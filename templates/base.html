@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AfricaChange</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Barre de navigation -->
+  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">🌍 AfricaChange</h1>
+    
+    <div class="space-x-4 flex items-center flex-wrap justify-end">
+
+      <!-- Liens publics -->
+      <a href="{{ url_for('main.accueil') }}" class="hover:text-blue-600">Accueil</a>
+	  
+	  {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-red-600 font-semibold">
+        ⚙️ Admin
+        </a>
+      {% endif %}
+
+
+      <!-- Conversion unique -->
+      <a href="{{ url_for('convert.convertir') }}" class="hover:text-blue-600">Convertir</a>
+
+      <!-- Zone utilisateur -->
+      {% if session.get('user_id') %}
+        <span class="text-gray-600">Bonjour, {{ session.get('user_nom') }}</span>
+        <a href="{{ url_for('auth.tableau_de_bord') }}" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">
+          Tableau de bord
+        </a>
+		<a href="{{ url_for('convert.historique') }}" class="hover:text-blue-600">
+          Historique
+        </a>
+
+        <a href="{{ url_for('auth.deconnexion') }}" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+          Déconnexion
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.connexion') }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+          Connexion
+        </a>
+        <a href="{{ url_for('auth.inscription') }}" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+          Inscription
+        </a>
+      {% endif %}
+
+      <!-- Lien unique pour admin -->
+      {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin.dashboard') }}" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">
+          🧭 Tableau de bord Admin
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Zone de contenu -->
+  <main class="p-6">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="mb-4">
+          {% for m in messages %}
+            <div class="bg-blue-100 text-blue-800 p-2 rounded mb-2">{{ m }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

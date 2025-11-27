@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md mt-6">
+  <h2 class="text-2xl font-bold text-blue-600 mb-6">📊 Suivi des conversions</h2>
+
+  <!-- Filtres -->
+  <form method="get" class="flex flex-wrap gap-3 mb-6">
+    <input type="text" name="telephone" placeholder="Téléphone"
+           value="{{ filtre_tel }}" class="border p-2 rounded w-48" />
+    <input type="date" name="date" value="{{ filtre_date }}" class="border p-2 rounded w-48" />
+    <select name="devise" class="border p-2 rounded w-40">
+      <option value="">Toutes devises</option>
+      <option value="CFA" {% if filtre_devise == 'CFA' %}selected{% endif %}>CFA</option>
+      <option value="GNF" {% if filtre_devise == 'GNF' %}selected{% endif %}>GNF</option>
+    </select>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+    <a href="{{ url_for('admin.export_conversions') }}"
+       class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-auto">⬇️ Export Excel</a>
+  </form>
+
+  <!-- Tableau -->
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="p-2 text-left">Date</th>
+          <th class="p-2 text-left">De</th>
+          <th class="p-2 text-left">Vers</th>
+          <th class="p-2 text-right">Montant initial</th>
+          <th class="p-2 text-right">Montant converti</th>
+          <th class="p-2 text-left">Téléphone envoyeur</th>
+          <th class="p-2 text-left">Téléphone récepteur</th>
+          <th class="p-2 text-left">Référence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in conversions %}
+        <tr class="border-b hover:bg-gray-50">
+          <td class="p-2">{{ c.date_conversion.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="p-2">{{ c.from_currency }}</td>
+          <td class="p-2">{{ c.to_currency }}</td>
+          <td class="p-2 text-right text-gray-700 font-medium">{{ "%.2f"|format(c.montant_initial) }}</td>
+          <td class="p-2 text-right text-blue-600 font-semibold">{{ "%.2f"|format(c.montant_converti) }}</td>
+          <td class="p-2">{{ c.sender_phone }}</td>
+          <td class="p-2">{{ c.receiver_phone }}</td>
+          <td class="p-2 text-gray-600">{{ c.reference }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center p-4 text-gray-500">Aucune conversion trouvée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

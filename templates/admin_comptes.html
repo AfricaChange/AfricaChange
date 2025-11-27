@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md mt-8">
+  <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">🏦 Gestion des comptes systèmes</h2>
+
+  <!-- Formulaire d'ajout -->
+  <form method="POST" class="bg-gray-50 p-4 rounded-lg mb-6 shadow-inner grid grid-cols-4 gap-4 items-end">
+    <div>
+      <label class="block text-gray-700">Nom du compte</label>
+      <input type="text" name="nom" required class="w-full border p-2 rounded" placeholder="Ex: Compte Wave Sénégal">
+    </div>
+    <div>
+      <label class="block text-gray-700">Fournisseur</label>
+      <select name="fournisseur" required class="w-full border p-2 rounded">
+        <option value="Wave">Wave</option>
+        <option value="Orange Money">Orange Money</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700">Pays</label>
+      <select name="pays" required class="w-full border p-2 rounded">
+        <option value="SN">Sénégal (SN)</option>
+        <option value="GN">Guinée (GN)</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-gray-700">Numéro</label>
+      <input type="text" name="numero" required class="w-full border p-2 rounded" placeholder="+221770000000">
+    </div>
+
+    <div class="col-span-4 text-right mt-2">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        ➕ Ajouter le compte
+      </button>
+    </div>
+  </form>
+
+  <!-- Liste des comptes -->
+  <table class="w-full border-collapse text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="p-2 text-left">Nom</th>
+        <th class="p-2 text-left">Fournisseur</th>
+        <th class="p-2 text-left">Pays</th>
+        <th class="p-2 text-left">Numéro</th>
+        <th class="p-2 text-center">Statut</th>
+        <th class="p-2 text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in comptes %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-2">{{ c.nom }}</td>
+        <td class="p-2">{{ c.fournisseur }}</td>
+        <td class="p-2">{{ c.pays }}</td>
+        <td class="p-2">{{ c.numero }}</td>
+		<td class="p-2">
+          {{ c.compte_systeme.nom if c.compte_systeme else "—" }}
+        </td>
+
+        <td class="p-2 text-center">
+          {% if c.actif %}
+            <span class="bg-green-100 text-green-700 px-2 py-1 rounded">🟢 Actif</span>
+          {% else %}
+            <span class="bg-red-100 text-red-700 px-2 py-1 rounded">🔴 Inactif</span>
+          {% endif %}
+        </td>
+        <td class="p-2 text-center">
+          <form method="POST" action="{{ url_for('admin.toggle_compte', id=c.id) }}" style="display:inline;">
+            <button type="submit" class="text-blue-600 hover:underline">🌀 Activer/Désactiver</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.supprimer_compte', id=c.id) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce compte ?');">
+            <button type="submit" class="text-red-600 hover:underline">🗑️ Supprimer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if comptes|length == 0 %}
+  <p class="text-center text-gray-500 mt-4">Aucun compte système enregistré.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

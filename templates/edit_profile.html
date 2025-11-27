@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
+    <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Modifier mon profil</h2>
+    <form method="POST">
+        <input type="text" name="nom" value="{{ utilisateur.nom }}" placeholder="Nom" required class="w-full mb-3 p-2 border rounded">
+        <input type="text" name="prenom" value="{{ utilisateur.prenom }}" placeholder="Prénom" required class="w-full mb-3 p-2 border rounded">
+        <input type="email" name="email" value="{{ utilisateur.email }}" placeholder="Email" required class="w-full mb-3 p-2 border rounded">
+        <input type="text" name="telephone" value="{{ utilisateur.telephone }}" placeholder="Téléphone" required class="w-full mb-3 p-2 border rounded">
+
+        <input type="password" name="mot_de_passe" placeholder="Nouveau mot de passe (optionnel)" class="w-full mb-5 p-2 border rounded">
+
+        <button type="submit" class="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600">Enregistrer</button>
+    </form>
+    <div class="text-center mt-4">
+        <a href="{{ url_for('auth.tableau_de_bord') }}" class="text-blue-600 hover:underline">← Retour au tableau de bord</a>
+    </div>
+</div>
+{% endblock %}

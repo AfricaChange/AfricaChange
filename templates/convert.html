@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">💱 Convertisseur AfricaChange</h2>
+
+  <!-- Formulaire principal -->
+  <form id="form-conversion" method="POST" action="{{ url_for('convert.convertir') }}" class="space-y-4">
+    
+    <!-- Montant -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Montant à convertir :</label>
+      <input type="number" step="0.01" id="montant" name="montant" class="w-full p-2 border rounded focus:ring focus:ring-blue-300" placeholder="Ex: 5000" required>
+    </div>
+
+    <!-- Paires de devises -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">De :</label>
+        <select id="from_currency" name="from_currency" class="w-full p-2 border rounded">
+          <option value="CFA">CFA</option>
+          <option value="GNF">GNF</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Vers :</label>
+        <select id="to_currency" name="to_currency" class="w-full p-2 border rounded">
+          <option value="GNF">GNF</option>
+          <option value="CFA">CFA</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Téléphones -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Téléphone envoyeur :</label>
+        <input type="tel" id="sender_phone" name="sender_phone" class="w-full p-2 border rounded" placeholder="Ex: 77 123 45 67" required>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Téléphone récepteur :</label>
+        <input type="tel" id="receiver_phone" name="receiver_phone" class="w-full p-2 border rounded" placeholder="Ex: +224 621 45 67 89" required>
+      </div>
+    </div>
+
+    <!-- Résultat de conversion -->
+    <div class="mt-4 bg-gray-50 p-3 rounded text-center shadow-inner">
+      <p class="text-gray-600">Montant converti :</p>
+      <p id="resultat" class="text-2xl font-semibold text-green-600 transition-all duration-300">--</p>
+      <p id="taux" class="text-sm text-gray-500"></p>
+    </div>
+
+    <!-- Bouton de validation -->
+    <div class="text-center mt-6">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        Valider la conversion
+      </button>
+    </div>
+  </form>
+  
+  <!-- Bouton paiement Orange Money -->
+  <div class="mt-6 bg-orange-50 p-4 rounded-lg shadow">
+    <h3 class="font-bold text-orange-600 mb-2">Payer avec Orange Money</h3>
+
+    <form action="{{ url_for('paiement.paiement_orange') }}" method="POST" class="space-y-3">
+        
+        <input type="hidden" name="montant" id="montant_om" value="">
+        
+        <div>
+            <label class="block text-gray-700">Numéro Orange Money</label>
+            <input type="text" name="telephone" class="w-full border p-2 rounded" placeholder="+22177xxxxxxx" required>
+        </div>
+
+        <button type="submit"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full">
+            📲 Payer avec Orange Money
+        </button>
+    </form>
+  </div>
+
+  <script>
+    // Synchronise le champ montant pour Orange Money
+    document.getElementById('montant_om').value =
+        document.getElementById('montant').value;
+  </script>
+
+  
+</div>
+  
+<!-- Script JavaScript -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const montantInput = document.getElementById("montant");
+  const fromSelect = document.getElementById("from_currency");
+  const toSelect = document.getElementById("to_currency");
+  const resultat = document.getElementById("resultat");
+  const tauxEl = document.getElementById("taux");
+
+  // Fonction de conversion instantanée
+  async function convertir() {
+    const montant = parseFloat(montantInput.value);
+    if (!montant || montant <= 0) {
+      resultat.textContent = "--";
+      tauxEl.textContent = "";
+      return;
+    }
+
+    // Affiche un message temporaire pendant le calcul
+    resultat.textContent = "Calcul en cours...";
+    tauxEl.textContent = "";
+
+    try {
+      const response = await fetch("/convert/api/convertir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          montant: montant,
+          from_currency: fromSelect.value,
+          to_currency: toSelect.value
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        resultat.textContent = "Erreur";
+        tauxEl.textContent = data.error;
+      } else {
+        resultat.textContent = `${data.montant_converti} ${toSelect.value}`;
+        resultat.classList.add("scale-110");
+        setTimeout(() => resultat.classList.remove("scale-110"), 200);
+        tauxEl.textContent = `Taux : 1 ${fromSelect.value} = ${data.taux} ${toSelect.value}`;
+      }
+    } catch (err) {
+      resultat.textContent = "Erreur réseau";
+    }
+  }
+
+  // Déclenche la conversion instantanée
+  montantInput.addEventListener("input", convertir);
+  fromSelect.addEventListener("change", convertir);
+  toSelect.addEventListener("change", convertir);
+});
+</script>
+{% endblock %}
