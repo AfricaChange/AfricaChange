@@ -33,6 +33,7 @@ urllib3==2.2.3
 Werkzeug==2.3.7
 zipp==3.20.2
 psycopg2-binary
+psycopg[binary]
 
 gunicorn==21.2.0
 setuptools
