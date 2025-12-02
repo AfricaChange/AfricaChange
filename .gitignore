@@ -17,8 +17,20 @@ _site/
 # Details at https://github.com/github/pages-gem/issues/768
 Gemfile.lock
 
+
+# Environnement
 echo .env >> .gitignore
 echo instance/*.db >> .gitignore
 echo __pycache__/ >> .gitignore
 echo *.pyc >> .gitignore
 echo *.swp >> .gitignore
+
+
+
+
+
+# éditeur / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

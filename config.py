@@ -6,7 +6,8 @@ load_dotenv()  # Charge les variables depuis .env
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-key")
 
-    SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
+    # 🔥 On lit DATABASE_URL depuis .env
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///instance/database.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Orange Money
@@ -23,7 +24,7 @@ class Config:
     MTN_PRIMARY_KEY = os.getenv("MTN_PRIMARY_KEY")
     MTN_ENVIRONMENT = os.getenv("MTN_ENVIRONMENT")
 
-    # Paydunya
+    # PayDunya
     PAYDUNYA_MASTER_KEY = os.getenv("PAYDUNYA_MASTER_KEY")
     PAYDUNYA_PRIVATE_KEY = os.getenv("PAYDUNYA_PRIVATE_KEY")
     PAYDUNYA_TOKEN = os.getenv("PAYDUNYA_TOKEN")
