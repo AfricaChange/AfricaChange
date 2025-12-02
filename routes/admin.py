@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from database import db
 from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme
-import pandas as pd
 import io
 from datetime import datetime
 from openpyxl import Workbook
@@ -108,46 +107,76 @@ def gerer_taux():
 
 # 🔹 Liste filtrable des conversions
 @admin.route('/conversions')
-def liste_conversions():
-    if not require_admin():
-        flash("Accès refusé : admin requis.")
-        return redirect(url_for('auth.connexion'))
+def export_conversions():
+    # 🔐 sécurité : seulement admin
+    user_id = session.get("user_id")
+    user = None
+    if user_id:
+        user = Utilisateur.query.get(user_id)
+    if not user or not user.is_admin:
+        flash("Accès réservé à l’administrateur.", "error")
+        return redirect(url_for("auth.connexion"))
 
-    filtre_devise = request.args.get("devise", "")
-    filtre_tel = request.args.get("telephone", "")
-    filtre_date = request.args.get("date", "")
-
-    query = Conversion.query
-
-    if filtre_devise:
-        query = query.filter((Conversion.from_currency == filtre_devise) | (Conversion.to_currency == filtre_devise))
-    if filtre_tel:
-        query = query.filter(
-            (Conversion.sender_phone.like(f"%{filtre_tel}%")) | (Conversion.receiver_phone.like(f"%{filtre_tel}%"))
-        )
-    if filtre_date:
-        try:
-            date_obj = datetime.strptime(filtre_date, "%Y-%m-%d")
-            query = query.filter(db.func.date(Conversion.date_conversion) == date_obj.date())
-        except ValueError:
-            flash("Format de date invalide (AAAA-MM-JJ).")
-
-    conversions = query.order_by(Conversion.date_conversion.desc()).all()
-
-    return render_template(
-        'admin_conversions.html',
-        conversions=conversions,
-        filtre_devise=filtre_devise,
-        filtre_tel=filtre_tel,
-        filtre_date=filtre_date
+    # 🔎 récupérer toutes les conversions
+    conversions = (
+        Conversion.query
+        .order_by(Conversion.date_conversion.desc())
+        .all()
     )
 
+    # 📘 création du fichier Excel avec openpyxl
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Conversions"
 
+    # En-têtes
+    headers = [
+        "ID",
+        "Utilisateur ID",
+        "Devise source",
+        "Devise cible",
+        "Montant initial",
+        "Montant converti",
+        "Téléphone envoyeur",
+        "Téléphone receveur",
+        "Référence",
+        "Date conversion",
+        "Statut",
+        "Compte système"
+    ]
+    ws.append(headers)
 
+    # Lignes
+    for c in conversions:
+        ws.append([
+            c.id,
+            c.user_id,
+            c.from_currency,
+            c.to_currency,
+            c.montant_initial,
+            c.montant_converti,
+            c.sender_phone,
+            c.receiver_phone,
+            c.reference,
+            c.date_conversion.strftime("%Y-%m-%d %H:%M:%S") if c.date_conversion else "",
+            c.statut,
+            c.compte_systeme.nom if c.compte_systeme else ""
+        ])
 
-# --- Exporter les conversions en Excel ---
-@admin.route('/admin/export-conversions', methods=['GET'])
-def export_conversions():
+    # Sauvegarde en mémoire
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"conversions_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
     """Exporte toutes les conversions au format Excel (avec comptes système)."""
     
 
