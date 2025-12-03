@@ -4,11 +4,17 @@ from database import db
 from models import Utilisateur, Compte, Transaction, Conversion
 from datetime import datetime
 import uuid
+from werkzeug.security import generate_password_hash
+from itsdangerous import URLSafeTimedSerializer
+
+
 
 auth = Blueprint('auth', __name__)
 
+s = URLSafeTimedSerializer(Config.SECRET_KEY)
+
 # ============================
-# 🔹 INSCRIPTION
+# 🔹1 INSCRIPTION
 # ============================
 @auth.route('/inscription', methods=['GET', 'POST'])
 def inscription():
@@ -45,7 +51,7 @@ def inscription():
 
 
 # ============================
-# 🔹 CONNEXION
+# 🔹2 CONNEXION
 # ============================
 @auth.route('/connexion', methods=['GET', 'POST'])
 def connexion():
@@ -70,7 +76,7 @@ def connexion():
 
 
 # ============================
-# 🔹 DÉCONNEXION
+# 🔹3 DÉCONNEXION
 # ============================
 @auth.route('/deconnexion')
 def deconnexion():
@@ -80,7 +86,7 @@ def deconnexion():
 
 
 # ============================
-# 🔹 TABLEAU DE BORD UTILISATEUR
+# 🔹 4 TABLEAU DE BORD UTILISATEUR
 # ============================
 @auth.route('/tableau-de-bord')
 def tableau_de_bord():
@@ -107,7 +113,7 @@ def tableau_de_bord():
 
 
 # ============================
-# 🔹 MODIFIER PROFIL
+# 🔹5 MODIFIER PROFIL
 # ============================
 @auth.route('/modifier-profil', methods=['GET', 'POST'])
 def modifier_profil():
@@ -137,7 +143,7 @@ def modifier_profil():
 
 
 # ============================
-# 🔹 MON SOLDE (avec dépôt simulé)
+# 🔹6 MON SOLDE (avec dépôt simulé)
 # ============================
 @auth.route('/mon-solde', methods=['GET', 'POST'])
 def mon_solde():
@@ -191,3 +197,48 @@ def mon_solde():
     )
 
     return render_template('mon_solde.html', user=user, compte=compte, transactions=transactions)
+
+
+# ============================
+# 🔹7 mot de passe oublie
+# ============================
+@auth.route('/mot-de-passe-oublie', methods=['GET', 'POST'])
+def mot_de_passe_oublie():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = Utilisateur.query.filter_by(email=email).first()
+
+        if not user:
+            flash("Cet email n'existe pas.")
+            return redirect(url_for('auth.mot_de_passe_oublie'))
+
+        token = s.dumps(email, salt="reset-password")
+
+        flash("Lien de réinitialisation généré (démo).")
+
+        return redirect(url_for('auth.reinitialiser_mot_de_passe', token=token))
+
+    return render_template("reset_password.html")
+
+# ============================
+# 🔹8 reinitialisation token
+# ============================
+@auth.route('/reinitialiser/<token>', methods=['GET', 'POST'])
+def reinitialiser_mot_de_passe(token):
+    try:
+        email = s.loads(token, salt="reset-password", max_age=600)
+    except:
+        flash("Lien invalide ou expiré.")
+        return redirect(url_for('auth.mot_de_passe_oublie'))
+
+    if request.method == 'POST':
+        nouveau_password = request.form['mot_de_passe']
+        user = Utilisateur.query.filter_by(email=email).first()
+
+        user.mot_de_passe = generate_password_hash(nouveau_password)
+        db.session.commit()
+
+        flash("Mot de passe modifié avec succès.")
+        return redirect(url_for('auth.login'))
+
+    return render_template("reset_password_confirm.html")
