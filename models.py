@@ -122,7 +122,6 @@ class CompteSysteme(db.Model):
 
 
 
-…
 
 def generate_reset_token(self):
     s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])

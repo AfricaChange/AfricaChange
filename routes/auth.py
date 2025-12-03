@@ -6,6 +6,11 @@ from datetime import datetime
 import uuid
 from werkzeug.security import generate_password_hash
 from itsdangerous import URLSafeTimedSerializer
+from config import Config
+
+
+
+
 
 
 
@@ -200,25 +205,39 @@ def mon_solde():
 
 
 # ============================
-# 🔹7 mot de passe oublie
+# 🔹7 # --- Réinitialisation de mot de passe simple (sans email) ---
 # ============================
 @auth.route('/mot-de-passe-oublie', methods=['GET', 'POST'])
 def mot_de_passe_oublie():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form.get('email')
+        nouveau = request.form.get('nouveau_mot_de_passe')
+        confirmation = request.form.get('confirmation_mot_de_passe')
+
+        if not email or not nouveau or not confirmation:
+            flash("Veuillez remplir tous les champs.", "error")
+            return render_template("forgot_password.html")
+
+        if nouveau != confirmation:
+            flash("Les mots de passe ne correspondent pas.", "error")
+            return render_template("forgot_password.html", email=email)
+
+        # Chercher l'utilisateur
         user = Utilisateur.query.filter_by(email=email).first()
-
         if not user:
-            flash("Cet email n'existe pas.")
-            return redirect(url_for('auth.mot_de_passe_oublie'))
+            flash("Aucun compte trouvé avec cet email.", "error")
+            return render_template("forgot_password.html", email=email)
 
-        token = s.dumps(email, salt="reset-password")
+        # Mettre à jour le mot de passe (haché)
+        user.mot_de_passe = generate_password_hash(nouveau)
+        db.session.commit()
 
-        flash("Lien de réinitialisation généré (démo).")
+        flash("✅ Mot de passe réinitialisé. Vous pouvez vous connecter.", "success")
+        return redirect(url_for('auth.connexion'))
 
-        return redirect(url_for('auth.reinitialiser_mot_de_passe', token=token))
+    # GET : afficher le formulaire
+    return render_template("forgot_password.html")
 
-    return render_template("reset_password.html")
 
 # ============================
 # 🔹8 reinitialisation token
