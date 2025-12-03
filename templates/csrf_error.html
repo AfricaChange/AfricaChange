@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-2xl p-8 max-w-lg text-center">
+    <div class="text-5xl mb-4">🔐</div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+      Formulaire expiré ou invalide
+    </h1>
+    <p class="text-gray-600 mb-4">
+      Pour des raisons de sécurité, ce formulaire n’est plus valide.
+    </p>
+    {% if reason %}
+      <p class="text-xs text-gray-400 mb-4">{{ reason }}</p>
+    {% endif %}
+    <a href="{{ url_for('main.accueil') }}"
+       class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
+      ⬅️ Retour à l’accueil
+    </a>
+  </div>
+</div>
+{% endblock %}

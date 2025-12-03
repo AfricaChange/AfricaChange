@@ -7,5 +7,12 @@
         <input type="password" name="mot_de_passe" placeholder="Mot de passe" required class="w-full mb-5 p-2 border rounded">
         <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Se connecter</button>
     </form>
+	<p class="mt-2 text-sm text-right">
+      <a href="{{ url_for('auth.mot_de_passe_oublie') }}" class="text-blue-600 hover:underline">
+
+        Mot de passe oublié ?
+     </a>
+    </p>
+
 </div>
 {% endblock %}
