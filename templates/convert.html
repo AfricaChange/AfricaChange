@@ -1,11 +1,17 @@
 {% extends "base.html" %}
+{% block back_button %}
+<a href="..." class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700 mb-4">
+  ← Retour
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
   <h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">💱 Convertisseur AfricaChange</h2>
 
   <!-- Formulaire principal -->
   <form id="form-conversion" method="POST" action="{{ url_for('convert.convertir') }}" class="space-y-4">
-    
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <!-- Montant -->
     <div>
       <label class="block text-sm font-medium text-gray-700">Montant à convertir :</label>

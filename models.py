@@ -1,5 +1,10 @@
 from database import db
 from datetime import datetime
+from itsdangerous import URLSafeTimedSerializer
+from flask import current_app
+
+
+
 
 class Utilisateur(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -113,3 +118,22 @@ class CompteSysteme(db.Model):
 
     def __repr__(self):
         return f"<CompteSysteme {self.fournisseur} {self.pays}>"
+
+
+
+
+…
+
+def generate_reset_token(self):
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return s.dumps(self.email, salt='reset-password')
+
+@staticmethod
+def verify_reset_token(token, expiration=3600):
+    from .models import User  # éviter import circulaire
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = s.loads(token, salt='reset-password', max_age=expiration)
+    except:
+        return None
+    return User.query.filter_by(email=email).first()

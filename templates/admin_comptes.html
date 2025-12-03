@@ -6,6 +6,7 @@
 
   <!-- Formulaire d'ajout -->
   <form method="POST" class="bg-gray-50 p-4 rounded-lg mb-6 shadow-inner grid grid-cols-4 gap-4 items-end">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
       <label class="block text-gray-700">Nom du compte</label>
       <input type="text" name="nom" required class="w-full border p-2 rounded" placeholder="Ex: Compte Wave Sénégal">

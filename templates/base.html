@@ -59,6 +59,7 @@
   </nav>
 
   <!-- Zone de contenu -->
+  <!-- Zone de contenu -->
   <main class="p-6">
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -69,9 +70,19 @@
         </div>
       {% endif %}
     {% endwith %}
-    
+
+    {% block back_button %}
+    <a href="..." class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700 mb-4">
+     ← Retour
+    </a>
+    {% endblock %}
+
+    {% block back_button %}{% endblock %}
+
+    {# Contenu principal de chaque page #}
     {% block content %}{% endblock %}
   </main>
+
 
 </body>
 </html>

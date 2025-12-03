@@ -4,7 +4,7 @@ from models import Rate, Conversion, Utilisateur, CompteSysteme
 from datetime import datetime
 import random
 import string
-
+from extensions import csrf  # 👈 AJOUT
 
 
 
@@ -74,14 +74,14 @@ def convertir():
 
 
 # 🔹 API AJAX (conversion instantanée)
+# 🔹 API AJAX (conversion instantanée)
+@csrf.exempt   # 👈 AJOUT
 @convert.route('/api/convertir', methods=['POST'])
 def api_convertir():
     data = request.get_json()
     montant = float(data.get('montant', 0))
     from_currency = data.get('from_currency')
     to_currency = data.get('to_currency')
-
-    
 
     rate = Rate.query.filter_by(from_currency=from_currency, to_currency=to_currency).first()
     if not rate:
@@ -90,8 +90,6 @@ def api_convertir():
     montant_converti = round(montant * rate.rate, 2)
     return jsonify({"taux": rate.rate, "montant_converti": montant_converti})
 
-
-# 🔹 Confirmation par référence (ancienne méthode)
 # 🔹 Confirmation par référence (avec compte système lié)
 @convert.route('/confirmer/<reference>', methods=['POST'])
 def confirmer_envoi_par_reference(reference):

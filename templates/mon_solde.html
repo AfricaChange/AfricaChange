@@ -10,6 +10,7 @@
 
   <!-- Formulaire de dépôt -->
   <form method="POST" class="flex gap-4 mb-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  
     <input type="number" step="0.01" min="1" name="montant" placeholder="Montant à déposer"
            class="border rounded-lg p-2 flex-1 focus:ring-2 focus:ring-blue-400 outline-none" required>
     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">

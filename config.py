@@ -1,16 +1,35 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Charge les variables depuis .env
+load_dotenv()  # Charge les variables depuis .env (en local)
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-key")
+    # 🌱 Environnement : "development" ou "production"
+    ENV = os.getenv("FLASK_ENV", "production")
+    DEBUG = ENV == "development"
 
-    # 🔥 On lit DATABASE_URL depuis .env
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///instance/database.db")
+    # 🔐 Clé secrète
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-key-CHANGE-MOI")
+
+    # 🗄 Base de données
+    # Render te fournit DATABASE_URL dans les variables d'env
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL", 
+        "sqlite:///instance/database.db"  # fallback en local si pas de DB
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Orange Money
+    # 🔐 Sécurité des cookies
+    SESSION_COOKIE_SECURE = True        # cookie envoyé seulement en HTTPS
+    SESSION_COOKIE_HTTPONLY = True      # non accessible via JS
+    SESSION_COOKIE_SAMESITE = "Lax"     # limite CSRF basique
+
+    REMEMBER_COOKIE_SECURE = True
+    REMEMBER_COOKIE_HTTPONLY = True
+
+    PREFERRED_URL_SCHEME = "https"
+
+    # Orange Money (on garde, mais en pause pour l’instant)
     OM_API_KEY = os.getenv("OM_API_KEY")
     OM_CLIENT_ID = os.getenv("OM_CLIENT_ID")
     OM_CLIENT_SECRET = os.getenv("OM_CLIENT_SECRET")
