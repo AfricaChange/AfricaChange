@@ -23,10 +23,11 @@ csrf.init_app(app)
 # 🔁 Injection du helper csrf_token() dans les templates
 @app.context_processor
 def inject_globals():
-    return dict(
-        csrf_token=generate_csrf,
-        config=app.config
-    )
+    return {
+        "csrf_token": generate_csrf,
+        "config": app.config,   # 👈 permet d’utiliser config.MAINTENANCE_MODE dans les templates
+    }
+
     
     
     
