@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template
+from flask import Flask, render_template,session, request
 from config import Config
 from database import db
 from routes.main import main
