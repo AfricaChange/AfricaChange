@@ -103,7 +103,19 @@ def gerer_taux():
 # ============================
 # 3️⃣ Liste des conversions
 # ============================
-
+@admin.route('/conversions')
+def liste_conversions():
+    """Liste des conversions pour l’admin"""
+    conversions = (
+        Conversion.query
+        .order_by(Conversion.date_conversion.desc())
+        .all()
+    )
+    return render_template(
+        'admin_conversions.html',
+        conversions=conversions
+    )
+    
 # 🔹 Liste filtrable des conversions
 @admin.route('/conversions')
 def export_conversions():
