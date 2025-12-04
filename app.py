@@ -22,8 +22,47 @@ csrf.init_app(app)
 
 # 🔁 Injection du helper csrf_token() dans les templates
 @app.context_processor
-def inject_csrf_token():
-    return dict(csrf_token=generate_csrf)
+def inject_globals():
+    return dict(
+        csrf_token=generate_csrf,
+        config=app.config
+    )
+    
+    
+    
+    
+    
+# 🔴🔴🔴 MIDDLEWARE DE MAINTENANCE 🔴🔴🔴
+@app.before_request
+def check_maintenance_mode():
+    # On ignore les fichiers statiques
+    if request.endpoint == 'static':
+        return
+
+    # Si pas en maintenance → on laisse passer
+    if not app.config.get("MAINTENANCE_MODE", False):
+        return
+
+    # Si l’admin est connecté → il peut continuer à tout utiliser
+    if session.get("is_admin"):
+        return
+
+    # On laisse quand même la page de maintenance elle-même
+    if request.endpoint == 'maintenance':
+        return
+
+    # Sinon : on affiche la page maintenance avec un code 503
+    message = app.config.get("MAINTENANCE_MESSAGE", "")
+    return render_template("maintenance.html", message=message), 503
+
+
+# Route dédiée (permet aussi de la tester directement)
+@app.route("/maintenance")
+def maintenance():
+    message = app.config.get("MAINTENANCE_MESSAGE", "")
+    return render_template("maintenance.html", message=message), 503
+
+    
 
 
 # Enregistrement de la route principale

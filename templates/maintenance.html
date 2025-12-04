@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-xl p-8 max-w-lg text-center">
+    <div class="text-5xl mb-4">🛠️</div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+      Site en maintenance
+    </h1>
+    <p class="text-gray-600 mb-4">
+      {{ message or "Nous procédons à une mise à jour de la plateforme. Merci de votre patience." }}
+    </p>
+
+    <p class="text-sm text-gray-400">
+      Si vous êtes administrateur et que vous voyez cette page, vérifiez votre connexion ou le paramètre MAINTENANCE_MODE.
+    </p>
+  </div>
+</div>
+{% endblock %}

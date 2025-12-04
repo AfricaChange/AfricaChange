@@ -18,6 +18,13 @@ class Config:
         "sqlite:///instance/database.db"  # fallback en local si pas de DB
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+     # 🔐 Maintenance
+    MAINTENANCE_MODE = os.getenv("MAINTENANCE_MODE", "0") == "1"
+    MAINTENANCE_MESSAGE = os.getenv(
+        "MAINTENANCE_MESSAGE",
+        "Nous effectuons une maintenance. Merci de revenir plus tard."
+    )
 
     # 🔐 Sécurité des cookies
     SESSION_COOKIE_SECURE = True        # cookie envoyé seulement en HTTPS
