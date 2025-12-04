@@ -23,7 +23,6 @@
         </a>
       {% endif %}
 
-
       <!-- Conversion unique -->
       <a href="{{ url_for('convert.convertir') }}" class="hover:text-blue-600">Convertir</a>
 
@@ -59,16 +58,14 @@
   </nav>
 
   <!-- Zone de contenu -->
-  <!-- Zone de contenu -->
   <main class="p-6">
     {% if session.get('is_admin') and config.MAINTENANCE_MODE %}
       <div class="mb-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded">
-      ⚠️ Mode maintenance activé : les utilisateurs non-admin voient la page de maintenance.
+        ⚠️ Mode maintenance activé : les utilisateurs non-admin voient la page de maintenance.
       </div>
     {% endif %}
 
-    {% with messages = get_flashed_messages() %}
-    ...
+    {# Messages flash #}
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <div class="mb-4">
@@ -88,7 +85,6 @@
     {# Contenu principal de chaque page #}
     {% block content %}{% endblock %}
   </main>
-
 
 </body>
 </html>
