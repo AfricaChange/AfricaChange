@@ -1,6 +1,23 @@
-from app import app
+from flask import Flask
+from config import Config
 from database import db
 from models import Utilisateur
+
+
+def create_cli_app():
+    """
+    Crée une petite app Flask juste pour les commandes en ligne (admin).
+    On évite d'importer l'app principale pour ne pas déclencher
+    des choses inutiles (blueprints, gunicorn, etc.).
+    """
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    db.init_app(app)
+    return app
+
+
+app = create_cli_app()
+
 
 def ajouter_admin(email):
     with app.app_context():
@@ -40,14 +57,14 @@ if __name__ == "__main__":
     print("1 → Ajouter un admin")
     print("2 → Retirer un admin")
     print("3 → Lister les admins")
-    choix = input("Votre choix : ")
+    choix = input("Votre choix : ").strip()
 
     if choix == "1":
-        email = input("Email de l'utilisateur à promouvoir admin : ")
+        email = input("Email de l'utilisateur à promouvoir admin : ").strip()
         ajouter_admin(email)
 
     elif choix == "2":
-        email = input("Email de l'utilisateur à retirer admin : ")
+        email = input("Email de l'utilisateur à retirer admin : ").strip()
         retirer_admin(email)
 
     elif choix == "3":
