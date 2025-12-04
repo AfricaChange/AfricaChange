@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from database import db
-from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme
+from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme, Parametre
 import io
 from datetime import datetime
 from openpyxl import Workbook
-from io import BytesIO
-
+from io import BytesIO 
 
 
 
@@ -324,3 +323,48 @@ def supprimer_compte(id):
     db.session.commit()
     flash(f"🗑️ Compte {compte.nom} supprimé.", "danger")
     return redirect(url_for('admin.comptes_systeme'))
+
+
+
+
+
+# ===============================================================
+# 🏦 ROUTE DE MAINTENANCE
+# ===============================================================
+@admin.route("/maintenance", methods=["GET", "POST"])
+def admin_maintenance():
+    # Sécurité : seulement admin
+    if not session.get("is_admin"):
+        flash("Accès réservé aux administrateurs.", "error")
+        return redirect(url_for("main.accueil"))
+
+    # Récupération des paramètres existants
+    mode_param = Parametre.query.filter_by(cle="maintenance_mode").first()
+    msg_param = Parametre.query.filter_by(cle="maintenance_message").first()
+
+    if request.method == "POST":
+        mode = request.form.get("mode", "off")  # "on" ou "off"
+        message = request.form.get("message", "").strip()
+
+        if not mode_param:
+            mode_param = Parametre(cle="maintenance_mode")
+            db.session.add(mode_param)
+        mode_param.valeur = "on" if mode == "on" else "off"
+
+        if not msg_param:
+            msg_param = Parametre(cle="maintenance_message")
+            db.session.add(msg_param)
+        msg_param.valeur = message
+
+        db.session.commit()
+        flash("Paramètres de maintenance mis à jour ✅", "success")
+        return redirect(url_for("admin.admin_maintenance"))
+
+    current_mode = "on" if (mode_param and mode_param.valeur == "on") else "off"
+    current_message = msg_param.valeur if msg_param else ""
+
+    return render_template(
+        "admin_maintenance.html",
+        mode=current_mode,
+        message=current_message,
+    )

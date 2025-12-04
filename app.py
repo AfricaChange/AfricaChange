@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template,session, request
 from config import Config
 from database import db
@@ -10,6 +9,7 @@ from routes.paiement import paiement
 from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
 from extensions import csrf
+from models import Parametre
 
 
 
@@ -31,34 +31,44 @@ def inject_globals():
     
     
     
-    
-    
 # 🔴🔴🔴 MIDDLEWARE DE MAINTENANCE 🔴🔴🔴
 @app.before_request
 def check_maintenance_mode():
-    # On ignore les fichiers statiques
+    # Laisser passer les fichiers statiques
     if request.endpoint == 'static':
         return
 
-    # Si pas en maintenance → on laisse passer
-    if not app.config.get("MAINTENANCE_MODE", False):
+    # Laisser passer la page de maintenance elle-même
+    if request.endpoint in ('maintenance',):
         return
 
-    # Si l’admin est connecté → il peut continuer à tout utiliser
+    # Admin connecté : accès complet même en maintenance
     if session.get("is_admin"):
         return
 
-    # On laisse quand même la page de maintenance elle-même
-    if request.endpoint == 'maintenance':
+    # 1️⃣ Regarder d'abord en base
+    try:
+        param = Parametre.query.filter_by(cle="maintenance_mode").first()
+        db_mode_on = bool(param and param.valeur == "on")
+    except Exception:
+        # En cas de souci de DB → on tombe sur la config
+        db_mode_on = False
+
+    # 2️⃣ Si pas de paramètre en base → fallback config (MAINTENANCE_MODE via .env)
+    maintenance_on = db_mode_on or app.config.get("MAINTENANCE_MODE", False)
+
+    if not maintenance_on:
         return
 
-    # Sinon : on affiche la page maintenance avec un code 503
-    message = app.config.get("MAINTENANCE_MESSAGE", "")
+    # Message perso : d’abord DB, sinon config
+    msg_param = Parametre.query.filter_by(cle="maintenance_message").first()
+    message = (
+        msg_param.valeur if msg_param and msg_param.valeur
+        else app.config.get("MAINTENANCE_MESSAGE", "")
+    )
+
     return render_template("maintenance.html", message=message), 503
 
-
-# Route dédiée (permet aussi de la tester directement)
-@app.route("/maintenance")
 def maintenance():
     message = app.config.get("MAINTENANCE_MESSAGE", "")
     return render_template("maintenance.html", message=message), 503

@@ -121,6 +121,15 @@ class CompteSysteme(db.Model):
 
 
 
+class Parametre(db.Model):
+    __tablename__ = "parametre"
+
+    id = db.Column(db.Integer, primary_key=True)
+    cle = db.Column(db.String(50), unique=True, nullable=False)
+    valeur = db.Column(db.String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<Parametre {self.cle}={self.valeur}>"
 
 
 def generate_reset_token(self):

@@ -45,7 +45,13 @@
            🏦 Gérer les comptes systèmes
       </a>
 
-      <a href="{{ url_for('admin.export_conversions') }}"
+      
+	  <a href="{{ url_for('admin.admin_maintenance') }}"
+         class="inline-block bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+           🛠️ Mode maintenance
+      </a>
+
+	  <a href="{{ url_for('admin.export_conversions') }}"
          class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow transition">
          📤 Exporter en Excel
       </a>
