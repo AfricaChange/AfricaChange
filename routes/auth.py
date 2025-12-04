@@ -4,19 +4,8 @@ from database import db
 from models import Utilisateur, Compte, Transaction, Conversion
 from datetime import datetime
 import uuid
-from werkzeug.security import generate_password_hash
-from itsdangerous import URLSafeTimedSerializer
-from config import Config
-
-
-
-
-
-
 
 auth = Blueprint('auth', __name__)
-
-s = URLSafeTimedSerializer(Config.SECRET_KEY)
 
 # ============================
 # 🔹1 INSCRIPTION
@@ -205,7 +194,7 @@ def mon_solde():
 
 
 # ============================
-# 🔹7 # --- Réinitialisation de mot de passe simple (sans email) ---
+# 🔹7 MOT DE PASSE OUBLIÉ (simple, sans email)
 # ============================
 @auth.route('/mot-de-passe-oublie', methods=['GET', 'POST'])
 def mot_de_passe_oublie():
@@ -216,7 +205,7 @@ def mot_de_passe_oublie():
 
         if not email or not nouveau or not confirmation:
             flash("Veuillez remplir tous les champs.", "error")
-            return render_template("forgot_password.html")
+            return render_template("forgot_password.html", email=email)
 
         if nouveau != confirmation:
             flash("Les mots de passe ne correspondent pas.", "error")
@@ -237,27 +226,3 @@ def mot_de_passe_oublie():
 
     # GET : afficher le formulaire
     return render_template("forgot_password.html")
-
-
-# ============================
-# 🔹8 reinitialisation token
-# ============================
-@auth.route('/reinitialiser/<token>', methods=['GET', 'POST'])
-def reinitialiser_mot_de_passe(token):
-    try:
-        email = s.loads(token, salt="reset-password", max_age=600)
-    except:
-        flash("Lien invalide ou expiré.")
-        return redirect(url_for('auth.mot_de_passe_oublie'))
-
-    if request.method == 'POST':
-        nouveau_password = request.form['mot_de_passe']
-        user = Utilisateur.query.filter_by(email=email).first()
-
-        user.mot_de_passe = generate_password_hash(nouveau_password)
-        db.session.commit()
-
-        flash("Mot de passe modifié avec succès.")
-        return redirect(url_for('auth.login'))
-
-    return render_template("reset_password_confirm.html")

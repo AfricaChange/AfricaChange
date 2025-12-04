@@ -9,6 +9,8 @@ from routes.admin import admin  # 👈 AJOUT
 from routes.paiement import paiement
 from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
+from flask_wtf import CSRFProtect
+
 # 🚩 Import du CSRF
 from extensions import csrf
 
