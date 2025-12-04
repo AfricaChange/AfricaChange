@@ -11,6 +11,7 @@
 
   <!-- Formulaire principal -->
   <form id="form-conversion" method="POST" action="{{ url_for('convert.convertir') }}" class="space-y-4">
+    <!-- 🔐 IMPORTANT : token CSRF -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <!-- Montant -->
     <div>
