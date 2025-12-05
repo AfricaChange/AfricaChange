@@ -64,6 +64,20 @@
       {% endif %}
     </p>
   </div>
+  <div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('auth.tableau_de_bord') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+        ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
+
   {% endif %}
 </div>
 
