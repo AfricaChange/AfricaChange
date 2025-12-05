@@ -2,7 +2,19 @@
 {% block content %}
 <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
     <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Mon Tableau de Bord</h2>
+    <div class="flex justify-between mt-6">
     
+      <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+      </a>
+
+      <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+    </div>
     <!-- Informations de l'utilisateur -->
     <div class="space-y-4">
         <div class="flex justify-between">
@@ -74,6 +86,8 @@
       {% endfor %}
     </tbody>
   </table>
+  
+
   {% else %}
   <p class="text-center text-gray-500 bg-gray-50 p-4 rounded-lg shadow-inner">
     Aucune conversion enregistrée pour le moment.
