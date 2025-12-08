@@ -13,11 +13,16 @@ auth = Blueprint('auth', __name__)
 @auth.route('/inscription', methods=['GET', 'POST'])
 def inscription():
     if request.method == 'POST':
-        nom = request.form['nom']
-        prenom = request.form['prenom']
-        email = request.form['email']
-        telephone = request.form['telephone']
-        mot_de_passe = generate_password_hash(request.form['mot_de_passe'])
+        nom = request.form.get('nom')
+        prenom = request.form.get('prenom')
+        email = request.form.get('email')
+        telephone = request.form.get('telephone')
+        mot_de_passe = request.form.get('mot_de_passe')
+
+        # Vérification données
+        if not all([nom, prenom, email, telephone, mot_de_passe]):
+            flash("Tous les champs sont obligatoires.", "warning")
+            return render_template("register.html")
 
         # Vérifier si l'utilisateur existe déjà
         utilisateur_existe = Utilisateur.query.filter(
@@ -26,22 +31,32 @@ def inscription():
 
         if utilisateur_existe:
             flash("Cet email ou numéro de téléphone est déjà utilisé.", "warning")
-            return redirect(url_for('auth.inscription'))
+            return render_template("register.html")
 
-        nouvel_utilisateur = Utilisateur(
-            nom=nom,
-            prenom=prenom,
-            email=email,
-            telephone=telephone,
-            mot_de_passe=mot_de_passe
-        )
-        db.session.add(nouvel_utilisateur)
-        db.session.commit()
+        try:
+            hash_mdp = generate_password_hash(mot_de_passe)
 
-        flash("Inscription réussie ✅ Connecte-toi maintenant.", "success")
-        return redirect(url_for('auth.connexion'))
+            nouvel_utilisateur = Utilisateur(
+                nom=nom,
+                prenom=prenom,
+                email=email,
+                telephone=telephone,
+                mot_de_passe=hash_mdp
+            )
 
-    return render_template('register.html')
+            db.session.add(nouvel_utilisateur)
+            db.session.commit()
+
+            flash("Inscription réussie ! Connecte-toi maintenant 👍", "success")
+            return redirect(url_for('auth.connexion'))
+
+        except Exception as e:
+            db.session.rollback()
+            print("Erreur SQL → ", e)  # log dans Render ou terminal local
+            flash("Erreur interne. Réessaie.", "danger")
+
+    return render_template("register.html")
+
 
 
 # ============================
