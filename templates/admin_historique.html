@@ -3,6 +3,21 @@
 
 <div class="max-w-6xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
   <h2 class="text-3xl font-bold text-pink-600 text-center mb-6">📊 Historique global des conversions</h2>
+  
+  <!-- 🔙 Boutons de navigation -->
+  <div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
 
   <form method="get" action="{{ url_for('admin.historique_envois') }}" class="flex flex-col md:flex-row items-center justify-between mb-6 gap-3">
     <input 
@@ -65,16 +80,19 @@
 </div>
 
 <!-- 🔙 Boutons de navigation -->
-<div class="max-w-6xl mx-auto mt-6 flex justify-between">
-  <a href="{{ url_for('admin.dashboard') }}" 
-     class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
-     ⬅ Retour au tableau de bord
-  </a>
+<div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
 
-  <a href="{{ url_for('main.accueil') }}" 
-     class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-     🏠 Retour à l'accueil
-  </a>
-</div>
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
+
 
 {% endblock %}
