@@ -1,20 +1,51 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
-    <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Connexion</h2>
-    <form method="POST">
-        <!-- 🔐 IMPORTANT : token CSRF -->
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-		<input type="email" name="email" placeholder="Adresse email" required class="w-full mb-3 p-2 border rounded">
-        <input type="password" name="mot_de_passe" placeholder="Mot de passe" required class="w-full mb-5 p-2 border rounded">
-        <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Se connecter</button>
-    </form>
-	<p class="mt-2 text-sm text-right">
-      <a href="{{ url_for('auth.mot_de_passe_oublie') }}" class="text-blue-600 hover:underline">
+{% block title %}Connexion – AfricaChange{% endblock %}
 
-        Mot de passe oublié ?
-     </a>
+{% block content %}
+<div class="flex justify-center">
+  <div class="w-full max-w-md bg-white/90 backdrop-blur shadow-lg rounded-2xl p-6 mt-6">
+    <h2 class="text-2xl font-bold text-center mb-2 text-blue-700">
+      Connexion
+    </h2>
+    <p class="text-center text-sm text-gray-500 mb-6">
+      Accédez à votre espace AfricaChange
     </p>
 
+    <form method="POST" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Adresse email</label>
+        <input type="email" name="email" required
+               class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+               placeholder="exemple@domaine.com">
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Mot de passe</label>
+        <input type="password" name="mot_de_passe" required
+               class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+               placeholder="Votre mot de passe">
+      </div>
+
+      <div class="flex items-center justify-between text-sm">
+        <a href="{{ url_for('auth.reset_password') }}" class="text-blue-600 hover:underline">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
+        Se connecter
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-sm text-gray-500">
+      Pas encore de compte ?
+      <a href="{{ url_for('auth.inscription') }}" class="text-emerald-600 font-semibold hover:underline">
+        Créer un compte
+      </a>
+    </p>
+  </div>
 </div>
 {% endblock %}

@@ -6,85 +6,81 @@
   <title>AfricaChange</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="min-h-screen bg-gray-50 text-gray-800">
 
   <!-- Barre de navigation -->
-  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-blue-600">🌍 AfricaChange</h1>
-    
-    <div class="space-x-4 flex items-center flex-wrap justify-end">
+  <nav class="bg-white shadow-md p-4">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">AC</div>
+          <span class="text-lg font-semibold text-blue-600">AfricaChange</span>
+        </a>
+      </div>
 
-      <!-- Liens publics -->
-      <a href="{{ url_for('main.accueil') }}" class="hover:text-blue-600">Accueil</a>
-	  
-	  {% if session.get('is_admin') %}
-        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-red-600 font-semibold">
-        ⚙️ Admin
-        </a>
-      {% endif %}
+      <div class="flex items-center gap-3 text-sm">
+        <a href="{{ url_for('convert.convertir') }}" class="hover:text-blue-600">Convertir</a>
 
-      <!-- Conversion unique -->
-      <a href="{{ url_for('convert.convertir') }}" class="hover:text-blue-600">Convertir</a>
+        {% if session.get('user_id') %}
+          <span class="text-gray-600 hidden sm:inline">Bonjour, <span class="font-semibold">{{ session.get('user_nom') }}</span></span>
+          <a href="{{ url_for('auth.tableau_de_bord') }}" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Tableau de bord</a>
+          <a href="{{ url_for('convert.historique') }}" class="hover:text-blue-600">Historique</a>
+          <a href="{{ url_for('auth.deconnexion') }}" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</a>
+        {% else %}
+          <a href="{{ url_for('auth.connexion') }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Connexion</a>
+          <a href="{{ url_for('auth.inscription') }}" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Inscription</a>
+        {% endif %}
 
-      <!-- Zone utilisateur -->
-      {% if session.get('user_id') %}
-        <span class="text-gray-600">Bonjour, {{ session.get('user_nom') }}</span>
-        <a href="{{ url_for('auth.tableau_de_bord') }}" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">
-          Tableau de bord
-        </a>
-		<a href="{{ url_for('convert.historique') }}" class="hover:text-blue-600">
-          Historique
-        </a>
-
-        <a href="{{ url_for('auth.deconnexion') }}" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-          Déconnexion
-        </a>
-      {% else %}
-        <a href="{{ url_for('auth.connexion') }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-          Connexion
-        </a>
-        <a href="{{ url_for('auth.inscription') }}" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
-          Inscription
-        </a>
-      {% endif %}
-
-      <!-- Lien unique pour admin -->
-      {% if session.get('is_admin') %}
-        <a href="{{ url_for('admin.dashboard') }}" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">
-          🧭 Tableau de bord Admin
-        </a>
-      {% endif %}
+        {% if session.get('is_admin') %}
+          <a href="{{ url_for('admin.dashboard') }}" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">🧭 Admin</a>
+        {% endif %}
+      </div>
     </div>
   </nav>
 
   <!-- Zone de contenu -->
-  <main class="p-6">
+  <main class="max-w-5xl mx-auto p-6">
+
     {% if session.get('is_admin') and config.MAINTENANCE_MODE %}
       <div class="mb-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded">
         ⚠️ Mode maintenance activé : les utilisateurs non-admin voient la page de maintenance.
       </div>
     {% endif %}
 
-    {# Messages flash #}
-    {% with messages = get_flashed_messages() %}
+    <!-- Messages flash (avec catégories si fournies) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mb-4">
-          {% for m in messages %}
-            <div class="bg-blue-100 text-blue-800 p-2 rounded mb-2">{{ m }}</div>
+        <div class="mb-4 space-y-2">
+          {% for category, msg in messages %}
+            {% set style = {
+              'success': 'bg-emerald-50 border-emerald-200 text-emerald-800',
+              'error': 'bg-red-50 border-red-200 text-red-800',
+              'danger': 'bg-red-50 border-red-200 text-red-800',
+              'warning': 'bg-amber-50 border-amber-200 text-amber-800'
+            }[category] if category in ['success','error','danger','warning'] else 'bg-blue-50 border-blue-200 text-blue-800' %}
+            <div class="border px-3 py-2 rounded {{ style }}">
+              {{ msg }}
+            </div>
           {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
+    <!-- Back button: pages peuvent redéfinir block back_button -->
     {% block back_button %}
-    <a href="..." class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700 mb-4">
-     ← Retour
-    </a>
+    <!-- Par défaut on n'affiche rien – les pages qui veulent un retour remplaceront ce block -->
     {% endblock %}
 
-    {# Contenu principal de chaque page #}
+    <!-- Contenu principal -->
     {% block content %}{% endblock %}
   </main>
+
+  <footer class="border-t border-slate-200 mt-8">
+    <div class="max-w-5xl mx-auto px-6 py-4 text-xs text-slate-500 flex justify-between">
+      <span>© {{ 2025 }} AfricaChange</span>
+      <span>Prototype – Optimisé mobile</span>
+    </div>
+  </footer>
 
 </body>
 </html>
