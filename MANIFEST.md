@@ -1,0 +1,76 @@
+# Manifest du projet AfricaChange
+
+- Archive: `africachange_backup_20251211T123124Z.zip`
+- Généré: 2025-12-11 12:31:24 UTC
+
+## Fichiers inclus (path — sha256)
+
+- `admin_ajout.tsql` — `edb864b5221ea6a7309b8be4c52856ae6c849b8ae9d83cadd43a30b2f92038c5`
+- `ADMIN_EMAIL` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `admin_manager.py` — `1078cd713623445aff3741c5c56cca8fbcf4a4797fde8ce69b27f4b479ffdbf5`
+- `ADMIN_PASSWORD` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `africa-change.txt` — `ee0603854581da3119c7bab243c9f46829c3e7e65a23c3c0c8ccb074c62f20d9`
+- `app.py` — `3af5cc24f6dc5f06ead3660a0618dfe226f84ee12cc9da8f6fdbb704da635534`
+- `auth.py` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `check_postgres.py` — `ad878691ce674ab69ade452d7ce70c87cf31c3b7156aea16dffba8ae3662e87b`
+- `config.py` — `cfd2180929f5d3dae8c2cbefa8c871b4e5f2cd653b114146665576deb5573715`
+- `convert.py` — `d4d4c9761faa6691b0673df3826cd4702d9b2c105ed3ab70e06e8ad989f293e7`
+- `create_admin.py` — `382cf1d6d4ba474c3a8180fbde030643a74dc37f170988e223a729424affa110`
+- `create_tables.py` — `7371aaf4365bb775220f14b7031ed177705fc4bcc7b1e0174f1b6bb27491e090`
+- `database.py` — `bc22f136301287b9f770d2b435e467062661e602ec4176fbcfd259ee281cb7a5`
+- `extensions.py` — `7feb055539dd814ea1316fa3eb8075519ebb3e690980593dc594fe76aefe2800`
+- `git` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `insert_comptes.py` — `999a0d8c6bb8b23b272ba27b62512ba1a2ddd051456270b48045154f30aae178`
+- `migrate_sqlite_to_postgres.py` — `5604ce514d039b5d5935744a160a3e4278456d727a0d41942a9aafec7265ed1b`
+- `models.py` — `e646e03427fa2d729faedcd995419683cbe68341d6e814cc32736ee8906b6379`
+- `ORANGE_CLIENT_ID` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `ORANGE_CLIENT_SECRET` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `ORANGE_CURRENCY` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `ORANGE_MERCHANT_KEY` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `package_project.py` — `24a56b90b98657a66c0babe0313426264b98481217c86f17c613676465c5e3dc`
+- `procfile` — `0daa009e38ba0c13cc9fa0b97047a037600f5d4958f7633588ecf3fe28d7eae5`
+- `python` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `README.md` — `c074537890b6dcccedc433282e96dab7378f3889597a63a936d7ecf69c513374`
+- `requirements.txt` — `0da40007a937e031692e39d230ae4bdcb268a3171752483f128f5e3c8a57d36f`
+- `reset_pg.py` — `3929fd1e358d72d0555c3d0670d682d68bfa1bb9b7041717b59b75f4d7a3bb71`
+- `runtime.txt` — `b201bce096d222c53baef2d3659218e619c3ab48ae85a971828995f495d1ba4a`
+- `sync_db.py` — `0801f3e2ac8a651e40aaf64e82b224ec46c7939d1b515a311c4eaebac428d376`
+- `test_postgres` — `984e6a58114e8c568534fc9210e43e940228b3cdf421003e6da1381086a157ad`
+- `WAVE_API_KEY` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `WAVE_API_URL` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `api_clients/orange_money.py` — `6690b71b4918064cb0e079692045024739d25e233fdf315b759d9fe8bd78a44c`
+- `routes/admin.py` — `e8ebfe02b21736dd26a8b52938083fabee73d5423f1156075e2fbe10f58009b7`
+- `routes/auth.py` — `d00cdb2fb8363bb0266e8be16650b46bf6658763a7e287f4e828853785562150`
+- `routes/convert.py` — `9af01cd58268b8585d35fe858da9f926f11ebc5c398c96b6eb600d7ba0e4637b`
+- `routes/exchange.py` — `eee64ef6bc6312cffa908fec52f01d22175381ec3d842ea715c748f54701232c`
+- `routes/main.py` — `969c499bce899bb230a096923fc9fd6f8162f162729ac49acb5a89837864dd5b`
+- `routes/paiement.py` — `49027b659e8a8f75832a0a40f631058847c859103afeac6fb3ca184e4273c15d`
+- `routes/__init__` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `services/email_service.py` — `999b1da43e3f988c55102888dcba3b204e465c910f3629fa9477c0e6e3ca085d`
+- `services/orange_money_api.py` — `4cba7559966baa91046b225b87ca6334c49c503f02c2bc55ad18ce00e46c9c11`
+- `services/wave_api.py` — `19d87a884235f0b094b1ef1dad598611e07f357731a96547050172376662d729`
+- `templates/404.html` — `b14a39bf68caa3b71805320f1016aed2d587ad16920f4be8a467782d5527dcc9`
+- `templates/500.html` — `2cda97878bc0add655b397a60e7107f899087785f975bf1b2762654a8a2e6563`
+- `templates/admin_comptes.html` — `c947477d4da54d44974688130813a2b99ee784e4c917c3dd8ca8ce572d38600a`
+- `templates/admin_conversions.html` — `46e3f84475ebd926f5ed990c3ca2609a9d6156fddc1852d599caba75529ee672`
+- `templates/admin_dashboard.html` — `a72e9ea91da21b1177b4aba2ca2c51d61cc245497d0c7b663d1c0865a7e85db4`
+- `templates/admin_historique.html` — `3049f0374b92151a7e92a8c45fef6ad1ae3b89cd360b306162eb11915cd7990e`
+- `templates/admin_maintenance.html` — `f8d45ad1f263019018465a787f4b5b4a2f7642f4b9dd5b1026b8b55964f14e53`
+- `templates/admin_rates.html` — `6e9646fa6b4f1ec903955a03595f8155b228940643f0a72e4d5dc71f2e89c77d`
+- `templates/base.html` — `8763e4c2455c39d1c946af241c6d57db9ca9829ff9b6e129a51d5d7426e60a3f`
+- `templates/conversion.html` — `e0170eea19b5a73dd9a5e8497f2a78d843c9e7ce39ad83c393e66050daecb492`
+- `templates/convert.html` — `74bf4bfc9860f7ee7475953b3c54eeacea48a4c837f887eb62a8c7608f03405f`
+- `templates/csrf_error.html` — `80de400442689d4f07dd70acdddd55f0740047a5da36b06b4d70165a1f3c83d1`
+- `templates/dashboard.html` — `b69f059772ec2ec3d65d165e89a9fe034c8b668f1a9cc042fb6853c56601e4e6`
+- `templates/edit_profile.html` — `e64dd28d35404e902e6762845917f542e5410c5aa9f21af31e0b765f208b4627`
+- `templates/forgot_password.html` — `8311dfd8075420825359085476fbeafff6d74503981e6deeae250a54370bc49b`
+- `templates/historique.html` — `fcce2c8f65949eb64f6f4dc7bda03df0f1f194c25b8d8edf190830fde23ea293`
+- `templates/index.html` — `31670481a833f64443e409f8431f1f9caf78a469d92c9f0a7cbbaa592197395b`
+- `templates/login.html` — `46200d5b8d780de60165252542dd9abafbfe234f02703148f850d51345446c4a`
+- `templates/maintenance.html` — `f1ad2fdd76174840f0a6a36c86f7b5a151e2a15ef67c1753c3f645a00f4cbf37`
+- `templates/mon_solde.html` — `e45276250a9de52c2206e10e98af568244daeb00ab58a3497f16d6f0f2d7c93d`
+- `templates/paiement_resultat.html` — `1347ff998219b8f6011ce0e4e49026daf73cc7ea6554278e8b492f2fa66b12b1`
+- `templates/register.html` — `78b232a4c8bd15d236d56497986c97438262d135637f74763851ea3ab37d3f7e`
+- `templates/reset_password.html` — `be81de0efefbf226af6a2df6ba180dcc7d56ddb2b110b87fb8ca2f055ac0d628`
+- `templates/reset_password_confirm.html` — `bda41e1b6582537e1f18179af2abbe8531648327cde52740175911ef3c35bcee`
+- `templates/resultat.html` — `1181cf2180185b3fea135af752b13c358a12bfc471cbf0b63ab22f478a8edec8`

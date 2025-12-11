@@ -4,6 +4,8 @@ from database import db
 from models import Utilisateur, Compte, Transaction, Conversion
 from datetime import datetime
 import uuid
+from flask_limiter.util import get_remote_address
+from app import limiter
 
 auth = Blueprint('auth', __name__)
 
@@ -11,6 +13,7 @@ auth = Blueprint('auth', __name__)
 # 🔹1 INSCRIPTION
 # ============================
 @auth.route('/inscription', methods=['GET', 'POST'])
+@limiter.limit("5 per hour")
 def inscription():
     if request.method == 'POST':
         nom = request.form.get('nom')
@@ -63,6 +66,7 @@ def inscription():
 # 🔹2 CONNEXION
 # ============================
 @auth.route('/connexion', methods=['GET', 'POST'])
+@limiter.limit("5 per 15 minutes")
 def connexion():
     if request.method == 'POST':
         email = request.form['email']

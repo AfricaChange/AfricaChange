@@ -35,7 +35,23 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
 
     PREFERRED_URL_SCHEME = "https"
+       
+    # Flask-WTF (CSRF)
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = None  # ou un nombre en secondes si tu veux expirer tokens
 
+    # Talisman / CSP - valeurs par défaut ; adapte si besoin
+    CSP = {
+        "default-src": ["'self'"],
+        "script-src": ["'self'","https://cdn.jsdelivr.net","https://cdn.tailwindcss.com"],
+        "style-src": ["'self'","'unsafe-inline'","https://cdn.tailwindcss.com"],
+        "img-src": ["'self'","data:"],
+        "font-src": ["'self'","https://fonts.gstatic.com"],
+    }
+
+    # Rate limiter defaults (Flask-Limiter)
+    RATELIMIT_DEFAULT = "200 per day;50 per hour"   
+       
     # Orange Money (on garde, mais en pause pour l’instant)
     OM_API_KEY = os.getenv("OM_API_KEY")
     OM_CLIENT_ID = os.getenv("OM_CLIENT_ID")

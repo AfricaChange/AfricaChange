@@ -10,6 +10,12 @@ from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
 from extensions import csrf
 from models import Parametre
+from flask_wtf import CSRFProtect
+from flask_talisman import Talisman
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import logging
+
 
 
 
@@ -28,7 +34,43 @@ def inject_globals():
         "config": app.config,   # 👈 permet d’utiliser config.MAINTENANCE_MODE dans les templates
     }
 
-    
+  
+
+
+
+# ---------- CSRF ----------
+csrf = CSRFProtect(app)  # protège toutes les routes POST, PUT, DELETE, etc.
+# si tu as blueprints, CSRFProtect couvrira tout automatiquement
+
+# ---------- Security Headers via Talisman ----------
+csp = app.config.get("CSP", None)
+talisman = Talisman(
+    app,
+    content_security_policy=csp,
+    force_https=True,               # redirige vers HTTPS en prod
+    session_cookie_secure=True,
+    strict_transport_security=True,
+    strict_transport_security_max_age=31536000,  # 1 an
+    strict_transport_security_include_subdomains=True,
+)
+
+# ---------- Rate limiting ----------
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=[app.config.get("RATELIMIT_DEFAULT")],
+)
+
+# ---------- Logging : ne pas logguer secret (production) ----------
+if not app.debug:
+    # logger simple : écris erreurs dans un fichier sécurisé
+    handler = logging.FileHandler('logs/africachange_errors.log')
+    handler.setLevel(logging.WARNING)
+    fmt = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+    handler.setFormatter(fmt)
+    app.logger.addHandler(handler)
+
+  
     
     
 # 🔴🔴🔴 MIDDLEWARE DE MAINTENANCE 🔴🔴🔴
