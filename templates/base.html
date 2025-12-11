@@ -1,64 +1,82 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AfricaChange</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: {} } }</script>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-  <!-- Barre de navigation -->
-  <nav class="bg-white shadow-md p-4">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">AC</div>
-          <span class="text-lg font-semibold text-blue-600">AfricaChange</span>
-        </a>
+  <!-- NAV -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-3">
+          <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
+            <span class="text-2xl font-bold text-blue-600">🌍 AfricaChange</span>
+          </a>
+        </div>
+
+        <!-- Desktop links -->
+        <nav class="hidden md:flex items-center gap-3">
+          <a href="{{ url_for('convert.convertir') }}" class="text-sm hover:text-blue-600">Convertir</a>
+
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('auth.tableau_de_bord') }}" class="text-sm bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Tableau de bord</a>
+            <a href="{{ url_for('convert.historique') }}" class="text-sm hover:text-blue-600">Historique</a>
+            <a href="{{ url_for('auth.deconnexion') }}" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</a>
+          {% else %}
+            <a href="{{ url_for('auth.connexion') }}" class="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Connexion</a>
+            <a href="{{ url_for('auth.inscription') }}" class="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Inscription</a>
+          {% endif %}
+
+          {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin.dashboard') }}" class="text-sm bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">Admin</a>
+          {% endif %}
+        </nav>
+
+        <!-- Mobile hamburger -->
+        <div class="md:hidden">
+          <button id="btnBurger" aria-label="Open menu" class="p-2 rounded-md focus:outline-none">
+            <svg id="iconOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+            </svg>
+            <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
+    </div>
 
-      <div class="flex items-center gap-3 text-sm">
-        <a href="{{ url_for('convert.convertir') }}" class="hover:text-blue-600">Convertir</a>
-
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden border-t">
+      <div class="px-4 py-3 space-y-2">
+        <a href="{{ url_for('convert.convertir') }}" class="block">Convertir</a>
         {% if session.get('user_id') %}
-          <span class="text-gray-600 hidden sm:inline">Bonjour, <span class="font-semibold">{{ session.get('user_nom') }}</span></span>
-          <a href="{{ url_for('auth.tableau_de_bord') }}" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Tableau de bord</a>
-          <a href="{{ url_for('convert.historique') }}" class="hover:text-blue-600">Historique</a>
-          <a href="{{ url_for('auth.deconnexion') }}" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</a>
+          <a href="{{ url_for('auth.tableau_de_bord') }}" class="block">Tableau de bord</a>
+          <a href="{{ url_for('convert.historique') }}" class="block">Historique</a>
+          <a href="{{ url_for('auth.deconnexion') }}" class="block text-red-600">Déconnexion</a>
         {% else %}
-          <a href="{{ url_for('auth.connexion') }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Connexion</a>
-          <a href="{{ url_for('auth.inscription') }}" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Inscription</a>
+          <a href="{{ url_for('auth.connexion') }}" class="block">Connexion</a>
+          <a href="{{ url_for('auth.inscription') }}" class="block">Inscription</a>
         {% endif %}
-
         {% if session.get('is_admin') %}
-          <a href="{{ url_for('admin.dashboard') }}" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">🧭 Admin</a>
+          <a href="{{ url_for('admin.dashboard') }}" class="block">Admin</a>
         {% endif %}
       </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- Zone de contenu -->
-  <main class="max-w-5xl mx-auto p-6">
-
-    {% if session.get('is_admin') and config.MAINTENANCE_MODE %}
-      <div class="mb-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded">
-        ⚠️ Mode maintenance activé : les utilisateurs non-admin voient la page de maintenance.
-      </div>
-    {% endif %}
-
-    <!-- Messages flash (avec catégories si fournies) -->
+  <!-- MAIN -->
+  <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="mb-4 space-y-2">
+        <div class="space-y-2 mb-4">
           {% for category, msg in messages %}
-            {% set style = {
-              'success': 'bg-emerald-50 border-emerald-200 text-emerald-800',
-              'error': 'bg-red-50 border-red-200 text-red-800',
-              'danger': 'bg-red-50 border-red-200 text-red-800',
-              'warning': 'bg-amber-50 border-amber-200 text-amber-800'
-            }[category] if category in ['success','error','danger','warning'] else 'bg-blue-50 border-blue-200 text-blue-800' %}
-            <div class="border px-3 py-2 rounded {{ style }}">
+            <div class="p-3 rounded {{ 'bg-green-100 text-green-800' if category=='success' else 'bg-yellow-100 text-yellow-800' if category=='warning' else 'bg-red-100 text-red-800' }}">
               {{ msg }}
             </div>
           {% endfor %}
@@ -66,21 +84,36 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Back button: pages peuvent redéfinir block back_button -->
     {% block back_button %}
-    <!-- Par défaut on n'affiche rien – les pages qui veulent un retour remplaceront ce block -->
+      <!-- Par défaut : bouton retour petit (mobile friendly) -->
+      <div class="mb-4">
+        <a href="javascript:history.back()" class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700">
+          ← Retour
+        </a>
+      </div>
     {% endblock %}
 
-    <!-- Contenu principal -->
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="border-t border-slate-200 mt-8">
-    <div class="max-w-5xl mx-auto px-6 py-4 text-xs text-slate-500 flex justify-between">
-      <span>© {{ 2025 }} AfricaChange</span>
-      <span>Prototype – Optimisé mobile</span>
-	</div>
+  <footer class="bg-white border-t py-4 text-center text-sm text-gray-500">
+    © {{ (config.get('APP_NAME') or 'AfricaChange') }} — {{ current_year if current_year is defined else '' }}
   </footer>
+
+<script>
+  // Toggle mobile menu
+  const btn = document.getElementById('btnBurger');
+  const menu = document.getElementById('mobileMenu');
+  const iconOpen = document.getElementById('iconOpen');
+  const iconClose = document.getElementById('iconClose');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+    });
+  }
+</script>
 
 </body>
 </html>

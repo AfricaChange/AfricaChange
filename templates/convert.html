@@ -1,35 +1,26 @@
 {% extends "base.html" %}
-{% block back_button %}
-<a href="..." class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700 mb-4">
-  ← Retour
-</a>
-{% endblock %}
-
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
-  <h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">💱 Convertisseur AfricaChange</h2>
+<div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+  <h1 class="text-2xl font-bold text-blue-600 text-center mb-4">💱 Convertisseur</h1>
 
-  <form id="form-conversion" method="POST" action="{{ url_for('convert.convertir') }}" class="space-y-4">
+  <form id="conversionForm" method="POST" action="{{ url_for('convert.convertir') }}" class="space-y-4">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div>
-      <label class="block text-sm font-medium text-gray-700">Montant à convertir :</label>
-      <input type="number" step="0.01" id="montant" name="montant"
-             class="w-full p-2 border rounded focus:ring focus:ring-blue-300"
-             placeholder="Ex: 5000" required>
+      <label class="block text-sm font-medium">Montant</label>
+      <input id="montant" name="montant" type="number" step="0.01" required class="w-full p-3 border rounded-lg" placeholder="Ex: 5000">
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-sm font-medium text-gray-700">De :</label>
+        <label class="block text-sm font-medium">De</label>
         <select id="from_currency" name="from_currency" class="w-full p-2 border rounded">
           <option value="CFA">CFA</option>
           <option value="GNF">GNF</option>
         </select>
       </div>
-
       <div>
-        <label class="block text-sm font-medium text-gray-700">Vers :</label>
+        <label class="block text-sm font-medium">Vers</label>
         <select id="to_currency" name="to_currency" class="w-full p-2 border rounded">
           <option value="GNF">GNF</option>
           <option value="CFA">CFA</option>
@@ -37,195 +28,139 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-sm font-medium text-gray-700">Téléphone envoyeur :</label>
-        <input type="tel" id="sender_phone" name="sender_phone"
-               class="w-full p-2 border rounded" placeholder="Ex: +221771234567" required>
+        <label class="block text-sm font-medium">Téléphone envoyeur</label>
+        <input id="sender_phone" name="sender_phone" type="tel" required class="w-full p-3 border rounded-lg" placeholder="+22177XXXXXXX">
       </div>
-
       <div>
-        <label class="block text-sm font-medium text-gray-700">Téléphone récepteur :</label>
-        <input type="tel" id="receiver_phone" name="receiver_phone"
-               class="w-full p-2 border rounded" placeholder="Ex: +224621456789" required>
+        <label class="block text-sm font-medium">Téléphone bénéficiaire</label>
+        <input id="receiver_phone" name="receiver_phone" type="tel" required class="w-full p-3 border rounded-lg" placeholder="+22462XXXXXXX">
       </div>
     </div>
 
-    <div class="mt-4 bg-gray-50 p-3 rounded text-center shadow-inner">
-      <p class="text-gray-600">Montant converti :</p>
-      <p id="resultat" class="text-2xl font-semibold text-green-600 transition-all duration-300">--</p>
-      <p id="taux" class="text-sm text-gray-500"></p>
+    <div class="bg-gray-50 p-3 rounded text-center">
+      <p class="text-sm text-gray-600">Montant converti</p>
+      <p id="resultat" class="text-2xl font-bold text-green-600">--</p>
+      <p id="taux" class="text-xs text-gray-500 mt-1"></p>
     </div>
 
-    <div class="text-center mt-6">
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-        Valider la conversion
-      </button>
+    <div class="flex gap-3">
+      <button type="submit" class="flex-1 bg-blue-600 text-white p-3 rounded-lg">Valider la conversion</button>
+      <button type="button" id="resetBtn" class="bg-gray-200 text-gray-700 p-3 rounded-lg">Réinitialiser</button>
     </div>
   </form>
 
-  <!-- Paiement Orange Money -->
-  <div class="mt-6 bg-orange-50 p-4 rounded-lg shadow">
-    <h3 class="font-bold text-orange-600 mb-2">Payer avec Orange Money</h3>
+  <!-- SECTION PAIEMENT (s'affiche après conversion ou peut être utilisée pour payer) -->
+  <div id="paiementCard" class="mt-6 bg-white border rounded-lg p-4 shadow-sm hidden">
+    <h3 class="font-semibold text-lg mb-2">Payer maintenant</h3>
+    <p class="text-sm text-gray-600 mb-3">Montant à payer : <span id="paiement_montant">--</span></p>
 
-    <form id="form-om" action="{{ url_for('paiement.paiement_orange') }}" method="POST" class="space-y-3">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="montant" id="montant_om" value="">
-        <div>
-            <label class="block text-gray-700">Numéro Orange Money</label>
-            <input type="text" name="telephone" id="om_phone" class="w-full border p-2 rounded" placeholder="+22177xxxxxxx" required>
-        </div>
-
-        <button type="submit"
-                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full">
-            📲 Payer avec Orange Money
-        </button>
+    <!-- Exemple: Orange Money -->
+    <form id="omForm" action="{{ url_for('paiement.paiement_orange') }}" method="POST" class="space-y-3">
+      <input type="hidden" name="montant" id="om_montant" value="">
+      <div>
+        <label class="block text-sm">Numéro Orange Money</label>
+        <input id="om_phone" name="telephone" type="tel" required class="w-full p-2 border rounded" placeholder="+22177XXXXXXX">
+      </div>
+      <button type="submit" class="w-full bg-orange-500 text-white p-2 rounded">📲 Payer avec Orange Money</button>
     </form>
-  </div>
 
-  <!-- Paiement Wave -->
-  <div class="mt-4 bg-cyan-50 p-4 rounded-lg shadow">
-    <h3 class="font-bold text-cyan-700 mb-2">Payer avec Wave</h3>
-
-    <form id="form-wave" action="{{ url_for('paiement.paiement_wave') }}" method="POST" class="space-y-3">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="montant" id="montant_wave" value="">
-        <div>
-            <label class="block text-gray-700">Numéro Wave</label>
-            <input type="text" name="telephone" id="wave_phone" class="w-full border p-2 rounded" placeholder="+22177xxxxxxx" required>
-        </div>
-
-        <button type="submit"
-                class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded w-full">
-            🌊 Payer avec Wave
-        </button>
+    <!-- Wave -->
+    <form id="waveForm" action="{{ url_for('paiement.paiement_wave') }}" method="POST" class="space-y-3 mt-3 hidden">
+      <input type="hidden" name="montant" id="wave_montant" value="">
+      <div>
+        <label class="block text-sm">Numéro Wave</label>
+        <input id="wave_phone" name="telephone" type="tel" class="w-full p-2 border rounded" placeholder="+22177XXXXXXX">
+      </div>
+      <button type="submit" class="w-full bg-blue-700 text-white p-2 rounded">🌊 Payer avec Wave</button>
     </form>
-  </div>
-
-  <div class="flex justify-between mt-6">
-    <a href="{{ url_for('auth.tableau_de_bord') }}" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">⬅ Retour</a>
-    <a href="{{ url_for('main.accueil') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">🏠 Accueil</a>
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const montantInput = document.getElementById("montant");
-  const fromSelect = document.getElementById("from_currency");
-  const toSelect = document.getElementById("to_currency");
-  const resultatEl = document.getElementById("resultat");
-  const tauxEl = document.getElementById("taux");
+document.addEventListener('DOMContentLoaded', () => {
+  const montantEl = document.getElementById('montant');
+  const fromSelect = document.getElementById('from_currency');
+  const toSelect = document.getElementById('to_currency');
+  const resultat = document.getElementById('resultat');
+  const tauxEl = document.getElementById('taux');
 
-  const senderPhone = document.getElementById("sender_phone");
-  const receiverPhone = document.getElementById("receiver_phone");
+  const paiementCard = document.getElementById('paiementCard');
+  const omForm = document.getElementById('omForm');
+  const waveForm = document.getElementById('waveForm');
+  const omMontant = document.getElementById('om_montant');
+  const waveMontant = document.getElementById('wave_montant');
+  const omPhone = document.getElementById('om_phone');
+  const wavePhone = document.getElementById('wave_phone');
 
-  const montantOm = document.getElementById("montant_om");
-  const omPhone = document.getElementById("om_phone");
+  // Copie envoyeur -> paiement
+  const senderPhone = document.getElementById('sender_phone');
+  senderPhone.addEventListener('input', () => {
+    omPhone.value = senderPhone.value;
+    wavePhone.value = senderPhone.value;
+  });
 
-  const montantWave = document.getElementById("montant_wave");
-  const wavePhone = document.getElementById("wave_phone");
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('conversionForm').reset();
+    resultat.textContent = '--';
+    tauxEl.textContent = '';
+    paiementCard.classList.add('hidden');
+  });
 
-  // Appelle l'API AJAX pour obtenir la conversion
-  async function convertirEtSync() {
-    const montant = parseFloat(montantInput.value);
-    if (!montant || montant <= 0) {
-      resultatEl.textContent = "--";
-      tauxEl.textContent = "";
-      montantOm.value = "";
-      montantWave.value = "";
+  // Fonction qui appelle l'API interne /convert/api/convertir
+  async function compute() {
+    const m = parseFloat(montantEl.value);
+    if (!m || m <= 0) {
+      resultat.textContent = '--';
+      tauxEl.textContent = '';
+      paiementCard.classList.add('hidden');
       return;
     }
-
-    resultatEl.textContent = "Calcul en cours...";
-    tauxEl.textContent = "";
 
     try {
-      const resp = await fetch("/convert/api/convertir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          montant: montant,
-          from_currency: fromSelect.value,
-          to_currency: toSelect.value
-        })
+      const res = await fetch('/convert/api/convertir', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ montant: m, from_currency: fromSelect.value, to_currency: toSelect.value })
       });
-
-      const data = await resp.json();
+      const data = await res.json();
       if (data.error) {
-        resultatEl.textContent = "Erreur";
+        resultat.textContent = 'Erreur';
         tauxEl.textContent = data.error;
-        montantOm.value = "";
-        montantWave.value = "";
-      } else {
-        resultatEl.textContent = `${data.montant_converti} ${toSelect.value}`;
-        tauxEl.textContent = `Taux : 1 ${fromSelect.value} = ${data.taux} ${toSelect.value}`;
-
-        // On envoie ici le montant converti aux prestataires
-        montantOm.value = data.montant_converti;
-        montantWave.value = data.montant_converti;
-
-        resultatEl.classList.add("scale-110");
-        setTimeout(() => resultatEl.classList.remove("scale-110"), 200);
+        paiementCard.classList.add('hidden');
+        return;
       }
+      resultat.textContent = `${data.montant_converti} ${toSelect.value}`;
+      tauxEl.textContent = `Taux: 1 ${fromSelect.value} = ${data.taux} ${toSelect.value}`;
+      // Affiche la carte paiement avec montant prérempli
+      paiementCard.classList.remove('hidden');
+      omMontant.value = data.montant_converti;
+      waveMontant.value = data.montant_converti;
+      document.getElementById('paiement_montant').textContent = `${data.montant_converti} ${toSelect.value}`;
+
+      // Affiche/masque les moyens selon devise cible (ex: si to_currency === 'GNF' on privilégie Orange GN)
+      if (toSelect.value === 'GNF') {
+        // par exemple : afficher OM (Guinée) et cacher Wave
+        omForm.classList.remove('hidden');
+        waveForm.classList.add('hidden');
+      } else {
+        // vers CFA -> Wave ou OM SN ; ici on affiche Wave, masque OM (à adapter plus tard)
+        waveForm.classList.remove('hidden');
+        omForm.classList.add('hidden');
+      }
+
     } catch (err) {
-      resultatEl.textContent = "Erreur réseau";
-      montantOm.value = "";
-      montantWave.value = "";
+      resultat.textContent = 'Erreur réseau';
+      tauxEl.textContent = '';
+      paiementCard.classList.add('hidden');
     }
   }
 
-  // Sync téléphone envoyeur → OM / Wave si utilisateur n'a pas modifié les champs
-  function syncPhones() {
-    if (!omPhone.dataset.touched) { omPhone.value = senderPhone.value; }
-    if (!wavePhone.dataset.touched) { wavePhone.value = senderPhone.value; }
-  }
-
-  // Si l'utilisateur modifie manuellement omPhone / wavePhone on ne l'écrase plus
-  omPhone.addEventListener("input", () => { omPhone.dataset.touched = "1"; });
-  wavePhone.addEventListener("input", () => { wavePhone.dataset.touched = "1"; });
-
-  // Événements
-  montantInput.addEventListener("input", convertirEtSync);
-  fromSelect.addEventListener("change", convertirEtSync);
-  toSelect.addEventListener("change", convertirEtSync);
-  senderPhone.addEventListener("input", syncPhones);
-
-  convertirEtSync();
-  syncPhones();
-
-  // Confirm avant soumission OM
-  document.getElementById("form-om").addEventListener("submit", (e) => {
-    if (!montantOm.value || montantOm.value === "") {
-      e.preventDefault();
-      alert("Le montant converti n'est pas défini — vérifie le montant ou sélectionne les devises puis réessaye.");
-      return;
-    }
-    if (!omPhone.value || omPhone.value.trim() === "") {
-      e.preventDefault();
-      alert("Veuillez renseigner votre numéro Orange Money.");
-      omPhone.focus();
-      return;
-    }
-    const ok = confirm(`Vous allez payer ${montantOm.value} (${toSelect.value}) avec Orange Money au numéro ${omPhone.value}. Confirmer ?`);
-    if (!ok) e.preventDefault();
-  });
-
-  // Confirm avant soumission Wave
-  document.getElementById("form-wave").addEventListener("submit", (e) => {
-    if (!montantWave.value || montantWave.value === "") {
-      e.preventDefault();
-      alert("Le montant converti n'est pas défini — vérifie le montant ou sélectionne les devises puis réessaye.");
-      return;
-    }
-    if (!wavePhone.value || wavePhone.value.trim() === "") {
-      e.preventDefault();
-      alert("Veuillez renseigner votre numéro Wave.");
-      wavePhone.focus();
-      return;
-    }
-    const ok = confirm(`Vous allez payer ${montantWave.value} (${toSelect.value}) avec Wave au numéro ${wavePhone.value}. Confirmer ?`);
-    if (!ok) e.preventDefault();
-  });
+  montantEl.addEventListener('input', compute);
+  fromSelect.addEventListener('change', compute);
+  toSelect.addEventListener('change', compute);
 });
 </script>
 {% endblock %}
