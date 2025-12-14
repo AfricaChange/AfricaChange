@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-6">
+  <h2 class="text-2xl font-bold mb-4 text-blue-600">💰 Mon solde</h2>
+
+  <div class="bg-blue-50 p-4 rounded-lg mb-6">
+    <p class="text-gray-600 text-lg">Solde actuel :</p>
+    <p class="text-3xl font-bold text-green-600">{{ compte.solde|round(2) }} FCFA</p>
+  </div>
+
+  <!-- Formulaire de dépôt -->
+  <form method="POST" class="flex gap-4 mb-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  
+    <input type="number" step="0.01" min="1" name="montant" placeholder="Montant à déposer"
+           class="border rounded-lg p-2 flex-1 focus:ring-2 focus:ring-blue-400 outline-none" required>
+    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+      + Dépôt
+    </button>
+  </form>
+  <div class="bg-orange-50 p-4 rounded-lg mt-4 shadow">
+    <h3 class="font-bold text-orange-700 mb-2">Recharger mon solde</h3>
+
+    <form action="{{ url_for('paiement.paiement_orange') }}" method="POST" class="space-y-3">
+        
+        <div>
+            <label class="block text-gray-600">Montant à déposer</label>
+            <input type="number" name="montant" class="w-full border p-2 rounded" required>
+        </div>
+
+        <div>
+            <label class="block text-gray-600">Numéro Orange Money</label>
+            <input type="text" name="telephone" class="w-full border p-2 rounded" required>
+        </div>
+
+        <button type="submit"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full">
+            🔶 Déposer avec Orange Money
+        </button>
+    </form>
+  </div>
+
+  <h3 class="text-xl font-semibold mb-3">📜 Historique des transactions</h3>
+  {% if transactions %}
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2">Date</th>
+          <th class="p-2">Type</th>
+          <th class="p-2">Montant</th>
+          <th class="p-2">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for txn in transactions %}
+        <tr class="border-b hover:bg-gray-50">
+		  <td class="p-2">
+           {% if txn.date_transaction %}
+            {{ txn.date_transaction.strftime('%d/%m/%Y %H:%M') }}
+           {% else %}
+            -
+           {% endif %}
+          </td>
+
+          <td class="p-2 capitalize">{{ txn.type }}</td>
+          <td class="p-2 text-green-600 font-semibold">{{ txn.montant }} FCFA</td>
+          <td class="p-2">{{ txn.statut }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-500">Aucune transaction pour le moment.</p>
+  {% endif %}
+</div>
+{% endblock %}

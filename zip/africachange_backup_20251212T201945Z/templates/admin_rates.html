@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
+  <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Administration — Gestion des Taux</h2>
+
+  <form method="POST" class="space-y-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Taux CFA → GNF</label>
+      <input name="cfa_gnf" type="number" step="0.0001" value="{{ rate_cfa_gnf.rate if rate_cfa_gnf else '' }}"
+             class="w-full border rounded p-2" required>
+      <p class="text-xs text-gray-500 mt-1">Exemple : 1 CFA = 14.00 GNF</p>
+    </div>
+
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Taux GNF → CFA</label>
+      <input name="gnf_cfa" type="number" step="0.0001" value="{{ rate_gnf_cfa.rate if rate_gnf_cfa else '' }}"
+             class="w-full border rounded p-2" required>
+      <p class="text-xs text-gray-500 mt-1">Exemple : 1 GNF = 0.07 CFA</p>
+    </div>
+
+    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+      Enregistrer les taux
+    </button>
+  </form>
+
+  <div class="mt-8 grid gap-3">
+    <div class="p-3 bg-gray-50 border rounded">
+      <div class="text-sm text-gray-600">Taux actuel</div>
+      <div>1 CFA = {{ rate_cfa_gnf.rate if rate_cfa_gnf else '—' }} GNF</div>
+    </div>
+    <div class="p-3 bg-gray-50 border rounded">
+      <div class="text-sm text-gray-600">Taux actuel</div>
+      <div>1 GNF = {{ rate_gnf_cfa.rate if rate_gnf_cfa else '—' }} CFA</div>
+    </div>
+  </div>
+  
+  <div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
+
+  
+  
+</div>
+{% endblock %}

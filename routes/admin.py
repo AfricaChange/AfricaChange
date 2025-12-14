@@ -5,7 +5,7 @@ import io
 from datetime import datetime
 from openpyxl import Workbook
 from io import BytesIO 
-
+from functools import wraps
 
 
 
@@ -20,13 +20,15 @@ from io import BytesIO
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Vérifie si l'utilisateur connecté est admin
-def require_admin():
-    uid = session.get('user_id')
-    if not uid:
-        return False
-    user = Utilisateur.query.get(uid)
-    return bool(user and user.is_admin)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user_id') or not session.get('is_admin'):
+            flash("Accès refusé.", "danger")
+            return redirect(url_for('main.accueil'))
+        return f(*args, **kwargs)
+    return decorated
 
 # ============================
 # 1️⃣ Tableau de bord principal
@@ -34,6 +36,7 @@ def require_admin():
 
 
 @admin.route('/dashboard')
+@admin_required
 def dashboard():
     total_users = Utilisateur.query.count()
     total_transactions = Transaction.query.count()

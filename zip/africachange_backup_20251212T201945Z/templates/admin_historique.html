@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-6xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
+  <h2 class="text-3xl font-bold text-pink-600 text-center mb-6">📊 Historique global des conversions</h2>
+  
+  <!-- 🔙 Boutons de navigation -->
+  <div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
+
+  <form method="get" action="{{ url_for('admin.historique_envois') }}" class="flex flex-col md:flex-row items-center justify-between mb-6 gap-3">
+    <input 
+      type="text" 
+      name="search" 
+      value="{{ search or '' }}" 
+      placeholder="🔍 Rechercher par nom, référence, téléphone..."
+      class="w-full md:w-2/3 p-2 border rounded-lg focus:ring-2 focus:ring-pink-400"
+    />
+    <button 
+      type="submit" 
+      class="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition">
+      Rechercher
+    </button>
+  </form>
+
+  {% if conversions and conversions|length > 0 %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full border-collapse text-sm">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="p-3 text-left">Date</th>
+          <th class="p-3 text-left">Utilisateur</th>
+          <th class="p-3 text-left">De → Vers</th>
+          <th class="p-3 text-right">Montant</th>
+          <th class="p-3 text-left">Téléphones</th>
+          <th class="p-3 text-center">Statut</th>
+          <th class="p-3 text-center">Référence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in conversions %}
+        <tr class="border-b hover:bg-gray-50 transition">
+          <td class="p-3">{{ c.date_conversion.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="p-3">{{ c.user.prenom }} {{ c.user.nom }}</td>
+          <td class="p-3">{{ c.from_currency }} → {{ c.to_currency }}</td>
+          <td class="p-3 text-right text-blue-600 font-semibold">{{ c.montant_initial }} → {{ c.montant_converti }}</td>
+          <td class="p-3 text-sm">{{ c.sender_phone }} → {{ c.receiver_phone }}</td>
+          <td class="p-3 text-center">
+            {% if c.statut == 'envoyée' %}
+              <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">✅ Envoyée</span>
+            {% elif c.statut == 'échouée' %}
+              <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">❌ Échouée</span>
+            {% else %}
+              <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold animate-pulse">⏳ En attente</span>
+            {% endif %}
+          </td>
+          <td class="p-3 text-center font-mono text-gray-700">{{ c.reference }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <p class="text-center text-gray-500 bg-gray-50 p-5 rounded-lg shadow-inner">
+    Aucune conversion enregistrée pour le moment.
+  </p>
+  {% endif %}
+</div>
+
+<!-- 🔙 Boutons de navigation -->
+<div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('admin.dashboard') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+  </div>
+
+
+{% endblock %}

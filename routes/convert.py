@@ -1,34 +1,57 @@
 from flask import Blueprint, render_template, request, jsonify, session, flash, redirect, url_for
 from database import db
-from models import Rate, Conversion, Utilisateur, CompteSysteme 
+from models import Rate, Conversion, Utilisateur, CompteSysteme
 from datetime import datetime
 import random
 import string
-from extensions import csrf  # 👈 AJOUT
+from extensions import csrf
+from sqlalchemy import or_
 
-
-
-# 🟢 Le Blueprint doit être défini ici AVANT toute route
+# 🟢 Blueprint
 convert = Blueprint('convert', __name__, url_prefix='/convert')
 
-# 🔹 Page principale de conversion
+
+# ======================================================
+# 🔹 PAGE PRINCIPALE DE CONVERSION
+# ======================================================
 @convert.route('/', methods=['GET', 'POST'])
 def convertir():
     if request.method == 'POST':
-        montant = float(request.form.get('montant'))
+        try:
+            montant = float(request.form.get('montant', 0))
+        except ValueError:
+            flash("Montant invalide.", "error")
+            return redirect(url_for('convert.convertir'))
+
+        if montant <= 0:
+            flash("Le montant doit être supérieur à 0.", "warning")
+            return redirect(url_for('convert.convertir'))
+
         from_currency = request.form.get('from_currency')
         to_currency = request.form.get('to_currency')
         sender_phone = request.form.get('sender_phone')
         receiver_phone = request.form.get('receiver_phone')
 
-        rate = Rate.query.filter_by(from_currency=from_currency, to_currency=to_currency).first()
+        if not all([from_currency, to_currency, sender_phone, receiver_phone]):
+            flash("Tous les champs sont obligatoires.", "warning")
+            return redirect(url_for('convert.convertir'))
+
+        rate = Rate.query.filter_by(
+            from_currency=from_currency,
+            to_currency=to_currency
+        ).first()
+
         if not rate:
             flash("❌ Taux non défini pour cette paire de devises.", "error")
             return redirect(url_for('convert.convertir'))
 
         montant_converti = round(montant * rate.rate, 2)
-        reference = "CVT-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-        user_id = session.get('user_id', None)
+
+        reference = "CVT-" + ''.join(
+            random.choices(string.ascii_uppercase + string.digits, k=6)
+        )
+
+        user_id = session.get('user_id')
 
         nouvelle_conversion = Conversion(
             user_id=user_id,
@@ -39,8 +62,10 @@ def convertir():
             sender_phone=sender_phone,
             receiver_phone=receiver_phone,
             reference=reference,
+            statut='en_attente',
             date_conversion=datetime.utcnow()
         )
+
         db.session.add(nouvelle_conversion)
         db.session.commit()
 
@@ -73,24 +98,44 @@ def convertir():
     return render_template('convert.html')
 
 
-# 🔹 API AJAX (conversion instantanée)
-# 🔹 API AJAX (conversion instantanée)
-@csrf.exempt   # 👈 AJOUT
+# ======================================================
+# 🔹 API AJAX – CONVERSION INSTANTANÉE
+# ======================================================
+@csrf.exempt  # volontaire : endpoint JS interne
 @convert.route('/api/convertir', methods=['POST'])
 def api_convertir():
-    data = request.get_json()
-    montant = float(data.get('montant', 0))
+    data = request.get_json(silent=True) or {}
+
+    try:
+        montant = float(data.get('montant', 0))
+    except ValueError:
+        return jsonify({"error": "Montant invalide"}), 400
+
+    if montant <= 0:
+        return jsonify({"error": "Montant invalide"}), 400
+
     from_currency = data.get('from_currency')
     to_currency = data.get('to_currency')
 
-    rate = Rate.query.filter_by(from_currency=from_currency, to_currency=to_currency).first()
+    rate = Rate.query.filter_by(
+        from_currency=from_currency,
+        to_currency=to_currency
+    ).first()
+
     if not rate:
         return jsonify({"error": "Taux non défini pour cette paire."}), 400
 
     montant_converti = round(montant * rate.rate, 2)
-    return jsonify({"taux": rate.rate, "montant_converti": montant_converti})
 
-# 🔹 Confirmation par référence (avec compte système lié)
+    return jsonify({
+        "taux": rate.rate,
+        "montant_converti": montant_converti
+    })
+
+
+# ======================================================
+# 🔹 CONFIRMATION PAR RÉFÉRENCE (COMPTE SYSTÈME)
+# ======================================================
 @convert.route('/confirmer/<reference>', methods=['POST'])
 def confirmer_envoi_par_reference(reference):
     conversion = Conversion.query.filter_by(reference=reference).first()
@@ -99,17 +144,15 @@ def confirmer_envoi_par_reference(reference):
         return jsonify({"error": "Conversion introuvable"}), 404
 
     if conversion.statut != 'en_attente':
-        return jsonify({"error": "Cette conversion a déjà été traitée."}), 400
+        return jsonify({"error": "Conversion déjà traitée."}), 400
 
     try:
-        # 🌍 Déterminer le pays cible selon la devise de destination
         mapping_pays = {
             "CFA": "SN",
             "GNF": "GN",
         }
-        pays_cible = mapping_pays.get(conversion.to_currency, "SN")
+        pays_cible = mapping_pays.get(conversion.to_currency)
 
-        # 🔍 Trouver un compte système actif correspondant au pays
         compte_systeme = (
             CompteSysteme.query
             .filter_by(pays=pays_cible, actif=True)
@@ -118,40 +161,31 @@ def confirmer_envoi_par_reference(reference):
         )
 
         if not compte_systeme:
-            return jsonify({"error": f"Aucun compte système actif trouvé pour le pays {pays_cible}"}), 404
+            return jsonify({"error": "Aucun compte système actif disponible"}), 404
 
-        # ✅ Associer la conversion à ce compte
         conversion.compte_systeme_id = compte_systeme.id
-
-        # 💸 Simulation d’un envoi
-        print(f"💸 Envoi simulé via {compte_systeme.nom} : "
-              f"{conversion.montant_converti} {conversion.to_currency} "
-              f"de {conversion.sender_phone} vers {conversion.receiver_phone}")
-
-        # 🟢 Mise à jour du statut
         conversion.statut = 'envoyée'
+
         db.session.commit()
 
         return jsonify({
-            "message": f"✅ Envoi de {conversion.montant_converti} {conversion.to_currency} effectué avec succès via {compte_systeme.nom} !",
+            "message": f"✅ Envoi effectué via {compte_systeme.nom}",
             "reference": conversion.reference
         }), 200
 
     except Exception as e:
         conversion.statut = 'échouée'
         db.session.commit()
-        return jsonify({"error": f"Erreur lors de l’envoi : {str(e)}"}), 500
+        return jsonify({"error": "Erreur lors du traitement"}), 500
 
 
-
-
-
-
-# 🔹 Historique des conversions utilisateur (avec pagination + recherche)
+# ======================================================
+# 🔹 HISTORIQUE UTILISATEUR (PAGINATION + RECHERCHE)
+# ======================================================
 @convert.route('/historique')
 def historique():
     if not session.get('user_id'):
-        flash("Veuillez vous connecter pour voir votre historique.", "warning")
+        flash("Veuillez vous connecter.", "warning")
         return redirect(url_for('auth.connexion'))
 
     user_id = session['user_id']
@@ -161,20 +195,21 @@ def historique():
 
     query = Conversion.query.filter_by(user_id=user_id)
 
-    # 🔍 Si l’utilisateur recherche un texte
     if search:
-        like_pattern = f"%{search}%"
+        like = f"%{search}%"
         query = query.filter(
-            db.or_(
-                Conversion.reference.like(like_pattern),
-                Conversion.from_currency.like(like_pattern),
-                Conversion.to_currency.like(like_pattern),
-                Conversion.sender_phone.like(like_pattern),
-                Conversion.receiver_phone.like(like_pattern),
+            or_(
+                Conversion.reference.like(like),
+                Conversion.from_currency.like(like),
+                Conversion.to_currency.like(like),
+                Conversion.sender_phone.like(like),
+                Conversion.receiver_phone.like(like),
             )
         )
 
-    pagination = query.order_by(Conversion.date_conversion.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    pagination = query.order_by(
+        Conversion.date_conversion.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template(
         'historique.html',

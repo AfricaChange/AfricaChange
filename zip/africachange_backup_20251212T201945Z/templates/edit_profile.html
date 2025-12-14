@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
+    <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Modifier mon profil</h2>
+    <form method="POST">
+	    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="nom" value="{{ user.nom }}" placeholder="Nom" required class="w-full mb-3 p-2 border rounded">
+        <input type="text" name="prenom" value="{{ user.prenom }}" placeholder="Prénom" required class="w-full mb-3 p-2 border rounded">
+        <input type="email" name="email" value="{{ user.email }}" placeholder="Email" required class="w-full mb-3 p-2 border rounded">
+        <input type="text" name="telephone" value="{{ user.telephone }}" placeholder="Téléphone" required class="w-full mb-3 p-2 border rounded">
+
+        <input type="password" name="mot_de_passe" placeholder="Nouveau mot de passe (optionnel)" class="w-full mb-5 p-2 border rounded">
+
+        <button type="submit" class="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600">Enregistrer</button>
+    </form>
+    <div class="flex justify-between mt-6">
+    
+    <a href="{{ url_for('auth.tableau_de_bord') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+    </a>
+
+    <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+    </a>
+
+</div>
+
+
+</div>
+{% endblock %}

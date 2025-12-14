@@ -15,6 +15,10 @@ from flask_talisman import Talisman
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
+from datetime import timedelta
+from extensions import limiter
+
+
 
 
 
@@ -22,6 +26,8 @@ import logging
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
+#une expiration de session
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialisation CSRF
 csrf.init_app(app)
@@ -36,7 +42,7 @@ def inject_globals():
 
   
 
-
+limiter.init_app(app)
 
 # ---------- CSRF ----------
 csrf = CSRFProtect(app)  # protège toutes les routes POST, PUT, DELETE, etc.
@@ -54,12 +60,6 @@ talisman = Talisman(
     strict_transport_security_include_subdomains=True,
 )
 
-# ---------- Rate limiting ----------
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=[app.config.get("RATELIMIT_DEFAULT")],
-)
 
 # ---------- Logging : ne pas logguer secret (production) ----------
 if not app.debug:
@@ -71,7 +71,7 @@ if not app.debug:
     app.logger.addHandler(handler)
 
   
-    
+   
     
 # 🔴🔴🔴 MIDDLEWARE DE MAINTENANCE 🔴🔴🔴
 @app.before_request

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Inscription – AfricaChange{% endblock %}
+
+{% block content %}
+<div class="flex justify-center">
+  <div class="w-full max-w-md bg-white/90 backdrop-blur shadow-lg rounded-2xl p-6 mt-6">
+    <h2 class="text-2xl font-bold text-center mb-2 text-emerald-700">
+      Créer un compte
+    </h2>
+    <p class="text-center text-sm text-gray-500 mb-6">
+      Rejoignez AfricaChange en quelques secondes
+    </p>
+
+    <form method="POST" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Nom</label>
+          <input type="text" name="nom" required
+                 class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                 placeholder="Votre nom">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Prénom</label>
+          <input type="text" name="prenom" required
+                 class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                 placeholder="Votre prénom">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Adresse email</label>
+        <input type="email" name="email" required
+               class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+               placeholder="exemple@domaine.com">
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Numéro de téléphone</label>
+        <input type="tel" name="telephone" required
+               class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+               placeholder="Ex: +221781234567">
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Mot de passe</label>
+        <input type="password" name="mot_de_passe" required
+               class="w-full p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+               placeholder="Choisissez un mot de passe">
+      </div>
+
+      <button type="submit"
+              class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition">
+        S'inscrire
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-sm text-gray-500">
+      Vous avez déjà un compte ?
+      <a href="{{ url_for('auth.connexion') }}" class="text-blue-600 font-semibold hover:underline">
+        Se connecter
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+-- ▶ Ajouter un admin
+UPDATE utilisateur
+SET is_admin = 1
+WHERE email = 'admin@africachange.com';
+
+-- ▶ Afficher les admins
+SELECT id, nom, email FROM utilisateur WHERE is_admin = 1;

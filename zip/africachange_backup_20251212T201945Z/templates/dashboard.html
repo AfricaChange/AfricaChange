@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md mt-10">
+    <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Mon Tableau de Bord</h2>
+    <div class="flex justify-between mt-6">
+    
+      <a href="{{ url_for('auth.tableau_de_bord') }}" 
+       class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
+       ⬅ Retour
+      </a>
+
+      <a href="{{ url_for('main.accueil') }}" 
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+       🏠 Accueil
+      </a>
+
+    </div>
+    <!-- Informations de l'utilisateur -->
+    <div class="space-y-4">
+        <div class="flex justify-between">
+            <span class="font-semibold text-gray-700">Nom complet :</span>
+            <span>{{ user.prenom }} {{ user.nom }}</span>
+        </div>
+
+        <div class="flex justify-between">
+            <span class="font-semibold text-gray-700">Email :</span>
+            <span>{{ user.email }}</span>
+        </div>
+
+        <div class="flex justify-between">
+            <span class="font-semibold text-gray-700">Téléphone :</span>
+            <span>{{ user.telephone }}</span>
+        </div>
+
+        
+    </div>
+
+    <!-- Boutons -->
+    <div class="text-center mt-8 space-x-4">
+        <a href="{{ url_for('auth.modifier_profil') }}" 
+           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+           Modifier mon profil
+        </a>
+        <a href="{{ url_for('auth.deconnexion') }}" 
+           class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+           Se déconnecter
+        </a>
+    </div>
+</div>
+
+<!-- Section historique des conversions -->
+<div class="max-w-5xl mx-auto bg-white mt-8 p-6 rounded-lg shadow-md">
+  <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">💱 Mes dernières conversions</h2>
+
+  {% if conversions and conversions|length > 0 %}
+  <table class="w-full text-sm border-collapse">
+    <thead class="bg-gray-100 text-gray-700">
+      <tr>
+        <th class="p-2 text-left">Date</th>
+        <th class="p-2 text-left">De → Vers</th>
+        <th class="p-2 text-right">Montant</th>
+        <th class="p-2 text-left">Téléphones</th>
+        <th class="p-2 text-center">Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in conversions %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-2">{{ c.date_conversion.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td class="p-2">{{ c.from_currency }} → {{ c.to_currency }}</td>
+        <td class="p-2 text-right text-blue-600 font-semibold">{{ c.montant_initial }} → {{ c.montant_converti }}</td>
+        <td class="p-2 text-sm">{{ c.sender_phone }} → {{ c.receiver_phone }}</td>
+        <td class="p-2 text-center">
+          {% if c.statut == 'envoyée' %}
+            <span class="bg-green-100 text-green-700 px-2 py-1 rounded">✅ Envoyée</span>
+          {% elif c.statut == 'échouée' %}
+            <span class="bg-red-100 text-red-700 px-2 py-1 rounded">❌ Échouée</span>
+          {% else %}
+            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">⏳ En attente</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+
+  {% else %}
+  <p class="text-center text-gray-500 bg-gray-50 p-4 rounded-lg shadow-inner">
+    Aucune conversion enregistrée pour le moment.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

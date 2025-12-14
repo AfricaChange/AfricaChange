@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white rounded-xl shadow p-6 mt-8">
+  <h1 class="text-2xl font-bold mb-4 text-gray-800">⚙️ Gestion de la maintenance</h1>
+
+  <form method="POST" class="space-y-4">
+    <div>
+      <label class="block font-semibold mb-1">Mode maintenance</label>
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center space-x-1">
+          <input type="radio" name="mode" value="off" {% if mode == "off" %}checked{% endif %}>
+          <span>Site actif (normal)</span>
+        </label>
+        <label class="flex items-center space-x-1">
+          <input type="radio" name="mode" value="on" {% if mode == "on" %}checked{% endif %}>
+          <span>Maintenance activée</span>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label class="block font-semibold mb-1">Message affiché aux utilisateurs</label>
+      <textarea name="message" rows="3"
+                class="w-full border rounded p-2"
+                placeholder="Ex : Nous effectuons une mise à jour. Retour prévu à 18h.">{{ message }}</textarea>
+    </div>
+
+    <button type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      💾 Enregistrer
+    </button>
+  </form>
+</div>
+{% endblock %}

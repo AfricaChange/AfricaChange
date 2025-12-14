@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10 text-center">
+  <h2 class="text-2xl font-bold text-green-600 mb-4">💸 Paiement simulé avec succès</h2>
+
+  <div class="text-left bg-gray-50 p-4 rounded-lg mb-4">
+    <p><strong>Montant envoyé :</strong> {{ conversion.montant_initial }} {{ conversion.from_currency }}</p>
+    <p><strong>Montant reçu :</strong> {{ conversion.montant_converti }} {{ conversion.to_currency }}</p>
+    <p><strong>Référence :</strong> {{ transaction.reference }}</p>
+    <p><strong>Envoyeur :</strong> {{ conversion.sender_phone }}</p>
+    <p><strong>Récepteur :</strong> {{ conversion.receiver_phone }}</p>
+    <p><strong>Date :</strong> {{ transaction.date_transaction.strftime('%d/%m/%Y %H:%M') }}</p>
+  </div>
+
+  <div class="bg-green-100 text-green-800 p-3 rounded-lg mb-4">
+    ✅ Transaction validée et enregistrée avec succès !
+  </div>
+
+  <a href="{{ url_for('convert.convertir') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    Nouvelle conversion
+  </a>
+  <a href="{{ url_for('admin.liste_conversions') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2">
+    Voir les conversions
+  </a>
+</div>
+{% endblock %}

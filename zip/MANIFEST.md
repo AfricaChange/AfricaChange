@@ -1,7 +1,7 @@
 # Manifest du projet AfricaChange
 
-- Archive: `africachange_backup_20251211T125117Z.zip`
-- Généré: 2025-12-11 12:51:17 UTC
+- Archive: `africachange_backup_20251212T201945Z.zip`
+- Généré: 2025-12-12 20:19:45 UTC
 
 ## Fichiers inclus (path — sha256)
 
@@ -10,10 +10,11 @@
 - `admin_manager.py` — `1078cd713623445aff3741c5c56cca8fbcf4a4797fde8ce69b27f4b479ffdbf5`
 - `ADMIN_PASSWORD` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - `africa-change.txt` — `ee0603854581da3119c7bab243c9f46829c3e7e65a23c3c0c8ccb074c62f20d9`
-- `app.py` — `3af5cc24f6dc5f06ead3660a0618dfe226f84ee12cc9da8f6fdbb704da635534`
+- `app.py` — `2341e4e440daa2c16481479e9627c810c9ebfa809bdf6f0a34b132b5cccfc799`
 - `auth.py` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+- `check_env.py` — `b40afd3e582f0a77a1d7bb11a90b894d33736c7267ce6d4d1789d33ab7a5f643`
 - `check_postgres.py` — `ad878691ce674ab69ade452d7ce70c87cf31c3b7156aea16dffba8ae3662e87b`
-- `config.py` — `cfd2180929f5d3dae8c2cbefa8c871b4e5f2cd653b114146665576deb5573715`
+- `config.py` — `e20d73ed4f7bf115bb7c5b532e1c16b67b4698f8101910911edbd784e45d438f`
 - `convert.py` — `d4d4c9761faa6691b0673df3826cd4702d9b2c105ed3ab70e06e8ad989f293e7`
 - `create_admin.py` — `382cf1d6d4ba474c3a8180fbde030643a74dc37f170988e223a729424affa110`
 - `create_tables.py` — `7371aaf4365bb775220f14b7031ed177705fc4bcc7b1e0174f1b6bb27491e090`
@@ -30,10 +31,11 @@
 - `ORANGE_CURRENCY` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - `ORANGE_MERCHANT_KEY` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - `package_project.py` — `24a56b90b98657a66c0babe0313426264b98481217c86f17c613676465c5e3dc`
+- `package_release.py` — `f061fb10a795145b0bb825fbcfa90840252eb4f0384a7cf8b2bc7d973f6ae8c1`
 - `procfile` — `0daa009e38ba0c13cc9fa0b97047a037600f5d4958f7633588ecf3fe28d7eae5`
 - `python` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - `README.md` — `c074537890b6dcccedc433282e96dab7378f3889597a63a936d7ecf69c513374`
-- `requirements.txt` — `0da40007a937e031692e39d230ae4bdcb268a3171752483f128f5e3c8a57d36f`
+- `requirements.txt` — `54242f1c136d2b4c25be73244453e9301291927491c2808ed129043428bc7b6a`
 - `reset_pg.py` — `3929fd1e358d72d0555c3d0670d682d68bfa1bb9b7041717b59b75f4d7a3bb71`
 - `runtime.txt` — `b201bce096d222c53baef2d3659218e619c3ab48ae85a971828995f495d1ba4a`
 - `sync_db.py` — `0801f3e2ac8a651e40aaf64e82b224ec46c7939d1b515a311c4eaebac428d376`
@@ -42,7 +44,7 @@
 - `WAVE_API_URL` — `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
 - `api_clients/orange_money.py` — `6690b71b4918064cb0e079692045024739d25e233fdf315b759d9fe8bd78a44c`
 - `routes/admin.py` — `e8ebfe02b21736dd26a8b52938083fabee73d5423f1156075e2fbe10f58009b7`
-- `routes/auth.py` — `d00cdb2fb8363bb0266e8be16650b46bf6658763a7e287f4e828853785562150`
+- `routes/auth.py` — `8021716f035e5f14cee4c626ab0c102aa3f30773c89ce6472972d094126af87b`
 - `routes/convert.py` — `9af01cd58268b8585d35fe858da9f926f11ebc5c398c96b6eb600d7ba0e4637b`
 - `routes/exchange.py` — `eee64ef6bc6312cffa908fec52f01d22175381ec3d842ea715c748f54701232c`
 - `routes/main.py` — `969c499bce899bb230a096923fc9fd6f8162f162729ac49acb5a89837864dd5b`
@@ -59,9 +61,10 @@
 - `templates/admin_historique.html` — `3049f0374b92151a7e92a8c45fef6ad1ae3b89cd360b306162eb11915cd7990e`
 - `templates/admin_maintenance.html` — `f8d45ad1f263019018465a787f4b5b4a2f7642f4b9dd5b1026b8b55964f14e53`
 - `templates/admin_rates.html` — `6e9646fa6b4f1ec903955a03595f8155b228940643f0a72e4d5dc71f2e89c77d`
-- `templates/base.html` — `8763e4c2455c39d1c946af241c6d57db9ca9829ff9b6e129a51d5d7426e60a3f`
-- `templates/conversion.html` — `e0170eea19b5a73dd9a5e8497f2a78d843c9e7ce39ad83c393e66050daecb492`
-- `templates/convert.html` — `74bf4bfc9860f7ee7475953b3c54eeacea48a4c837f887eb62a8c7608f03405f`
+- `templates/Africa_Change_License.html` — `9133516c651a175286e62fa19592f901f3b24731b961c2332c919bd5d64765f5`
+- `templates/base.html` — `67280b97002088c77faf4f74d616c56805208b294f62b9b20d9c3c9808244c5c`
+- `templates/conversion.html` — `52b0471b216d706b412e2ec2d9090e755e900907d06f147fe392c4b123001582`
+- `templates/convert.html` — `cb6ed3d09c2ab142ce486a5d5f049fb7d9bfd28f39a288b444aabd2e04d010b2`
 - `templates/csrf_error.html` — `80de400442689d4f07dd70acdddd55f0740047a5da36b06b4d70165a1f3c83d1`
 - `templates/dashboard.html` — `b69f059772ec2ec3d65d165e89a9fe034c8b668f1a9cc042fb6853c56601e4e6`
 - `templates/edit_profile.html` — `e64dd28d35404e902e6762845917f542e5410c5aa9f21af31e0b765f208b4627`
@@ -75,4 +78,6 @@
 - `templates/register.html` — `78b232a4c8bd15d236d56497986c97438262d135637f74763851ea3ab37d3f7e`
 - `templates/reset_password.html` — `be81de0efefbf226af6a2df6ba180dcc7d56ddb2b110b87fb8ca2f055ac0d628`
 - `templates/reset_password_confirm.html` — `bda41e1b6582537e1f18179af2abbe8531648327cde52740175911ef3c35bcee`
-- `templates/resultat.html` — `1181cf2180185b3fea135af752b13c358a12bfc471cbf0b63ab22f478a8edec8`
+- `templates/resultat.html` — `5672af02d582456def972135c98d7ec0f4c29b11e2ab30208a6218d3bb9ea144`
+- `zip/files.json` — `eeff2d652928891faebb91c3985ba5d8f88bae9c9bd66ac441181fa0d2624d4f`
+- `zip/MANIFEST.md` — `4a3f36f9002dedcd793aec92d143e0e936a92b0f73a37541d1dd67564884dee7`

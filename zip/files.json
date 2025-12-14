@@ -1,6 +1,6 @@
 {
-  "archive": "africachange_backup_20251211T125117Z.zip",
-  "generated": "2025-12-11 12:51:17 UTC",
+  "archive": "africachange_backup_20251212T201945Z.zip",
+  "generated": "2025-12-12 20:19:45 UTC",
   "files": [
     {
       "path": "admin_ajout.tsql",
@@ -24,11 +24,15 @@
     },
     {
       "path": "app.py",
-      "sha256": "3af5cc24f6dc5f06ead3660a0618dfe226f84ee12cc9da8f6fdbb704da635534"
+      "sha256": "2341e4e440daa2c16481479e9627c810c9ebfa809bdf6f0a34b132b5cccfc799"
     },
     {
       "path": "auth.py",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "check_env.py",
+      "sha256": "b40afd3e582f0a77a1d7bb11a90b894d33736c7267ce6d4d1789d33ab7a5f643"
     },
     {
       "path": "check_postgres.py",
@@ -36,7 +40,7 @@
     },
     {
       "path": "config.py",
-      "sha256": "cfd2180929f5d3dae8c2cbefa8c871b4e5f2cd653b114146665576deb5573715"
+      "sha256": "e20d73ed4f7bf115bb7c5b532e1c16b67b4698f8101910911edbd784e45d438f"
     },
     {
       "path": "convert.py",
@@ -103,6 +107,10 @@
       "sha256": "24a56b90b98657a66c0babe0313426264b98481217c86f17c613676465c5e3dc"
     },
     {
+      "path": "package_release.py",
+      "sha256": "f061fb10a795145b0bb825fbcfa90840252eb4f0384a7cf8b2bc7d973f6ae8c1"
+    },
+    {
       "path": "procfile",
       "sha256": "0daa009e38ba0c13cc9fa0b97047a037600f5d4958f7633588ecf3fe28d7eae5"
     },
@@ -116,7 +124,7 @@
     },
     {
       "path": "requirements.txt",
-      "sha256": "0da40007a937e031692e39d230ae4bdcb268a3171752483f128f5e3c8a57d36f"
+      "sha256": "54242f1c136d2b4c25be73244453e9301291927491c2808ed129043428bc7b6a"
     },
     {
       "path": "reset_pg.py",
@@ -152,7 +160,7 @@
     },
     {
       "path": "routes/auth.py",
-      "sha256": "d00cdb2fb8363bb0266e8be16650b46bf6658763a7e287f4e828853785562150"
+      "sha256": "8021716f035e5f14cee4c626ab0c102aa3f30773c89ce6472972d094126af87b"
     },
     {
       "path": "routes/convert.py",
@@ -219,16 +227,20 @@
       "sha256": "6e9646fa6b4f1ec903955a03595f8155b228940643f0a72e4d5dc71f2e89c77d"
     },
     {
+      "path": "templates/Africa_Change_License.html",
+      "sha256": "9133516c651a175286e62fa19592f901f3b24731b961c2332c919bd5d64765f5"
+    },
+    {
       "path": "templates/base.html",
-      "sha256": "8763e4c2455c39d1c946af241c6d57db9ca9829ff9b6e129a51d5d7426e60a3f"
+      "sha256": "67280b97002088c77faf4f74d616c56805208b294f62b9b20d9c3c9808244c5c"
     },
     {
       "path": "templates/conversion.html",
-      "sha256": "e0170eea19b5a73dd9a5e8497f2a78d843c9e7ce39ad83c393e66050daecb492"
+      "sha256": "52b0471b216d706b412e2ec2d9090e755e900907d06f147fe392c4b123001582"
     },
     {
       "path": "templates/convert.html",
-      "sha256": "74bf4bfc9860f7ee7475953b3c54eeacea48a4c837f887eb62a8c7608f03405f"
+      "sha256": "cb6ed3d09c2ab142ce486a5d5f049fb7d9bfd28f39a288b444aabd2e04d010b2"
     },
     {
       "path": "templates/csrf_error.html",
@@ -284,7 +296,15 @@
     },
     {
       "path": "templates/resultat.html",
-      "sha256": "1181cf2180185b3fea135af752b13c358a12bfc471cbf0b63ab22f478a8edec8"
+      "sha256": "5672af02d582456def972135c98d7ec0f4c29b11e2ab30208a6218d3bb9ea144"
+    },
+    {
+      "path": "zip/files.json",
+      "sha256": "eeff2d652928891faebb91c3985ba5d8f88bae9c9bd66ac441181fa0d2624d4f"
+    },
+    {
+      "path": "zip/MANIFEST.md",
+      "sha256": "4a3f36f9002dedcd793aec92d143e0e936a92b0f73a37541d1dd67564884dee7"
     }
   ]
 }

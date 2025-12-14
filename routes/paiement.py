@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template, flash
 from database import db
-from models import Transaction, Utilisateur, Conversion, Compte
+from models import Transaction, Utilisateur, Conversion, Compte, Paiement
 from datetime import datetime
 import uuid
 from services.orange_money_api import OrangeMoneyAPI
 from services.wave_api import WaveAPI
-
+from extensions import csrf
 
 
 
@@ -15,37 +15,73 @@ from services.wave_api import WaveAPI
 paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 
 
-# --------------------------------------------------------
-# 🔶 1. INITIER PAIEMENT ORANGE MONEY
-# --------------------------------------------------------
 
+# ======================================================
+# 🔶 ORANGE MONEY – INITIATION DE PAIEMENT
+# ======================================================
+@csrf.exempt  # endpoint JS / API interne
 @paiement.route('/orange', methods=['POST'])
 def paiement_orange():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"error": "Veuillez vous connecter"}), 403
+    data = request.get_json(silent=True) or {}
 
-    data = request.get_json()
-    montant = data.get("montant")
-    phone = data.get("telephone")
-    reference = data.get("reference")
+    try:
+        montant = float(data.get('montant', 0))
+    except ValueError:
+        return jsonify({"error": "Montant invalide"}), 400
 
-    if not montant or not phone or not reference:
-        return jsonify({"error": "Données incomplètes"}), 400
+    telephone = data.get('telephone')
+    reference = data.get('reference')
 
-    om = OrangeMoneyAPI()
+    if not all([montant, telephone, reference]):
+        return jsonify({"error": "Données manquantes"}), 400
 
-    result = om.init_payment(
-        amount=montant,
-        phone_number=phone,
-        return_url=url_for('paiement.orange_callback', _external=True),
-        reference=reference
-    )
+    if montant <= 0:
+        return jsonify({"error": "Montant incorrect"}), 400
 
-    if not result["success"]:
-        return jsonify({"error": result["error"]}), 400
+    conversion = Conversion.query.filter_by(reference=reference).first()
+    if not conversion:
+        return jsonify({"error": "Conversion introuvable"}), 404
 
-    return jsonify(result["data"])
+    if conversion.statut != 'en_attente':
+        return jsonify({"error": "Conversion déjà traitée"}), 400
+
+    try:
+        paiement = Paiement(
+            conversion_id=conversion.id,
+            montant_envoye=conversion.montant_initial,
+            montant_recu=conversion.montant_converti,
+            devise_source=conversion.from_currency,
+            devise_cible=conversion.to_currency,
+            sender_phone=telephone,
+            receiver_phone=conversion.receiver_phone,
+            statut='en_attente',
+            date_paiement=datetime.utcnow()
+        )
+
+        db.session.add(paiement)
+
+        transaction = Transaction(
+            user_id=conversion.user_id,
+            type='paiement',
+            montant=montant,
+            statut='en_attente',
+            fournisseur='Orange Money',
+            reference=str(uuid.uuid4())[:12],
+            date_transaction=datetime.utcnow()
+        )
+
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Paiement Orange Money initié avec succès.",
+            "reference": transaction.reference
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
 
 
 
@@ -124,51 +160,72 @@ def simuler(conversion_id):
     )
 
 
-# --------------------------------------------------------
-# 🔶 ROUTE DE PAIEMENT WAVE
-# --------------------------------------------------------
+# ======================================================
+# 🌊 WAVE – INITIATION DE PAIEMENT
+# ======================================================
+@csrf.exempt
 @paiement.route('/wave', methods=['POST'])
 def paiement_wave():
-    montant = request.form.get("montant")
-    phone = request.form.get("telephone")
-    user_id = session.get("user_id")
+    data = request.get_json(silent=True) or {}
 
-    if not user_id:
-        flash("Veuillez vous connecter pour effectuer un paiement.", "warning")
-        return redirect(url_for("auth.connexion"))
+    try:
+        montant = float(data.get('montant', 0))
+    except ValueError:
+        return jsonify({"error": "Montant invalide"}), 400
 
-    if not montant or not phone:
-        flash("Informations de paiement manquantes.", "error")
-        return redirect(url_for("convert.convertir"))
+    telephone = data.get('telephone')
+    reference = data.get('reference')
 
-    wave = WaveAPI()
-    result = wave.create_payment(
-        amount=montant,
-        currency="XOF",
-        return_url=url_for("paiement.wave_callback", _external=True)
-    )
+    if not all([montant, telephone, reference]):
+        return jsonify({"error": "Données manquantes"}), 400
 
-    if not result["success"]:
-        flash(f"Erreur Wave : {result['error']}", "error")
-        return redirect(url_for("convert.convertir"))
+    if montant <= 0:
+        return jsonify({"error": "Montant incorrect"}), 400
 
-    # Enregistre la transaction
-    from models import Transaction, Compte
-    transaction = Transaction(
-        user_id=user_id,
-        type="depot",
-        montant=float(montant),
-        fournisseur="Wave",
-        reference=result["data"]["reference"],
-        statut="en_attente",
-        date_transaction=datetime.utcnow()
-    )
-    db.session.add(transaction)
-    db.session.commit()
+    conversion = Conversion.query.filter_by(reference=reference).first()
+    if not conversion:
+        return jsonify({"error": "Conversion introuvable"}), 404
 
-    # Redirige vers la page Wave officielle
-    return redirect(result["data"]["payment_url"])
+    if conversion.statut != 'en_attente':
+        return jsonify({"error": "Conversion déjà traitée"}), 400
 
+    try:
+        paiement = Paiement(
+            conversion_id=conversion.id,
+            montant_envoye=conversion.montant_initial,
+            montant_recu=conversion.montant_converti,
+            devise_source=conversion.from_currency,
+            devise_cible=conversion.to_currency,
+            sender_phone=telephone,
+            receiver_phone=conversion.receiver_phone,
+            statut='en_attente',
+            date_paiement=datetime.utcnow()
+        )
+
+        db.session.add(paiement)
+
+        transaction = Transaction(
+            user_id=conversion.user_id,
+            type='paiement',
+            montant=montant,
+            statut='en_attente',
+            fournisseur='Wave',
+            reference=str(uuid.uuid4())[:12],
+            date_transaction=datetime.utcnow()
+        )
+
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Paiement Wave initié avec succès.",
+            "reference": transaction.reference
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
 
 
 
@@ -194,3 +251,14 @@ def wave_callback():
 
     flash("Paiement Wave réussi ✅", "success")
     return redirect(url_for("auth.tableau_de_bord"))
+
+
+
+
+
+
+
+
+
+
+

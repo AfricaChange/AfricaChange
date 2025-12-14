@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-2xl p-8 max-w-lg text-center">
+    <div class="text-6xl mb-4">🔥</div>
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+      Erreur interne du serveur
+    </h1>
+    <p class="text-gray-600 mb-4">
+      Une erreur inattendue s’est produite sur AfricaChange.
+    </p>
+    <p class="text-gray-500 text-sm mb-6">
+      Si le problème persiste, veuillez réessayer plus tard ou contacter le support.
+    </p>
+
+    <a href="{{ url_for('main.accueil') }}"
+       class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
+      ⬅️ Retour à l’accueil
+    </a>
+  </div>
+</div>
+{% endblock %}
