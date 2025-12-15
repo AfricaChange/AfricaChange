@@ -13,6 +13,7 @@ Flask-Login==0.6.3
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.0.5
 Flask-WTF
+Flask-Limiter
 greenlet==3.1.1
 idna==3.10
 importlib_metadata==8.5.0
