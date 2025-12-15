@@ -151,6 +151,9 @@ class Paiement(db.Model):
 
     conversion = db.relationship('Conversion', backref=db.backref('paiement', uselist=False))
 
+    transaction_reference = db.Column(db.String(100), unique=True)
+
+
     def __repr__(self):
         return f"<Paiement conversion={self.conversion_id}>"
 
