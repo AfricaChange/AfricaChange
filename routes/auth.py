@@ -229,7 +229,15 @@ def mot_de_passe_oublie():
             flash("Si le compte existe, un lien sera généré.", "info")
             return redirect(url_for('auth.mot_de_passe_oublie'))
 
-        token = user.create_reset_token(expires_in=900)
+        token = user.generate_reset_token(expires_sec=900)
+        reset = ResetToken(
+                     user_id=user.id,
+                     token=token,
+                     expire_at=datetime.utcnow() + timedelta(minutes=15)
+                )
+        db.session.add(reset)
+        db.session.commit()
+
 
         # TEMPORAIRE (sans email)
         flash(f"Lien temporaire : /reset/{token}", "warning")
