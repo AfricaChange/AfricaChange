@@ -15,6 +15,7 @@ from flask_talisman import Talisman
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
+import os
 from datetime import timedelta
 from extensions import limiter
 
@@ -63,11 +64,20 @@ talisman = Talisman(
 
 # ---------- Logging : ne pas logguer secret (production) ----------
 if not app.debug:
-    # logger simple : écris erreurs dans un fichier sécurisé
-    handler = logging.FileHandler('logs/africachange_errors.log')
+    log_dir = os.path.join(os.path.dirname(__file__), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+    log_file = os.path.join(log_dir, "africachange_errors.log")
+
+    handler = logging.FileHandler(log_file)
     handler.setLevel(logging.WARNING)
-    fmt = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
-    handler.setFormatter(fmt)
+
+    formatter = logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s '
+        '[in %(pathname)s:%(lineno)d]'
+    )
+    handler.setFormatter(formatter)
+
     app.logger.addHandler(handler)
 
   
