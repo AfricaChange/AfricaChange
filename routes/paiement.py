@@ -44,8 +44,16 @@ def paiement_orange():
 
     if conversion.statut != 'en_attente':
         return jsonify({"error": "Conversion déjà traitée"}), 400
+    # 🔐 Sécurité : empêcher paiement d’une conversion d’un autre utilisateur
+    if conversion.user_id is not None:
+       if conversion.user_id != session.get("user_id"):
+          return jsonify({"error": "Action non autorisée"}), 403
 
     try:
+        # 🔒 Bloquer double paiement
+        conversion.statut = "paiement_en_cours"
+        db.session.commit()
+
         paiement = Paiement(
             conversion_id=conversion.id,
             montant_envoye=conversion.montant_initial,
@@ -71,6 +79,9 @@ def paiement_orange():
         )
 
         db.session.add(transaction)
+        # 🔗 Lien Paiement ↔ Transaction (audit)
+        paiement.transaction_reference = transaction.reference
+
         db.session.commit()
 
         return jsonify({
@@ -188,8 +199,16 @@ def paiement_wave():
 
     if conversion.statut != 'en_attente':
         return jsonify({"error": "Conversion déjà traitée"}), 400
+    # 🔐 Sécurité : empêcher paiement d’une conversion d’un autre utilisateur
+    if conversion.user_id is not None:
+       if conversion.user_id != session.get("user_id"):
+          return jsonify({"error": "Action non autorisée"}), 403
 
     try:
+        # 🔒 Bloquer double paiement
+        conversion.statut = "paiement_en_cours"
+        db.session.commit()
+
         paiement = Paiement(
             conversion_id=conversion.id,
             montant_envoye=conversion.montant_initial,
@@ -215,6 +234,9 @@ def paiement_wave():
         )
 
         db.session.add(transaction)
+        # 🔗 Lien Paiement ↔ Transaction (audit)
+        paiement.transaction_reference = transaction.reference
+
         db.session.commit()
 
         return jsonify({
