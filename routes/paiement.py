@@ -92,7 +92,10 @@ def paiement_orange():
 
     except Exception as e:
         db.session.rollback()
+        conversion.statut = "en_attente"
+        db.session.commit()
         return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
+
 
 
 
@@ -245,9 +248,12 @@ def paiement_wave():
             "reference": transaction.reference
         }), 200
 
-    except Exception:
+    except Exception as e:
         db.session.rollback()
+        conversion.statut = "en_attente"
+        db.session.commit()
         return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
+
 
 
 
