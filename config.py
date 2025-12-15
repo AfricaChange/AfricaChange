@@ -37,6 +37,9 @@ class Config:
     # Render / Heroku style: DATABASE_URL
     raw_db = os.getenv("DATABASE_URL", None)
     SQLALCHEMY_DATABASE_URI = _normalize_database_url(raw_db) or "sqlite:///instance/database.db"
+    if IS_PRODUCTION and not raw_db:
+       raise RuntimeError("DATABASE_URL is required in production")
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Maintenance
