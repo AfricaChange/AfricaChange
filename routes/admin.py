@@ -64,9 +64,7 @@ def dashboard():
 @admin.route('/taux', methods=['GET', 'POST'])
 @admin_required
 def gerer_taux():
-    if not admin_required(f):
-        flash("Accès refusé : admin requis.")
-        return redirect(url_for('auth.connexion'))
+    
 
     # Récupération des taux actuels (ou création si absents)
     rate_cfa_gnf = Rate.query.filter_by(from_currency='CFA', to_currency='GNF').first()
