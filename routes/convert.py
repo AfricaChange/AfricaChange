@@ -10,6 +10,7 @@ from sqlalchemy import or_
 # 🟢 Blueprint
 convert = Blueprint('convert', __name__, url_prefix='/convert')
 
+MAX_PUBLIC_AMOUNT = 50000  # 50 000 CFA max pour non connectés
 
 # ======================================================
 # 🔹 PAGE PRINCIPALE DE CONVERSION
@@ -19,6 +20,16 @@ def convertir():
     if request.method == 'POST':
         try:
             montant = float(request.form.get('montant', 0))
+            user_id = session.get('user_id')
+
+            # 🔐 Limitation pour utilisateurs non connectés
+            if not user_id and montant > MAX_PUBLIC_AMOUNT:
+               flash(
+                      f"Pour convertir plus de {MAX_PUBLIC_AMOUNT:,} CFA, veuillez vous connecter.",
+                     "warning"
+                      )
+            return redirect(url_for('auth.connexion'))
+
         except ValueError:
             flash("Montant invalide.", "error")
             return redirect(url_for('convert.convertir'))
