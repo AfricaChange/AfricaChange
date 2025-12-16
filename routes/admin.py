@@ -30,6 +30,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def require_admin():
+    if not session.get("user_id") or not session.get("is_admin"):
+        flash("Accès administrateur requis.", "danger")
+        return False
+    return True
+
 # ============================
 # 1️⃣ Tableau de bord principal
 # ============================
