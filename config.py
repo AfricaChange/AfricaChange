@@ -29,7 +29,7 @@ class Config:
     # Environment
     ENV = os.getenv("FLASK_ENV", "production")
     DEBUG = ENV == "development"
-
+    IS_PRODUCTION = ENV == "production"
     # Secret key
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-key-CHANGE-MOI")
 
