@@ -30,11 +30,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-def require_admin():
-    if not session.get("user_id") or not session.get("is_admin"):
-        flash("Accès administrateur requis.", "danger")
-        return False
-    return True
 
 # ============================
 # 1️⃣ Tableau de bord principal
@@ -61,14 +56,14 @@ def dashboard():
         taux_list=taux_list
     )
 
-
+ 
 # ============================
 # 2️⃣ Gestion des taux
 # ============================
 
 @admin.route('/taux', methods=['GET', 'POST'])
 def gerer_taux():
-    if not require_admin():
+    if not required_admin():
         flash("Accès refusé : admin requis.")
         return redirect(url_for('auth.connexion'))
 
@@ -126,7 +121,7 @@ def liste_conversions():
     )
     
 # 🔹 Liste filtrable des conversions
-@admin.route('/conversions')
+@admin.route('/conversions/export')
 def export_conversions():
     # 🔐 sécurité : seulement admin
     user_id = session.get("user_id")
