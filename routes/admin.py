@@ -64,7 +64,7 @@ def dashboard():
 @admin.route('/taux', methods=['GET', 'POST'])
 @admin_required
 def gerer_taux():
-    if not admin_required():
+    if not admin_required(f):
         flash("Accès refusé : admin requis.")
         return redirect(url_for('auth.connexion'))
 
