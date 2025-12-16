@@ -62,8 +62,9 @@ def dashboard():
 # ============================
 
 @admin.route('/taux', methods=['GET', 'POST'])
+@admin_required
 def gerer_taux():
-    if not required_admin():
+    if not admin_required():
         flash("Accès refusé : admin requis.")
         return redirect(url_for('auth.connexion'))
 
@@ -108,6 +109,7 @@ def gerer_taux():
 # 3️⃣ Liste des conversions
 # ============================
 @admin.route('/conversions')
+@admin_required
 def liste_conversions():
     """Liste des conversions pour l’admin"""
     conversions = (
@@ -122,6 +124,7 @@ def liste_conversions():
     
 # 🔹 Liste filtrable des conversions
 @admin.route('/conversions/export')
+@admin_required
 def export_conversions():
     # 🔐 sécurité : seulement admin
     user_id = session.get("user_id")
