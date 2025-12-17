@@ -22,6 +22,7 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 @csrf.exempt  # endpoint JS / API interne
 @paiement.route('/orange', methods=['POST'])
 def paiement_orange():
+    MAX_ANONYMOUS_AMOUNT = 50000  # exemple
     data = request.get_json(silent=True) or {}
 
     try:
@@ -37,8 +38,23 @@ def paiement_orange():
 
     if montant <= 0:
         return jsonify({"error": "Montant incorrect"}), 400
+    
+    
 
-    conversion = Conversion.query.filter_by(reference=reference).first()
+    if conversion.user_id is None:
+        if montant > MAX_ANONYMOUS_AMOUNT:
+             return jsonify({
+                    "error": "Veuillez vous connecter pour payer ce montant."
+                      }), 403
+
+   
+   conversion = (
+                db.session.query(Conversion)
+                .filter_by(reference=reference)
+                .with_for_update()
+                .first()
+                )
+
     if not conversion:
         return jsonify({"error": "Conversion introuvable"}), 404
 
@@ -52,6 +68,10 @@ def paiement_orange():
     try:
         # 🔒 Bloquer double paiement
         conversion.statut = "paiement_en_cours"
+        db.session.flush()  # ⚠️ très important
+        if conversion.user_id != session.get("user_id"):
+           return 403
+
         db.session.commit()
 
         paiement = Paiement(
@@ -180,6 +200,7 @@ def simuler(conversion_id):
 @csrf.exempt
 @paiement.route('/wave', methods=['POST'])
 def paiement_wave():
+    MAX_ANONYMOUS_AMOUNT = 50000  # exemple
     data = request.get_json(silent=True) or {}
 
     try:
@@ -195,8 +216,20 @@ def paiement_wave():
 
     if montant <= 0:
         return jsonify({"error": "Montant incorrect"}), 400
+    
+    if conversion.user_id is None:
+        if montant > MAX_ANONYMOUS_AMOUNT:
+             return jsonify({
+                    "error": "Veuillez vous connecter pour payer ce montant."
+                      }), 403
+    
+    conversion = (
+                db.session.query(Conversion)
+                .filter_by(reference=reference)
+                .with_for_update()
+                .first()
+                 )
 
-    conversion = Conversion.query.filter_by(reference=reference).first()
     if not conversion:
         return jsonify({"error": "Conversion introuvable"}), 404
 
@@ -210,6 +243,10 @@ def paiement_wave():
     try:
         # 🔒 Bloquer double paiement
         conversion.statut = "paiement_en_cours"
+        db.session.flush()  # ⚠️ très important
+        if conversion.user_id != session.get("user_id"):
+           return 403
+
         db.session.commit()
 
         paiement = Paiement(
