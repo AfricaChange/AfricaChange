@@ -269,6 +269,7 @@ def export_conversions():
 # =============================
 
 @admin.route("/historique-envois")
+@admin_required
 def historique_envois():
     page = request.args.get("page", 1, type=int)
     statut = request.args.get("statut", None)
@@ -297,6 +298,7 @@ def historique_envois():
 
 
 @admin.route('/comptes-systeme', methods=['GET', 'POST'])
+@admin_required
 def comptes_systeme():
     """Affiche la liste des comptes systèmes + permet d'en ajouter."""
     if request.method == 'POST':
@@ -322,6 +324,7 @@ def comptes_systeme():
 
 
 @admin.route('/comptes-systeme/toggle/<int:id>', methods=['POST'])
+@admin_required
 def toggle_compte(id):
     """Active ou désactive un compte système."""
     compte = CompteSysteme.query.get_or_404(id)
@@ -333,6 +336,7 @@ def toggle_compte(id):
 
 
 @admin.route('/comptes-systeme/supprimer/<int:id>', methods=['POST'])
+@admin_required
 def supprimer_compte(id):
     """Supprime définitivement un compte système."""
     compte = CompteSysteme.query.get_or_404(id)
@@ -349,6 +353,7 @@ def supprimer_compte(id):
 # 🏦 ROUTE DE MAINTENANCE
 # ===============================================================
 @admin.route("/maintenance", methods=["GET", "POST"])
+@admin_required
 def admin_maintenance():
     # Sécurité : seulement admin
     if not session.get("is_admin"):
