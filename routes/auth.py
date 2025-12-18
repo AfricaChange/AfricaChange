@@ -73,20 +73,30 @@ def inscription():
 # ============================
 # 🔹2 CONNEXION
 # ============================
+# ============================
+# 🔹2 CONNEXION (corrigée)
+# ============================
 @auth.route('/connexion', methods=['GET', 'POST'])
 @limiter.limit("5 per 15 minutes")
 def connexion():
+    # 🔴 IMPORTANT : purge préventive de session
+    # évite les faux "connecté" (mobile, cache navigateur, Render)
+    if request.method == 'GET':
+        session.clear()
+
     if request.method == 'POST':
+        session.clear()
+        session.permanent = True
+
         email = request.form.get('email')
         mot_de_passe = request.form.get('mot_de_passe')
 
         utilisateur = Utilisateur.query.filter_by(email=email).first()
 
-        if utilisateur and check_password_hash(utilisateur.mot_de_passe, mot_de_passe):
-            session.clear()
-            session.modified = True
-            session.permanent = True
-
+        if utilisateur and check_password_hash(
+            utilisateur.mot_de_passe,
+            mot_de_passe
+        ):
             session['user_id'] = utilisateur.id
             session['user_nom'] = utilisateur.nom
             session['is_admin'] = bool(utilisateur.is_admin)
@@ -98,6 +108,7 @@ def connexion():
         return redirect(url_for('auth.connexion'))
 
     return render_template('login.html')
+
 
 
 # ============================
