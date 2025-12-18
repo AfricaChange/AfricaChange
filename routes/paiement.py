@@ -48,11 +48,12 @@ def paiement_orange():
                       }), 403
 
    
-   conversion = (
+    conversion=(
                 db.session.query(Conversion)
                 .filter_by(reference=reference)
                 .with_for_update()
-                .first() )
+                .first()
+    )
    
 
     if not conversion:

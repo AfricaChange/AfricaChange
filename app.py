@@ -46,7 +46,6 @@ def inject_globals():
 limiter.init_app(app)
 
 # ---------- CSRF ----------
-csrf = CSRFProtect(app)  # protège toutes les routes POST, PUT, DELETE, etc.
 # si tu as blueprints, CSRFProtect couvrira tout automatiquement
 
 # ---------- Security Headers via Talisman ----------
@@ -165,6 +164,10 @@ def handle_csrf_error(e):
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()       # Crée les tables automatiquement
+    # ⚠️ Créer les tables UNIQUEMENT en local avec SQLite
+    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
+        with app.app_context():
+            db.create_all()
+
     app.run(debug=True)
+
