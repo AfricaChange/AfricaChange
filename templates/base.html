@@ -36,7 +36,8 @@
         <nav class="hidden md:flex items-center gap-3">
           <a href="{{ url_for('convert.convertir') }}" class="text-sm hover:text-blue-600">Convertir</a>
 
-          {% if session.get('user_id') %}
+          {% if session.get('user_id') is not none %}
+
             <a href="{{ url_for('auth.tableau_de_bord') }}" class="text-sm bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Tableau de bord</a>
             <a href="{{ url_for('convert.historique') }}" class="text-sm hover:text-blue-600">Historique</a>
             <a href="{{ url_for('auth.deconnexion') }}" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Déconnexion</a>
@@ -68,7 +69,8 @@
     <div id="mobileMenu" class="hidden md:hidden border-t">
       <div class="px-4 py-3 space-y-2">
         <a href="{{ url_for('convert.convertir') }}" class="block">Convertir</a>
-        {% if session.get('user_id') %}
+        {% if session.get('user_id') is not none %}
+
           <a href="{{ url_for('auth.tableau_de_bord') }}" class="block">Tableau de bord</a>
           <a href="{{ url_for('convert.historique') }}" class="block">Historique</a>
           <a href="{{ url_for('auth.deconnexion') }}" class="block text-red-600">Déconnexion</a>
