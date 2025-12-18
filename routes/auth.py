@@ -84,6 +84,7 @@ def connexion():
 
         if utilisateur and check_password_hash(utilisateur.mot_de_passe, mot_de_passe):
             session.clear()
+            session.modified = True
             session.permanent = True
 
             session['user_id'] = utilisateur.id
