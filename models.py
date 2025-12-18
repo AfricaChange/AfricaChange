@@ -210,3 +210,20 @@ class ResetToken(db.Model):
 
     def is_valid(self):
         return (not self.used) and self.expire_at > datetime.utcnow()
+
+
+class PaymentEvent(db.Model):
+    __tablename__ = "payment_event"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    transaction_reference = db.Column(db.String(100), index=True)
+    provider = db.Column(db.String(50))        # Orange / Wave
+    event_type = db.Column(db.String(50))      # callback / verify / reject
+    payload = db.Column(db.JSON)
+
+    ip_address = db.Column(db.String(45))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<PaymentEvent {self.provider} {self.event_type}>"

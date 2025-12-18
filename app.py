@@ -3,9 +3,10 @@ from config import Config
 from database import db
 from routes.main import main
 from routes.auth import auth
-from routes.exchange import exchange  # 👈 AJOUT
 from routes.admin import admin  # 👈 AJOUT
 from routes.paiement import paiement
+
+
 from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
 from extensions import csrf
@@ -130,7 +131,6 @@ def maintenance():
 # Enregistrement de la route principale
 app.register_blueprint(main)
 app.register_blueprint(auth)
-app.register_blueprint(exchange)      # 👈 AJOUT
 app.register_blueprint(admin)   # 👈 AJOUT
 app.register_blueprint(paiement)
 app.register_blueprint(convert)

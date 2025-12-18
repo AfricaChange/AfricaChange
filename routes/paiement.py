@@ -3,12 +3,11 @@ from database import db
 from models import Transaction, Utilisateur, Conversion, Compte, Paiement
 from datetime import datetime
 import uuid
-from services.orange_money_api import OrangeMoneyAPI
-from services.wave_api import WaveAPI
 from extensions import csrf
-
-
-
+from services.payment_service import PaymentService
+from services.providers.orange_provider import OrangeProvider
+from services.providers.wave_provider import WaveProvider
+from services.callbacks import CallbackManager
 
 
 
@@ -19,134 +18,88 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 # ======================================================
 # 🔶 ORANGE MONEY – INITIATION DE PAIEMENT
 # ======================================================
-@csrf.exempt  # endpoint JS / API interne
+
+
 @paiement.route('/orange', methods=['POST'])
+@csrf.exempt
 def paiement_orange():
-    MAX_ANONYMOUS_AMOUNT = 50000  # exemple
     data = request.get_json(silent=True) or {}
 
-    try:
-        montant = float(data.get('montant', 0))
-    except ValueError:
-        return jsonify({"error": "Montant invalide"}), 400
-
-    telephone = data.get('telephone')
-    reference = data.get('reference')
-
-    if not all([montant, telephone, reference]):
-        return jsonify({"error": "Données manquantes"}), 400
-
-    if montant <= 0:
-        return jsonify({"error": "Montant incorrect"}), 400
-    
-    
-
-    if conversion.user_id is None:
-        if montant > MAX_ANONYMOUS_AMOUNT:
-             return jsonify({
-                    "error": "Veuillez vous connecter pour payer ce montant."
-                      }), 403
-
-   
-    conversion=(
-                db.session.query(Conversion)
-                .filter_by(reference=reference)
-                .with_for_update()
-                .first()
-    )
-   
-
-    if not conversion:
-        return jsonify({"error": "Conversion introuvable"}), 404
-
-    if conversion.statut != 'en_attente':
-        return jsonify({"error": "Conversion déjà traitée"}), 400
-    # 🔐 Sécurité : empêcher paiement d’une conversion d’un autre utilisateur
-    if conversion.user_id is not None:
-       if conversion.user_id != session.get("user_id"):
-          return jsonify({"error": "Action non autorisée"}), 403
+    reference = data.get("reference")
+    telephone = data.get("telephone")
+    montant = float(data.get("montant", 0))
 
     try:
-        # 🔒 Bloquer double paiement
-        conversion.statut = "paiement_en_cours"
-        db.session.flush()  # ⚠️ très important
-        if conversion.user_id != session.get("user_id"):
-           return 403
+        # 🔒 1) Lock DB
+        conversion = PaymentService.lock_conversion(reference)
 
-        db.session.commit()
-
-        paiement = Paiement(
-            conversion_id=conversion.id,
-            montant_envoye=conversion.montant_initial,
-            montant_recu=conversion.montant_converti,
-            devise_source=conversion.from_currency,
-            devise_cible=conversion.to_currency,
-            sender_phone=telephone,
-            receiver_phone=conversion.receiver_phone,
-            statut='en_attente',
-            date_paiement=datetime.utcnow()
+        # 🔐 2) Provider Orange
+        provider = OrangeProvider()
+        result = provider.init_payment(
+            amount=montant,
+            phone=telephone,
+            reference=conversion.reference,
+            return_url=url_for("paiement.orange_callback", _external=True)
         )
 
-        db.session.add(paiement)
-
-        transaction = Transaction(
-            user_id=conversion.user_id,
-            type='paiement',
-            montant=montant,
-            statut='en_attente',
-            fournisseur='Orange Money',
-            reference=str(uuid.uuid4())[:12],
-            date_transaction=datetime.utcnow()
+        # 🧾 3) Traces internes
+        transaction = PaymentService.create_transaction(
+            conversion,
+            fournisseur="Orange Money",
+            montant=montant
         )
 
-        db.session.add(transaction)
-        # 🔗 Lien Paiement ↔ Transaction (audit)
-        paiement.transaction_reference = transaction.reference
+        PaymentService.create_paiement(
+            conversion,
+            transaction.reference,
+            telephone
+        )
 
         db.session.commit()
 
         return jsonify({
             "success": True,
-            "message": "Paiement Orange Money initié avec succès.",
-            "reference": transaction.reference
-        }), 200
+            "payment_url": result["payment_url"]
+        })
 
     except Exception as e:
         db.session.rollback()
-        conversion.statut = "en_attente"
-        db.session.commit()
-        return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
-
+        return jsonify({"error": str(e)}), 400
 
 
 
 # --------------------------------------------------------
 # 🔶 2. CALLBACK : RETOUR DE OM MONEY
 # --------------------------------------------------------
+
 @paiement.route('/orange/callback')
 def orange_callback():
-    order_id = request.args.get("order_id")
+    reference = request.args.get("order_id")
+    ip = request.remote_addr
 
-    if not order_id:
-        return "Order ID manquant", 400
+    if not reference:
+        return "Référence manquante", 400
 
-    om = OrangeMoneyAPI()
-    result = om.check_payment_status(order_id)
+    try:
+        provider = OrangeProvider()
+        status = provider.check_status(reference)
 
-    if not result["success"]:
-        return "Erreur de vérification paiement", 400
+        tx = CallbackManager.validate(
+            reference=reference,
+            provider="Orange Money",
+            payload=status,
+            ip=ip
+        )
 
-    status = result["data"]["status"]
+        tx.statut = "valide" if status.get("status") == "SUCCESS" else "echoue"
 
-    transaction = Transaction.query.filter_by(reference=order_id).first()
+        db.session.commit()
+        return redirect(url_for("auth.tableau_de_bord"))
 
-    if not transaction:
-        return "Transaction introuvable", 404
+    except Exception as e:
+        db.session.rollback()
+        return f"Erreur callback: {str(e)}", 403
 
-    transaction.statut = "valide" if status == "SUCCESS" else "echoue"
-    db.session.commit()
-
-    return redirect(url_for('auth.tableau_de_bord'))
 
 
 
@@ -198,99 +151,49 @@ def simuler(conversion_id):
 # ======================================================
 # 🌊 WAVE – INITIATION DE PAIEMENT
 # ======================================================
-@csrf.exempt
+
 @paiement.route('/wave', methods=['POST'])
+@csrf.exempt
 def paiement_wave():
-    MAX_ANONYMOUS_AMOUNT = 50000  # exemple
     data = request.get_json(silent=True) or {}
 
-    try:
-        montant = float(data.get('montant', 0))
-    except ValueError:
-        return jsonify({"error": "Montant invalide"}), 400
-
-    telephone = data.get('telephone')
-    reference = data.get('reference')
-
-    if not all([montant, telephone, reference]):
-        return jsonify({"error": "Données manquantes"}), 400
-
-    if montant <= 0:
-        return jsonify({"error": "Montant incorrect"}), 400
-    
-    if conversion.user_id is None:
-        if montant > MAX_ANONYMOUS_AMOUNT:
-             return jsonify({
-                    "error": "Veuillez vous connecter pour payer ce montant."
-                      }), 403
-    
-    conversion = (
-                db.session.query(Conversion)
-                .filter_by(reference=reference)
-                .with_for_update()
-                .first()
-                 )
-
-    if not conversion:
-        return jsonify({"error": "Conversion introuvable"}), 404
-
-    if conversion.statut != 'en_attente':
-        return jsonify({"error": "Conversion déjà traitée"}), 400
-    # 🔐 Sécurité : empêcher paiement d’une conversion d’un autre utilisateur
-    if conversion.user_id is not None:
-       if conversion.user_id != session.get("user_id"):
-          return jsonify({"error": "Action non autorisée"}), 403
+    reference = data.get("reference")
+    telephone = data.get("telephone")
+    montant = float(data.get("montant", 0))
 
     try:
-        # 🔒 Bloquer double paiement
-        conversion.statut = "paiement_en_cours"
-        db.session.flush()  # ⚠️ très important
-        if conversion.user_id != session.get("user_id"):
-           return 403
+        conversion = PaymentService.lock_conversion(reference)
 
-        db.session.commit()
-
-        paiement = Paiement(
-            conversion_id=conversion.id,
-            montant_envoye=conversion.montant_initial,
-            montant_recu=conversion.montant_converti,
-            devise_source=conversion.from_currency,
-            devise_cible=conversion.to_currency,
-            sender_phone=telephone,
-            receiver_phone=conversion.receiver_phone,
-            statut='en_attente',
-            date_paiement=datetime.utcnow()
+        provider = WaveProvider()
+        provider_result = provider.create_payment(
+            amount=montant,
+            reference=conversion.reference,
+            return_url=url_for("paiement.wave_callback", _external=True)
         )
 
-        db.session.add(paiement)
-
-        transaction = Transaction(
-            user_id=conversion.user_id,
-            type='paiement',
-            montant=montant,
-            statut='en_attente',
-            fournisseur='Wave',
-            reference=str(uuid.uuid4())[:12],
-            date_transaction=datetime.utcnow()
+        transaction = PaymentService.create_transaction(
+            conversion,
+            fournisseur="Wave",
+            montant=montant
         )
 
-        db.session.add(transaction)
-        # 🔗 Lien Paiement ↔ Transaction (audit)
-        paiement.transaction_reference = transaction.reference
+        PaymentService.create_paiement(
+            conversion,
+            transaction.reference,
+            telephone
+        )
 
         db.session.commit()
 
         return jsonify({
             "success": True,
-            "message": "Paiement Wave initié avec succès.",
-            "reference": transaction.reference
-        }), 200
+            "payment_url": provider_result["payment_url"]
+        })
 
     except Exception as e:
         db.session.rollback()
-        conversion.statut = "en_attente"
-        db.session.commit()
-        return jsonify({"error": "Erreur lors de l’initiation du paiement"}), 500
+        return jsonify({"error": str(e)}), 400
+
 
 
 
