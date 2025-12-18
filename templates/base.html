@@ -33,7 +33,7 @@
         </div>
 
         <!-- Desktop links -->
-        <nav class="hidden md:flex items-center gap-3">
+        <nav class="flex items-center gap-3">
           <a href="{{ url_for('convert.convertir') }}" class="text-sm hover:text-blue-600">Convertir</a>
 
           {% if session.get('user_id') is not none %}
