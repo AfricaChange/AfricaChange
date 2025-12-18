@@ -3,11 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- 🔐 CSRF TOKEN (utilisable JS / fetch) -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <!-- 🔐 Sécurité navigateur -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
   <title>AfricaChange</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { theme: { extend: {} } }</script>
+  <script>
+    tailwind.config = { theme: { extend: {} } }
+  </script>
 </head>
+
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
   <!-- NAV -->
@@ -77,7 +89,10 @@
       {% if messages %}
         <div class="space-y-2 mb-4">
           {% for category, msg in messages %}
-            <div class="p-3 rounded {{ 'bg-green-100 text-green-800' if category=='success' else 'bg-yellow-100 text-yellow-800' if category=='warning' else 'bg-red-100 text-red-800' }}">
+            <div class="p-3 rounded 
+              {{ 'bg-green-100 text-green-800' if category=='success'
+                 else 'bg-yellow-100 text-yellow-800' if category=='warning'
+                 else 'bg-red-100 text-red-800' }}">
               {{ msg }}
             </div>
           {% endfor %}
@@ -86,7 +101,6 @@
     {% endwith %}
 
     {% block back_button %}
-      <!-- Par défaut : bouton retour petit (mobile friendly) -->
       <div class="mb-4">
         <a href="javascript:history.back()" class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700">
           ← Retour
@@ -98,23 +112,30 @@
   </main>
 
   <footer class="bg-white border-t py-4 text-center text-sm text-gray-500">
-    © {{ (config.get('APP_NAME') or 'AfricaChange') }} — {{ current_year if current_year is defined else '' }}
+    © {{ (config.get('APP_NAME') or 'AfricaChange') }}
   </footer>
 
-<script>
-  // Toggle mobile menu
-  const btn = document.getElementById('btnBurger');
-  const menu = document.getElementById('mobileMenu');
-  const iconOpen = document.getElementById('iconOpen');
-  const iconClose = document.getElementById('iconClose');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      menu.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-    });
-  }
-</script>
+  <!-- 🔐 Helper JS CSRF (AJOUT) -->
+  <script>
+    window.CSRF_TOKEN = document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content');
+  </script>
+
+  <script>
+    // Toggle mobile menu
+    const btn = document.getElementById('btnBurger');
+    const menu = document.getElementById('mobileMenu');
+    const iconOpen = document.getElementById('iconOpen');
+    const iconClose = document.getElementById('iconClose');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
+      });
+    }
+  </script>
 
 </body>
 </html>

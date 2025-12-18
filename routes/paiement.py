@@ -52,8 +52,8 @@ def paiement_orange():
                 db.session.query(Conversion)
                 .filter_by(reference=reference)
                 .with_for_update()
-                .first()
-                )
+                .first() )
+   
 
     if not conversion:
         return jsonify({"error": "Conversion introuvable"}), 404
