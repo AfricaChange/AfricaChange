@@ -20,6 +20,8 @@
   </script>
 </head>
 
+{% include "partials/mobile_nav.html" %}
+
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
   <!-- NAV -->
@@ -133,6 +135,7 @@
         </div>
       {% endif %}
     {% endwith %}
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 pb-20">
 
     {% block back_button %}
       <div class="mb-4">

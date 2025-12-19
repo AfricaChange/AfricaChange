@@ -1,0 +1,48 @@
+{# ===============================
+   📱 MOBILE BOTTOM NAVIGATION
+   Visible uniquement sur mobile
+   =============================== #}
+
+<nav class="fixed bottom-0 inset-x-0 bg-white border-t shadow-lg z-50 md:hidden">
+  <div class="flex justify-around items-center h-14 text-xs">
+
+    <!-- Accueil -->
+    <a href="{{ url_for('main.accueil') }}"
+       class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-lg">🏠</span>
+      Accueil
+    </a>
+
+    <!-- Convertir -->
+    <a href="{{ url_for('convert.convertir') }}"
+       class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-lg">💱</span>
+      Convertir
+    </a>
+
+    <!-- Activité -->
+    {% if session.get('user_id') %}
+    <a href="{{ url_for('convert.historique') }}"
+       class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-lg">📜</span>
+      Activité
+    </a>
+    {% endif %}
+
+    <!-- Profil -->
+    {% if session.get('user_id') %}
+    <a href="{{ url_for('auth.tableau_de_bord') }}"
+       class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-lg">👤</span>
+      Profil
+    </a>
+    {% else %}
+    <a href="{{ url_for('auth.connexion') }}"
+       class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-lg">🔐</span>
+      Connexion
+    </a>
+    {% endif %}
+
+  </div>
+</nav>
