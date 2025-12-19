@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ======================================================
+     🔐 PAGE DE PAIEMENT SÉCURISÉ
+====================================================== -->
+
+<div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-6">
+
+  <!-- Titre -->
+  <h1 class="text-2xl font-bold text-gray-900 text-center mb-2">
+    Paiement sécurisé
+  </h1>
+
+  <p class="text-center text-gray-500 mb-6">
+    Finalisez votre conversion en toute sécurité
+  </p>
+
+  <!-- ======================================================
+       📋 RÉCAPITULATIF TRANSACTION (ULTRA IMPORTANT)
+  ====================================================== -->
+  <div class="bg-gray-50 rounded-lg p-4 mb-6">
+    <div class="flex justify-between text-sm mb-2">
+      <span class="text-gray-500">Montant envoyé</span>
+      <span class="font-semibold">{{ conversion.montant_initial }} {{ conversion.from_currency }}</span>
+    </div>
+
+    <div class="flex justify-between text-sm mb-2">
+      <span class="text-gray-500">Montant reçu</span>
+      <span class="font-semibold text-green-600">
+        {{ conversion.montant_converti }} {{ conversion.to_currency }}
+      </span>
+    </div>
+
+    <div class="flex justify-between text-sm mb-2">
+      <span class="text-gray-500">Bénéficiaire</span>
+      <span>{{ conversion.receiver_phone }}</span>
+    </div>
+
+    <div class="flex justify-between text-xs text-gray-400 mt-3">
+      <span>Référence</span>
+      <span>{{ conversion.reference }}</span>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       💳 CHOIX DU MOYEN DE PAIEMENT
+  ====================================================== -->
+  <h2 class="font-semibold text-gray-800 mb-3">
+    Choisissez un moyen de paiement
+  </h2>
+
+  <div class="space-y-3">
+
+    <!-- Wave -->
+    <button
+      onclick="initPaiement('wave')"
+      class="w-full border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
+
+      <div>
+        <p class="font-semibold">Wave</p>
+        <p class="text-sm text-gray-500">Paiement mobile rapide</p>
+      </div>
+
+      <span class="text-indigo-600 font-bold">→</span>
+    </button>
+
+    <!-- Orange Money -->
+    <button
+      onclick="initPaiement('orange')"
+      class="w-full border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
+
+      <div>
+        <p class="font-semibold">Orange Money</p>
+        <p class="text-sm text-gray-500">Paiement sécurisé Orange</p>
+      </div>
+
+      <span class="text-indigo-600 font-bold">→</span>
+    </button>
+
+  </div>
+
+  <!-- ======================================================
+       🔄 STATUT PAIEMENT
+  ====================================================== -->
+  <div id="statusBox" class="hidden mt-6 text-center">
+    <p class="text-sm text-gray-500">Traitement du paiement…</p>
+  </div>
+
+</div>
+
+<!-- ======================================================
+     🧠 SCRIPT UX (simple, clair, robuste)
+====================================================== -->
+<script>
+function initPaiement(type) {
+  const statusBox = document.getElementById("statusBox");
+  statusBox.classList.remove("hidden");
+
+  fetch(`/paiement/${type}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      reference: "{{ conversion.reference }}",
+      montant: {{ conversion.montant_initial }},
+      telephone: "{{ conversion.sender_phone }}"
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      statusBox.innerHTML = `
+        <p class="text-green-600 font-semibold mt-4">
+          Paiement initié avec succès
+        </p>
+      `;
+    } else {
+      statusBox.innerHTML = `
+        <p class="text-red-600 font-semibold mt-4">
+          ${data.error || "Erreur de paiement"}
+        </p>
+      `;
+    }
+  })
+  .catch(() => {
+    statusBox.innerHTML = `
+      <p class="text-red-600 font-semibold mt-4">
+        Erreur réseau. Réessayez.
+      </p>
+    `;
+  });
+}
+</script>
+
+{% endblock %}

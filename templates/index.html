@@ -1,8 +1,187 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center mt-20">
-  <h1 class="text-4xl font-bold text-blue-600 mb-4">Bienvenue sur AfricaChange</h1>
-  <p class="text-gray-600">Une plateforme sécurisée pour échanger vos devises africaines 🇸🇳 🇬🇳</p>
-</div>
+
+<!-- ======================================================
+     1️⃣ HERO SECTION
+     Objectif :
+     - Faire comprendre AfricaChange en < 5 secondes
+     - Donner confiance
+     - Inciter à l’action (Convertir / S’inscrire)
+====================================================== -->
+<section class="bg-gradient-to-b from-indigo-50 to-white py-20">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+
+    <!-- Promesse principale -->
+    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+      Échangez vos devises africaines<br>
+      <span class="text-indigo-600">
+        rapidement, simplement et en toute sécurité
+      </span>
+    </h1>
+
+    <!-- Sous-titre explicatif -->
+    <p class="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+      AfricaChange est un pont financier entre les devises africaines.
+      Convertissez et transférez votre argent sans complexité.
+    </p>
+
+    <!-- Boutons principaux (CTA) -->
+    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+
+      <!-- CTA principal : toujours visible -->
+      <a href="{{ url_for('convert.convertir') }}"
+         class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700">
+        Convertir maintenant
+      </a>
+
+      <!-- CTA secondaire : seulement si non connecté -->
+      {% if not session.get('user_id') %}
+      <a href="{{ url_for('auth.inscription') }}"
+         class="px-6 py-3 rounded-lg border border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50">
+        Créer un compte
+      </a>
+      {% endif %}
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ======================================================
+     2️⃣ PREUVES DE CONFIANCE
+     Objectif :
+     - Rassurer immédiatement
+     - Montrer que c’est une vraie fintech
+====================================================== -->
+<section class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 text-center">
+
+    <!-- Sécurité -->
+    <div>
+      <div class="text-indigo-600 text-3xl mb-3">🔐</div>
+      <h3 class="font-semibold text-lg">Sécurité renforcée</h3>
+      <p class="text-gray-600 mt-2">
+        Données protégées, paiements contrôlés, anti-fraude intégré.
+      </p>
+    </div>
+
+    <!-- Rapidité -->
+    <div>
+      <div class="text-indigo-600 text-3xl mb-3">⚡</div>
+      <h3 class="font-semibold text-lg">Rapide et fiable</h3>
+      <p class="text-gray-600 mt-2">
+        Conversion instantanée et traitement rapide des paiements.
+      </p>
+    </div>
+
+    <!-- Contexte africain -->
+    <div>
+      <div class="text-indigo-600 text-3xl mb-3">🌍</div>
+      <h3 class="font-semibold text-lg">Pensé pour l’Afrique</h3>
+      <p class="text-gray-600 mt-2">
+        CFA, GNF et autres devises locales, sans intermédiaires inutiles.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ======================================================
+     3️⃣ COMMENT ÇA MARCHE
+     Objectif :
+     - Simplicité
+     - Réduction de la peur
+====================================================== -->
+<section class="py-20 bg-gray-50">
+  <div class="max-w-6xl mx-auto px-4">
+
+    <h2 class="text-3xl font-bold text-center mb-12">
+      Comment fonctionne AfricaChange ?
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-10 text-center">
+
+      <!-- Étape 1 -->
+      <div>
+        <div class="text-4xl font-bold text-indigo-600 mb-3">1</div>
+        <h3 class="font-semibold text-lg">Entrez le montant</h3>
+        <p class="text-gray-600 mt-2">
+          Choisissez la devise d’origine et la devise de destination.
+        </p>
+      </div>
+
+      <!-- Étape 2 -->
+      <div>
+        <div class="text-4xl font-bold text-indigo-600 mb-3">2</div>
+        <h3 class="font-semibold text-lg">Vérifiez le taux</h3>
+        <p class="text-gray-600 mt-2">
+          Le taux est clair, sans frais cachés.
+        </p>
+      </div>
+
+      <!-- Étape 3 -->
+      <div>
+        <div class="text-4xl font-bold text-indigo-600 mb-3">3</div>
+        <h3 class="font-semibold text-lg">Envoyez l’argent</h3>
+        <p class="text-gray-600 mt-2">
+          Le bénéficiaire reçoit via un compte sécurisé.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================
+     4️⃣ SÉCURITÉ & RÈGLES FINTECH
+     Objectif :
+     - Montrer que la plateforme est sérieuse
+====================================================== -->
+<section class="py-16 bg-white">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+
+    <h2 class="text-2xl font-bold mb-4">
+      Une plateforme financière responsable
+    </h2>
+
+    <p class="text-gray-600 mb-6">
+      AfricaChange applique des règles strictes pour garantir la sécurité
+      des utilisateurs et la conformité.
+    </p>
+
+    <ul class="text-gray-700 space-y-2">
+      <li>✔️ Limites pour utilisateurs non connectés</li>
+      <li>✔️ Historique et traçabilité complète</li>
+      <li>✔️ Comptes systèmes contrôlés</li>
+      <li>✔️ Accès administrateur sécurisé</li>
+    </ul>
+
+  </div>
+</section>
+
+
+<!-- ======================================================
+     5️⃣ CALL TO ACTION FINAL
+     Objectif :
+     - Dernière incitation à agir
+====================================================== -->
+<section class="py-20 bg-indigo-600 text-white text-center">
+  <h2 class="text-3xl font-bold mb-4">
+    Commencez dès maintenant
+  </h2>
+
+  <p class="mb-6 text-indigo-100">
+    Convertissez vos devises africaines avec AfricaChange.
+  </p>
+
+  <a href="{{ url_for('convert.convertir') }}"
+     class="inline-block px-8 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100">
+    Convertir maintenant
+  </a>
+</section>
+
 {% endblock %}
