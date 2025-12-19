@@ -10,7 +10,7 @@ from sqlalchemy import or_
 # 🟢 Blueprint
 convert = Blueprint('convert', __name__, url_prefix='/convert')
 
-MAX_PUBLIC_AMOUNT = 50000  # 50 000 CFA max pour non connectés
+MAX_PUBLIC_AMOUNT = 500000  # 50 000 CFA max pour non connectés
 
 # ======================================================
 # 🔹 PAGE PRINCIPALE DE CONVERSION
