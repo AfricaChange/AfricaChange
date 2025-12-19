@@ -92,19 +92,10 @@ def convertir():
 
         flash(f"✅ Conversion réussie ! Référence : {reference}", "success")
 
-        return render_template(
-            'resultat.html',
-            montant=montant,
-            montant_converti=montant_converti,
-            from_currency=from_currency,
-            to_currency=to_currency,
-            reference=reference,
-            sender_phone=sender_phone,
-            receiver_phone=receiver_phone,
-            taux=rate.rate,
-            last_conversions=last_conversions,
-            conversion_id=nouvelle_conversion.id
+        return redirect(
+               url_for('convert.recap', reference=reference)
         )
+
 
     return render_template('convert.html')
 
@@ -227,4 +218,22 @@ def historique():
         conversions=pagination.items,
         pagination=pagination,
         search=search
+    )
+
+@convert.route('/recap/<reference>')
+def recap(reference):
+    conversion = Conversion.query.filter_by(reference=reference).first()
+
+    if not conversion:
+        flash("Conversion introuvable.", "danger")
+        return redirect(url_for('convert.convertir'))
+
+    # Sécurité : empêcher accès à une conversion d’un autre utilisateur
+    if conversion.user_id and conversion.user_id != session.get("user_id"):
+        flash("Accès non autorisé.", "danger")
+        return redirect(url_for('main.accueil'))
+
+    return render_template(
+        "recap.html",
+        conversion=conversion
     )
