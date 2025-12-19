@@ -21,6 +21,34 @@
 </head>
 
 {% include "partials/mobile_nav.html" %}
+<!-- ===============================
+     🔄 GLOBAL LOADING OVERLAY
+     =============================== -->
+<div id="globalLoader"
+     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 text-center shadow-xl w-64">
+    <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mx-auto"></div>
+    <p class="mt-4 text-sm font-semibold text-gray-700">
+      Traitement en cours…
+    </p>
+    <p class="text-xs text-gray-500 mt-1">
+      Merci de patienter
+    </p>
+  </div>
+</div>
+
+<script>
+  function showLoader() {
+    document.getElementById("globalLoader").classList.remove("hidden");
+  }
+
+  function hideLoader() {
+    document.getElementById("globalLoader").classList.add("hidden");
+  }
+</script>
+
+<script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
+
 
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 

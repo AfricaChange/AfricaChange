@@ -6,14 +6,12 @@
 
   <!-- Barre de navigation locale -->
   <div class="flex flex-col sm:flex-row justify-between gap-3 mb-4">
-    <a href="{{ url_for('auth.tableau_de_bord') }}" 
-       class="bg-gray-700 text-white px-4 py-2 rounded text-center hover:bg-gray-800 transition">
-      ⬅ Retour
-    </a>
-    <a href="{{ url_for('main.accueil') }}" 
-       class="bg-blue-600 text-white px-4 py-2 rounded text-center hover:bg-blue-700 transition">
-      🏠 Accueil
-    </a>
+    <button type="button"
+        onclick="safeBack()"
+        class="bg-gray-700 text-white px-4 py-2 rounded">
+     ⬅ Retour
+    </button>
+
   </div>
 
   <h2 class="text-2xl font-bold text-blue-600 mb-4">💱 Convertisseur de devises</h2>
@@ -54,9 +52,12 @@
       </div>
     </div>
 
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+    <button type="submit"
+        onclick="secureSubmit(this)"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
       Convertir maintenant
     </button>
+
   </form>
 
   {% if montant_converti %}
