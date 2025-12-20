@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white shadow-xl rounded-2xl p-6 mt-6">
+
+  <!-- Navigation -->
+  <div class="flex justify-between mb-4">
+    <button onclick="safeBack()"
+            class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+      ⬅ Retour
+    </button>
+
+    <a href="{{ url_for('main.accueil') }}"
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      🏠 Accueil
+    </a>
+  </div>
+
+  <!-- Titre -->
+  <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">
+    🔐 Récapitulatif de la transaction
+  </h2>
+
+  <!-- Carte récap -->
+  <div class="bg-gray-50 border rounded-xl p-4 space-y-3">
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Référence</span>
+      <span class="font-semibold">{{ conversion.reference }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Montant envoyé</span>
+      <span class="font-semibold text-blue-600">
+        {{ conversion.montant_initial }} {{ conversion.from_currency }}
+      </span>
+    </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Montant reçu</span>
+      <span class="font-semibold text-green-600">
+        {{ conversion.montant_converti }} {{ conversion.to_currency }}
+      </span>
+    </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Envoyeur</span>
+      <span>{{ conversion.sender_phone }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Bénéficiaire</span>
+      <span>{{ conversion.receiver_phone }}</span>
+    </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Statut</span>
+      <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">
+        En attente de paiement
+      </span>
+    </div>
+  </div>
+
+  <!-- Consentement -->
+  <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+    ⚠️ En continuant, vous confirmez l’exactitude des informations ci-dessus.
+    Cette opération est irréversible après paiement.
+  </div>
+
+  <!-- Boutons paiement -->
+  <div class="mt-6 space-y-3">
+
+    <!-- Orange Money -->
+    <button onclick="secureSubmit(this)"
+            data-provider="orange"
+            data-reference="{{ conversion.reference }}"
+            class="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition">
+      🟠 Payer avec Orange Money
+    </button>
+
+    <!-- Wave -->
+    <button onclick="secureSubmit(this)"
+            data-provider="wave"
+            data-reference="{{ conversion.reference }}"
+            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition">
+      🌊 Payer avec Wave
+    </button>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -10,7 +10,7 @@ from sqlalchemy import or_
 # 🟢 Blueprint
 convert = Blueprint('convert', __name__, url_prefix='/convert')
 
-MAX_PUBLIC_AMOUNT = 500000  # 50 000 CFA max pour non connectés
+MAX_PUBLIC_AMOUNT = 500000  # 500 000 CFA max pour non connectés
 
 # ======================================================
 # 🔹 PAGE PRINCIPALE DE CONVERSION
@@ -229,11 +229,13 @@ def recap(reference):
         return redirect(url_for('convert.convertir'))
 
     # Sécurité : empêcher accès à une conversion d’un autre utilisateur
-    if conversion.user_id and conversion.user_id != session.get("user_id"):
-        flash("Accès non autorisé.", "danger")
-        return redirect(url_for('main.accueil'))
+    if conversion.user_id:
+       if conversion.user_id != session.get("user_id"):
+         flash("Accès non autorisé.", "danger")
+         return redirect(url_for('main.accueil'))
+ 
 
     return render_template(
-        "/templates/recap.html",
+        "recap.html",
         conversion=conversion
     )
