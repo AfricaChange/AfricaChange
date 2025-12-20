@@ -24,11 +24,11 @@ def convertir():
 
             # 🔐 Limitation pour utilisateurs non connectés
             if not user_id and montant > MAX_PUBLIC_AMOUNT:
-               flash(
+                flash(
                       f"Pour convertir plus de {MAX_PUBLIC_AMOUNT:,} CFA, veuillez vous connecter.",
                      "warning"
-                      )
-            return redirect(url_for('auth.connexion'))
+                )
+                return redirect(url_for('auth.connexion'))
 
         except ValueError:
             flash("Montant invalide.", "error")

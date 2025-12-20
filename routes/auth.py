@@ -77,7 +77,7 @@ def inscription():
 # 🔹2 CONNEXION (corrigée)
 # ============================
 @auth.route('/connexion', methods=['GET', 'POST'])
-@limiter.limit("5 per 15 minutes")
+@limiter.limit("10 per 15 minutes")
 def connexion():
     # 🔴 IMPORTANT : purge préventive de session
     # évite les faux "connecté" (mobile, cache navigateur, Render)
