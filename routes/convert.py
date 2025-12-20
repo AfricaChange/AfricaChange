@@ -234,6 +234,6 @@ def recap(reference):
         return redirect(url_for('main.accueil'))
 
     return render_template(
-        "recap.html",
+        "/templates/recap.html",
         conversion=conversion
     )
