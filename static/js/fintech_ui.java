@@ -18,24 +18,31 @@ function hideLoader() {
 }
 
 /* 🔐 Soumission sécurisée (ANTI DOUBLE PAIEMENT) */
-function secureSubmit(button) {
-  if (!button || !button.form) return;
+let paymentLocked = false;
 
-  // Désactiver le bouton
+function secureSubmit(button) {
+  if (paymentLocked) return;
+
+  const provider = button.dataset.provider;
+  const reference = button.dataset.reference;
+
+  if (!provider || !reference) {
+    alert("Erreur interne. Veuillez rafraîchir la page.");
+    return;
+  }
+
+  paymentLocked = true;
+
   button.disabled = true;
   button.classList.add("opacity-50", "cursor-not-allowed");
+  button.innerText = "Connexion au service…";
 
-  // Changer le texte (UX rassurante)
-  const originalText = button.innerText;
-  button.dataset.originalText = originalText;
-  button.innerText = "Traitement…";
-
-  // Afficher loader
   showLoader();
 
-  // Soumettre le formulaire
-  button.form.submit();
+  // Redirection explicite et contrôlée
+  window.location.href = `/paiement/${provider}?reference=${reference}`;
 }
+
 
 /* 🔁 Bouton retour sécurisé */
 function safeBack() {
