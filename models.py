@@ -35,6 +35,35 @@ class Utilisateur(db.Model):
             return None
         return Utilisateur.query.filter_by(email=email).first()
 
+class AdminUser(db.Model):
+    __tablename__ = "admin_user"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("utilisateur.id"), unique=True)
+    role = db.Column(db.String(20))  # admin / super_admin
+    actif = db.Column(db.Boolean, default=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AdminAction(db.Model):
+    __tablename__ = "admin_action"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin_user.id"))
+    action_type = db.Column(db.String(50))  
+    # validate / block / refund / unlock / force_validate
+
+    target_type = db.Column(db.String(50))
+    # transaction / conversion / user / ledger
+
+    target_reference = db.Column(db.String(100))
+
+    reason = db.Column(db.Text)
+    ip_address = db.Column(db.String(50))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ======================================================
 # 💱 TAUX DE CHANGE
@@ -152,6 +181,14 @@ class Paiement(db.Model):
     conversion = db.relationship('Conversion', backref=db.backref('paiement', uselist=False))
 
     transaction_reference = db.Column(db.String(100), unique=True)
+    
+    idempotency_key = db.Column(
+        db.String(100),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+    
 
 
     def __repr__(self):
@@ -223,7 +260,105 @@ class PaymentEvent(db.Model):
     payload = db.Column(db.JSON)
 
     ip_address = db.Column(db.String(45))
+    # 🔐 ANTI-REPLAY
+    nonce = db.Column(db.String(128), unique=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint(
+            'transaction_reference',
+            'event_type',
+            'provider',
+            name='uq_event_once'
+        ),
+    )
 
     def __repr__(self):
         return f"<PaymentEvent {self.provider} {self.event_type}>"
+
+
+
+class LedgerEntry(db.Model):
+    __tablename__ = "ledger_entry"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # 🔐 Référence universelle
+    reference = db.Column(db.String(100), index=True, nullable=False)
+
+    # 🔄 Liens métier
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"), nullable=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey("conversion.id"), nullable=True)
+    paiement_id = db.Column(db.Integer, db.ForeignKey("paiement.id"), nullable=True)
+
+    # 💰 Données comptables
+    compte = db.Column(db.String(50), nullable=False)  
+    # ex: user_wallet, system_orange_sn, system_wave_ci
+
+    sens = db.Column(db.String(6), nullable=False)  
+    # debit / credit
+
+    montant = db.Column(db.Float, nullable=False)
+    devise = db.Column(db.String(10), nullable=False)
+
+    # 🔎 Métadonnées
+    provider = db.Column(db.String(50))
+    description = db.Column(db.String(255))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Ledger {self.sens} {self.montant} {self.devise} {self.compte}>"
+
+
+class RiskEvent(db.Model):
+    __tablename__ = "risk_event"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    reference = db.Column(db.String(100), index=True)
+    provider = db.Column(db.String(50))
+    ip_address = db.Column(db.String(50))
+
+    risk_type = db.Column(db.String(50))  
+    # ex: double_callback, burst_payment, amount_mismatch
+
+    risk_score = db.Column(db.Integer)
+    details = db.Column(db.Text)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AuditLog(db.Model):
+    __tablename__ = "audit_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    actor_type = db.Column(db.String(20))  
+    # system / admin / provider
+
+    actor_id = db.Column(db.Integer, nullable=True)
+
+    event = db.Column(db.String(100))
+    payload = db.Column(db.JSON)
+
+    ip_address = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Refund(db.Model):
+    __tablename__ = "refund"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"))
+    amount = db.Column(db.Float)
+    reason = db.Column(db.Text)
+
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin_user.id"))
+    status = db.Column(db.String(20))  # pending / completed / failed
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+
