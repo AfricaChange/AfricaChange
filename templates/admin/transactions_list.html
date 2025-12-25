@@ -1,0 +1,81 @@
+{% extends "base_admin.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto p-6">
+
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">
+    💳 Transactions
+  </h1>
+
+  <div class="overflow-x-auto bg-white shadow rounded-xl">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="p-3 text-left">Référence</th>
+          <th class="p-3">Utilisateur</th>
+          <th class="p-3">Fournisseur</th>
+          <th class="p-3 text-right">Montant</th>
+          <th class="p-3">Statut</th>
+          <th class="p-3">Date</th>
+          <th class="p-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr class="border-t hover:bg-gray-50">
+		  <td class="p-2 text-right space-x-2">
+
+             {% if t.statut != "valide" %}
+            <button
+            onclick="openAdminModal('validate', '{{ t.reference }}')"
+            class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">
+            ✅ Valider
+            </button>
+            {% endif %}
+
+            {% if t.statut not in ["bloque", "valide"] %}
+            <button
+            onclick="openAdminModal('block', '{{ t.reference }}')"
+            class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">
+            ⛔ Bloquer
+            </button>
+            {% endif %}
+
+            <button
+            onclick="openAdminModal('refund', '{{ t.reference }}')"
+            class="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600">
+            💸 Rembourser
+            </button>
+
+          </td>
+
+          <td class="p-3 font-mono">{{ tx.reference }}</td>
+          <td class="p-3">{{ tx.user_id }}</td>
+          <td class="p-3">{{ tx.fournisseur }}</td>
+          <td class="p-3 text-right font-semibold">{{ tx.montant }} FCFA</td>
+          <td class="p-3">
+            {% if tx.statut == 'valide' %}
+              <span class="text-green-600">● Validée</span>
+            {% elif tx.statut == 'bloque' %}
+              <span class="text-red-600">● Bloquée</span>
+            {% else %}
+              <span class="text-yellow-600">● En attente</span>
+            {% endif %}
+          </td>
+          <td class="p-3 text-xs text-gray-500">
+            {{ tx.date_transaction.strftime('%d/%m/%Y %H:%M') }}
+          </td>
+          <td class="p-3">
+            <a href="{{ url_for('admin_transactions.detail', reference=tx.reference) }}"
+               class="text-blue-600 hover:underline">
+              Voir →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

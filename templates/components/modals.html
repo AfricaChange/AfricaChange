@@ -1,0 +1,28 @@
+<div id="adminModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl w-full max-w-md p-6">
+
+    <h3 id="adminModalTitle" class="text-xl font-bold mb-3"></h3>
+
+    <textarea
+      id="adminReason"
+      placeholder="Raison obligatoire…"
+      class="w-full border rounded p-2 mb-4"
+      rows="3"></textarea>
+
+    <input type="number"
+           id="refundAmount"
+           class="hidden w-full border rounded p-2 mb-4"
+           placeholder="Montant à rembourser">
+
+    <div class="flex justify-end gap-2">
+      <button onclick="closeAdminModal()" class="px-4 py-2 bg-gray-300 rounded">
+        Annuler
+      </button>
+      <button onclick="confirmAdminAction()"
+              class="px-4 py-2 bg-blue-600 text-white rounded">
+        Confirmer
+      </button>
+    </div>
+
+  </div>
+</div>

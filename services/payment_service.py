@@ -16,6 +16,10 @@ class PaymentService:
             .with_for_update()
             .first()
         )
+        
+        if conversion.user_id:
+            if conversion.user_id != session.get("user_id"):
+               raise PermissionError("Accès non autorisé à cette conversion")
 
         if not conversion:
             raise ValueError("Conversion introuvable")
@@ -36,7 +40,7 @@ class PaymentService:
         transaction = Transaction(
             user_id=conversion.user_id,
             type="paiement",
-            montant=montant,
+            montant=conversion.montant_initial,
             statut="en_attente",
             fournisseur=fournisseur,
             reference=str(uuid.uuid4())[:12],
@@ -59,13 +63,21 @@ class PaymentService:
             sender_phone=sender_phone,
             receiver_phone=conversion.receiver_phone,
             statut="en_attente",
+            idempotency_key=PaymentService.generate_idempotency_key(),
             transaction_reference=transaction_ref,
             date_paiement=datetime.utcnow()
         )
         db.session.add(paiement)
         return paiement
-
+        
+    
+    @staticmethod
+    def generate_idempotency_key():
+        return str(uuid.uuid4())
+    
     @staticmethod
     def rollback(conversion):
-        conversion.statut = "en_attente"
+        if conversion.statut == "paiement_en_cours":
+           conversion.statut = "en_erreur"
         db.session.commit()
+

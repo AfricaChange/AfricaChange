@@ -56,6 +56,21 @@ def dashboard():
         taux_list=taux_list
     )
 
+    stats = {
+        "pending": Transaction.query.filter_by(statut="en_attente").count(),
+        "success": Transaction.query.filter_by(statut="valide").count(),
+        "failed": Transaction.query.filter_by(statut="echoue").count(),
+    }
+
+    latest = Transaction.query.order_by(
+        Transaction.date_transaction.desc()
+    ).limit(10)
+
+    return render_template(
+        "admin/dashboard.html",
+        stats=stats,
+        transactions=latest
+    )
  
 # ============================
 # 2️⃣ Gestion des taux
@@ -390,3 +405,39 @@ def admin_maintenance():
         mode=current_mode,
         message=current_message,
     )
+    
+    
+    
+@admin.route("/transactions")
+def transactions():
+    if not session.get("is_admin"):
+        abort(403)
+
+    status = request.args.get("status")
+    provider = request.args.get("provider")
+    search = request.args.get("q")
+
+    query = Transaction.query
+
+    if status:
+        query = query.filter(Transaction.statut == status)
+
+    if provider:
+        query = query.filter(Transaction.fournisseur == provider)
+
+    if search:
+        like = f"%{search}%"
+        query = query.filter(Transaction.reference.like(like))
+
+    transactions = (
+        query
+        .order_by(Transaction.date_transaction.desc())
+        .limit(100)
+        .all()
+    )
+
+    return render_template(
+        "admin/transactions.html",
+        transactions=transactions
+    )
+    

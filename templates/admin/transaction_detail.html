@@ -1,0 +1,48 @@
+{% extends "base_admin.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto p-6 bg-white shadow rounded-xl">
+
+  <h2 class="text-xl font-bold mb-4">
+    🧾 Transaction {{ tx.reference }}
+  </h2>
+
+  <!-- Résumé -->
+  <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+    <div><b>Utilisateur :</b> {{ tx.user_id }}</div>
+    <div><b>Fournisseur :</b> {{ tx.fournisseur }}</div>
+    <div><b>Montant :</b> {{ tx.montant }} FCFA</div>
+    <div><b>Statut :</b> {{ tx.statut }}</div>
+    <div><b>Date :</b> {{ tx.date_transaction }}</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-4 mt-6">
+
+    {% if tx.statut != 'valide' %}
+    <button onclick="openAdminModal('validate')"
+            class="bg-green-600 text-white px-4 py-2 rounded">
+      ✅ Valider
+    </button>
+    {% endif %}
+
+    {% if tx.statut != 'bloque' %}
+    <button onclick="openAdminModal('block')"
+            class="bg-red-600 text-white px-4 py-2 rounded">
+      ⛔ Bloquer
+    </button>
+    {% endif %}
+
+    {% if tx.statut == 'valide' %}
+    <button onclick="openAdminModal('refund')"
+            class="bg-yellow-500 text-white px-4 py-2 rounded">
+      💸 Rembourser
+    </button>
+    {% endif %}
+
+  </div>
+
+</div>
+
+{% include "admin/components/admin_confirm_modal.html" %}
+{% endblock %}

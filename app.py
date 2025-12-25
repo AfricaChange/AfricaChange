@@ -5,8 +5,6 @@ from routes.main import main
 from routes.auth import auth
 from routes.admin import admin  # 👈 AJOUT
 from routes.paiement import paiement
-
-
 from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
 from extensions import csrf
@@ -19,6 +17,8 @@ import logging
 import os
 from datetime import timedelta
 from extensions import limiter
+from routes.admin_transactions import admin_tx
+
 
 
 
@@ -134,7 +134,7 @@ app.register_blueprint(auth)
 app.register_blueprint(admin)   # 👈 AJOUT
 app.register_blueprint(paiement)
 app.register_blueprint(convert)
-
+app.register_blueprint(admin_tx)
 
 
 

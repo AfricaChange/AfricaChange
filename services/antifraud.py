@@ -12,8 +12,9 @@ class AntiFraud:
         if not tx:
             raise ValueError("Transaction inconnue")
 
-        if tx.statut == "valide":
-            raise ValueError("Transaction déjà validée")
+        if tx.statut in ["valide", "echoue"]:
+           raise ValueError("Transaction déjà finalisée")
+
 
         if tx.date_transaction < datetime.utcnow() - AntiFraud.CALLBACK_WINDOW:
             raise ValueError("Callback hors délai")

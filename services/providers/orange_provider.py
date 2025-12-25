@@ -1,6 +1,12 @@
 import os
 import requests
 import base64
+import hmac
+import hashlib
+import json
+from services.providers.base_provider import BaseProvider
+
+
 
 class OrangeProvider:
 
@@ -8,6 +14,8 @@ class OrangeProvider:
     PAYMENT_URL = "https://api.orange.com/orange-money-webpay/dev/v1/webpayment"
     STATUS_URL = "https://api.orange.com/orange-money-webpay/dev/v1/paymentstatus"
 
+    CALLBACK_HEADER = "X-Orange-Signature"
+    
     def __init__(self):
         self.client_id = os.getenv("ORANGE_CLIENT_ID")
         self.client_secret = os.getenv("ORANGE_CLIENT_SECRET")
@@ -88,3 +96,31 @@ class OrangeProvider:
             raise RuntimeError("Erreur vérification Orange")
 
         return r.json()
+
+
+    @staticmethod
+    def is_valid_status(payload):
+        return payload.get("status") in ["SUCCESS", "FAILED"]
+        
+        
+    SECRET = os.getenv("ORANGE_CALLBACK_SECRET")
+
+    def verify_callback(self, raw_payload: str, headers: dict) -> bool:
+        secret = os.getenv("ORANGE_CALLBACK_SECRET")
+        if not secret:
+            return False
+
+        received_signature = headers.get(self.CALLBACK_HEADER)
+        if not received_signature:
+            return False
+
+        computed_signature = hmac.new(
+            key=secret.encode(),
+            msg=raw_payload.encode(),
+            digestmod=hashlib.sha256
+        ).hexdigest()
+
+        return hmac.compare_digest(computed_signature, received_signature)
+        
+    def extract_nonce(self, payload, headers):
+        return headers.get("X-Orange-Nonce") or payload.get("nonce")    
