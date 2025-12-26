@@ -71,7 +71,8 @@ def dashboard():
         stats=stats,
         transactions=latest
     )
- 
+    print("SESSION ADMIN:", session.get("is_admin"))
+
 # ============================
 # 2️⃣ Gestion des taux
 # ============================
