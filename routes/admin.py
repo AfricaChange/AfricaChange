@@ -440,4 +440,8 @@ def transactions():
         "admin/transactions.html",
         transactions=transactions
     )
+
+@admin.route("/risques")
+def risques():
+    return render_template("admin/risques.html")
     
