@@ -446,3 +446,7 @@ def transactions():
 def risques():
     return render_template("admin/risques.html")
     
+@admin.route("/utilisateurs")
+def utilisateurs():
+    return render_template("admin/utilisateurs.html")
+    
