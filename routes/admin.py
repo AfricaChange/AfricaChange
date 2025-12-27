@@ -46,16 +46,7 @@ def dashboard():
 
     # 👉 Récupération des taux actuels
     taux_list = Rate.query.all()
-
-    return render_template(
-        'admin_dashboard.html',
-        total_users=total_users,
-        total_transactions=total_transactions,
-        total_fonds=total_fonds,
-        transactions=transactions,
-        taux_list=taux_list
-    )
-
+    
     stats = {
         "pending": Transaction.query.filter_by(statut="en_attente").count(),
         "success": Transaction.query.filter_by(statut="valide").count(),
@@ -67,11 +58,17 @@ def dashboard():
     ).limit(10)
 
     return render_template(
-        "admin/dashboard.html",
-        stats=stats,
-        transactions=latest
+        'admin_dashboard.html',
+        total_users=total_users,
+        total_transactions=total_transactions,
+        total_fonds=total_fonds,
+        transactions=transactions,
+        taux_list=taux_list
     )
-    print("SESSION ADMIN:", session.get("is_admin"))
+
+   
+
+   
 
 # ============================
 # 2️⃣ Gestion des taux
@@ -449,4 +446,10 @@ def risques():
 @admin.route("/utilisateurs")
 def utilisateurs():
     return render_template("admin/utilisateurs.html")
+    
+
+@admin.route("/audits")
+@admin_required
+def audits():
+    return render_template("admin/audits.html")
     
