@@ -1,0 +1,64 @@
+<!-- VALIDATE MODAL -->
+<div id="modal-validate" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-96">
+    <h2 class="font-bold mb-2">Validation manuelle</h2>
+
+    <input type="hidden" id="validateRef">
+
+    <textarea id="validateReason"
+              class="w-full border rounded p-2"
+              placeholder="Raison obligatoire"></textarea>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button onclick="closeModal()" class="px-4 py-2 bg-gray-400 rounded">Annuler</button>
+      <button onclick="submitValidate()" class="px-4 py-2 bg-green-600 text-white rounded">
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK MODAL -->
+<div id="modal-block" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-96">
+    <h2 class="font-bold mb-2">Bloquer transaction</h2>
+
+    <input type="hidden" id="blockRef">
+
+    <textarea id="blockReason"
+              class="w-full border rounded p-2"
+              placeholder="Motif du blocage"></textarea>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button onclick="closeModal()" class="px-4 py-2 bg-gray-400 rounded">Annuler</button>
+      <button onclick="submitBlock()" class="px-4 py-2 bg-red-600 text-white rounded">
+        Bloquer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REFUND MODAL -->
+<div id="modal-refund" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-96">
+    <h2 class="font-bold mb-2">Remboursement</h2>
+
+    <input type="hidden" id="refundRef">
+
+    <input id="refundAmount"
+           type="number"
+           class="w-full border rounded p-2 mb-2"
+           placeholder="Montant">
+
+    <textarea id="refundReason"
+              class="w-full border rounded p-2"
+              placeholder="Motif du remboursement"></textarea>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button onclick="closeModal()" class="px-4 py-2 bg-gray-400 rounded">Annuler</button>
+      <button onclick="submitRefund()" class="px-4 py-2 bg-yellow-600 text-white rounded">
+        Rembourser
+      </button>
+    </div>
+  </div>
+</div>
