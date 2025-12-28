@@ -17,13 +17,42 @@
       AfricaChange Admin
     </div>
 
-    <nav class="mt-6 space-y-1 px-4 text-sm">
-      <a href="{{ url_for('admin.dashboard') }}" class="block px-3 py-2 rounded hover:bg-slate-700">📊 Dashboard</a>
-      <a href="{{ url_for('admin.transactions') }}" class="block px-3 py-2 rounded hover:bg-slate-700">💳 Transactions</a>
-      <a href="{{ url_for('admin.risques') }}" class="block px-3 py-2 rounded hover:bg-slate-700">⚠️ Risques</a>
-      <a href="{{ url_for('admin.utilisateurs') }}" class="block px-3 py-2 rounded hover:bg-slate-700">👤 Utilisateurs</a>
-      <a href="{{ url_for('admin.audits') }}" class="block px-3 py-2 rounded hover:bg-slate-700">📜 Audits</a>
+    <nav class="mt-6 space-y-2 px-4 text-sm">
+
+        <!-- DASHBOARD -->
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="block px-3 py-2 rounded hover:bg-slate-700">
+           📊 Dashboard
+        </a>
+
+        <!-- FINANCE -->
+        <p class="mt-4 text-xs text-slate-400 uppercase">Finance</p>
+
+        <a href="{{ url_for('admin.transactions') }}"
+           class="block px-3 py-2 rounded hover:bg-slate-700">
+           🧾 Toutes les transactions
+        </a>
+
+        <a href="{{ url_for('admin.transactions', status='en_attente') }}"
+           class="block px-3 py-2 rounded hover:bg-slate-700">
+           ⏳ Paiements en attente
+        </a>
+
+        <a href="{{ url_for('admin.transactions', status='bloque') }}"
+           class="block px-3 py-2 rounded hover:bg-slate-700">
+           ⛔ Transactions bloquées
+        </a>
+
+        <!-- RISQUES -->
+        <p class="mt-4 text-xs text-slate-400 uppercase">Sécurité</p>
+
+        <a href="{{ url_for('admin.risques') }}"
+           class="block px-3 py-2 rounded hover:bg-slate-700">
+           ⚠️ Alertes risques
+        </a>
+
     </nav>
+
   </aside>
 
   <!-- MAIN -->
