@@ -45,17 +45,33 @@
   <tbody>
     {% for tx in transactions %}
     <tr class="border-t hover:bg-gray-50">
-      <td class="p-2 text-xs">{{ tx.date_transaction.strftime('%d/%m %H:%M') }}</td>
-      <td class="p-2 font-mono">{{ tx.reference }}</td>
-      <td class="p-2 font-semibold">{{ tx.montant }} XOF</td>
-      <td class="p-2">{{ tx.statut }}</td>
-      <td class="p-2">{{ tx.fournisseur }}</td>
-      <td class="p-2 text-center space-x-1">
-        <button onclick="openAdminModal('validate','{{ tx.reference }}')" class="text-green-600">✔</button>
-        <button onclick="openAdminModal('block','{{ tx.reference }}')" class="text-red-600">⛔</button>
-        <button onclick="openAdminModal('refund','{{ tx.reference }}')" class="text-yellow-600">💸</button>
+        <td class="p-2 text-center space-x-2">
 
-      </td>
+            {% if tx.statut == "en_attente" %}
+                <button onclick="openAdminModal('validate','{{ tx.reference }}')"
+                    class="text-green-600 hover:text-green-800"
+                    title="Valider">
+                    ✔
+                </button>
+
+                <button onclick="openAdminModal('block','{{ tx.reference }}')"
+                    class="text-red-600 hover:text-red-800"
+                    title="Bloquer">
+                    ⛔
+                </button>
+
+            {% elif tx.statut == "valide" %}
+                <button onclick="openAdminModal('refund','{{ tx.reference }}')"
+                    class="text-yellow-600 hover:text-yellow-800"
+                    title="Rembourser">
+                    💸
+                </button>
+
+            {% else %}
+                <span class="text-gray-400 text-xs">—</span>
+            {% endif %}
+
+        </td>
     </tr>
     {% endfor %}
   </tbody>

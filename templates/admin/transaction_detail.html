@@ -19,28 +19,27 @@
   <!-- Actions -->
   <div class="flex gap-4 mt-6">
 
-    {% if tx.statut != 'valide' %}
-    <button onclick="openAdminModal('validate')"
+    {% if tx.statut == 'en_attente' %}
+        <button onclick="openAdminModal('validate','{{ tx.reference }}')"
             class="bg-green-600 text-white px-4 py-2 rounded">
-      ✅ Valider
-    </button>
-    {% endif %}
+            ✅ Valider
+        </button>
 
-    {% if tx.statut != 'bloque' %}
-    <button onclick="openAdminModal('block')"
+        <button onclick="openAdminModal('block','{{ tx.reference }}')"
             class="bg-red-600 text-white px-4 py-2 rounded">
-      ⛔ Bloquer
-    </button>
+           ⛔ Bloquer
+        </button>
     {% endif %}
 
     {% if tx.statut == 'valide' %}
-    <button onclick="openAdminModal('refund')"
+        <button onclick="openAdminModal('refund','{{ tx.reference }}')"
             class="bg-yellow-500 text-white px-4 py-2 rounded">
-      💸 Rembourser
-    </button>
+            💸 Rembourser
+        </button>
     {% endif %}
 
   </div>
+
 
 </div>
 
