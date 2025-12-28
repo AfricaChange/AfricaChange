@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <title>{% block title %}Admin – AfricaChange{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin-actions.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin-live.js') }}"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
+{% include "admin/components/admin_modals.html" %}
 <body class="bg-gray-100 min-h-screen">
-
 <div class="flex">
 
   <!-- SIDEBAR -->
@@ -54,7 +56,6 @@
     </nav>
 
   </aside>
-
   <!-- MAIN -->
   <main class="flex-1 ml-64 p-6">
     {% block content %}{% endblock %}
