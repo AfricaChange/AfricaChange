@@ -2,125 +2,136 @@
 {% block content %}
 
 <div class="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-  <h1 class="text-3xl font-bold text-blue-600 mb-6 text-center">
+
+  <h1 class="text-3xl font-bold text-blue-600 mb-8 text-center">
     ⚙️ Tableau de bord administrateur
   </h1>
 
-  <!-- Section Statistiques -->
-  <div class="grid grid-cols-3 gap-4 mb-8 text-center">
+  <!-- ===================== -->
+  <!-- 📊 STATISTIQUES GLOBALES -->
+  <!-- ===================== -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-center">
     <div class="bg-blue-100 p-4 rounded-lg">
       <p class="text-gray-600">Utilisateurs inscrits</p>
-      <p class="text-2xl font-bold text-blue-700">{{ total_users or 0 }}</p>
+      <p id="stat-users" class="text-2xl font-bold text-blue-700">
+        {{ total_users or 0 }}
+      </p>
+
     </div>
     <div class="bg-green-100 p-4 rounded-lg">
       <p class="text-gray-600">Fonds totaux</p>
-      <p class="text-2xl font-bold text-green-700">{{ (total_fonds or 0) | round(2) }} FCFA</p>
+      <p id="stat-funds" class="text-2xl font-bold text-green-700">
+        {{ (total_fonds or 0) | round(2) }} FCFA
+      </p>
     </div>
     <div class="bg-yellow-100 p-4 rounded-lg">
       <p class="text-gray-600">Transactions</p>
-      <p class="text-2xl font-bold text-yellow-700">{{ total_transactions or 0 }}</p>
+      <p id="stat-transactions" class="text-2xl font-bold text-yellow-700">
+        {{ total_transactions or 0 }}
+      </p>
     </div>
   </div>
 
-  <!-- Section Gestion -->
-  <div class="bg-gray-50 p-6 rounded-lg shadow-inner mb-8">
-    <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">🧭 Outils d'administration</h2>
+  <!-- ===================== -->
+  <!-- 🚨 FINANCE – ACTIONS PRIORITAIRES -->
+  <!-- ===================== -->
+  <div class="bg-red-50 border border-red-200 p-6 rounded-lg mb-10">
+    <h2 class="text-xl font-semibold text-red-700 mb-4">
+      🚨 Supervision financière
+    </h2>
 
-    <div class="flex flex-wrap justify-center gap-4">
-      <a href="{{ url_for('admin.gerer_taux') }}" 
-         class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 shadow transition">
-         🔁 Gérer les taux
-      </a>
-	  <a href="{{ url_for('admin_tx.liste') }}"
-         class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
-         🧾 Gérer les transactions
+    <div class="flex flex-wrap gap-4">
+      <a href="{{ url_for('admin_tx.liste', status='bloque') }}"
+         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
+        ⛔ Transactions bloquées
+        <span id="stat-blocked"
+              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+          0
+        </span>
       </a>
 
 
-      <a href="{{ url_for('admin.liste_conversions') }}" 
-         class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 shadow transition">
-         💱 Voir les conversions
+      <a href="{{ url_for('admin_tx.liste', status='en_attente') }}"
+         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
+        ⏳ Paiements en attente
+        <span id="stat-blocked"
+              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+          0
+        </span>
       </a>
-      <a href="{{ url_for('admin.historique_envois') }}" 
-         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow transition">
-           📊 Historique des envois
-      </a>
-      <a href="{{ url_for('admin.comptes_systeme') }}" 
-         class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 shadow transition">
-           🏦 Gérer les comptes systèmes
-      </a>
+        
+      
 
       
-	  <a href="{{ url_for('admin.admin_maintenance') }}"
-         class="inline-block bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-           🛠️ Mode maintenance
+      <a href="{{ url_for('admin.risques') }}"
+         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
+        ⚠️ Alertes risques
+        <span id="stat-risks"
+              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+          0
+        </span>
       </a>
+        
+      
 
-	  <a href="{{ url_for('admin.export_conversions') }}"
-         class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow transition">
-         📤 Exporter en Excel
+      <a href="{{ url_for('admin_tx.liste') }}"
+         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        🧾 Gérer les transactions
       </a>
     </div>
   </div>
 
-  <!-- Section Taux actuels -->
-  {% if taux_list %}
-  <div class="bg-blue-50 p-6 rounded-lg shadow-inner mb-8">
-    <h2 class="text-xl font-semibold text-blue-700 mb-3 text-center">💹 Taux de change actuels</h2>
-    <table class="w-full border-collapse text-sm">
-      <thead class="bg-blue-100 text-blue-700">
-        <tr>
-          <th class="p-2 text-left">De</th>
-          <th class="p-2 text-left">Vers</th>
-          <th class="p-2 text-right">Taux</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for t in taux_list %}
-        <tr class="border-b hover:bg-blue-50">
-          <td class="p-2">{{ t.from_currency }}</td>
-          <td class="p-2">{{ t.to_currency }}</td>
-          <td class="p-2 text-right font-semibold">{{ t.rate }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+  <!-- ===================== -->
+  <!-- 🧭 ADMINISTRATION -->
+  <!-- ===================== -->
+  <div class="bg-gray-50 p-6 rounded-lg shadow-inner mb-10">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">
+      🧭 Outils d’administration
+    </h2>
 
-  <!-- Section Activité récente -->
-  <div>
-    <h2 class="text-xl font-semibold text-gray-700 mb-3">🕓 Dernières transactions</h2>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="{{ url_for('admin.gerer_taux') }}"
+         class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+        🔁 Gérer les taux
+      </a>
 
-    {% if transactions and transactions|length > 0 %}
-      <table class="w-full border-collapse text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 text-left">Date</th>
-            <th class="p-2 text-left">Utilisateur</th>
-            <th class="p-2 text-left">Type</th>
-            <th class="p-2 text-right">Montant</th>
-            <th class="p-2 text-left">Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in transactions %}
-          <tr class="border-b hover:bg-gray-50">
-            <td class="p-2">{{ t.date_transaction.strftime('%d/%m/%Y %H:%M') if t.date_transaction else '—' }}</td>
-            <td class="p-2">{{ t.user_id }}</td>
-            <td class="p-2 capitalize">{{ t.type }}</td>
-            <td class="p-2 text-right text-blue-600 font-semibold">{{ t.montant or 0 }} FCFA</td>
-            <td class="p-2">{{ t.statut or '—' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="text-center text-gray-500 bg-gray-50 p-4 rounded-lg shadow-inner">
-        Aucune transaction enregistrée pour le moment.
-      </div>
-    {% endif %}
+      <a href="{{ url_for('admin.comptes_systeme') }}"
+         class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+        🏦 Comptes systèmes
+      </a>
+
+      <a href="{{ url_for('admin.admin_maintenance') }}"
+         class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+        🛠️ Mode maintenance
+      </a>
+    </div>
   </div>
+
+  <!-- ===================== -->
+  <!-- 📊 REPORTING -->
+  <!-- ===================== -->
+  <div class="bg-blue-50 p-6 rounded-lg shadow-inner mb-10">
+    <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">
+      📊 Reporting & exports
+    </h2>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="{{ url_for('admin.liste_conversions') }}"
+         class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+        💱 Conversions
+      </a>
+
+      <a href="{{ url_for('admin.historique_envois') }}"
+         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        📈 Historique des envois
+      </a>
+
+      <a href="{{ url_for('admin.export_conversions') }}"
+         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        📤 Export Excel
+      </a>
+    </div>
+  </div>
+
 </div>
-
 {% endblock %}
