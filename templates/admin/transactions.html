@@ -51,9 +51,10 @@
       <td class="p-2">{{ tx.statut }}</td>
       <td class="p-2">{{ tx.fournisseur }}</td>
       <td class="p-2 text-center space-x-1">
-        <button onclick="adminAction('validate','{{ tx.reference }}')" class="text-green-600">✔</button>
-        <button onclick="adminAction('block','{{ tx.reference }}')" class="text-red-600">⛔</button>
-        <button onclick="adminRefund('{{ tx.reference }}')" class="text-yellow-600">💸</button>
+        <button onclick="openAdminModal('validate','{{ tx.reference }}')" class="text-green-600">✔</button>
+        <button onclick="openAdminModal('block','{{ tx.reference }}')" class="text-red-600">⛔</button>
+        <button onclick="openAdminModal('refund','{{ tx.reference }}')" class="text-yellow-600">💸</button>
+
       </td>
     </tr>
     {% endfor %}
