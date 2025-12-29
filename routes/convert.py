@@ -166,19 +166,22 @@ def confirmer_envoi_par_reference(reference):
             return jsonify({"error": "Aucun compte système actif disponible"}), 404
 
         conversion.compte_systeme_id = compte_systeme.id
-        conversion.statut = 'envoyée'
+
+        # ✅ STATUT NORMALISÉ
+        conversion.statut = 'paiement_en_cours'
 
         db.session.commit()
 
         return jsonify({
-            "message": f"✅ Envoi effectué via {compte_systeme.nom}",
+            "message": f"✅ Paiement en cours via {compte_systeme.nom}",
             "reference": conversion.reference
         }), 200
 
-    except Exception as e:
-        conversion.statut = 'échouée'
+    except Exception:
+        conversion.statut = 'echoue'
         db.session.commit()
         return jsonify({"error": "Erreur lors du traitement"}), 500
+
 
 
 # ======================================================
@@ -195,7 +198,16 @@ def historique():
     search = request.args.get('search', '').strip()
     per_page = 10
 
-    query = Conversion.query.filter_by(user_id=user_id)
+    query = Conversion.query.filter(
+        Conversion.user_id == user_id,
+        Conversion.statut.in_([
+            "en_attente",
+            "paiement_en_cours",
+            "valide",
+            "echoue"
+        ])
+    )
+
 
     if search:
         like = f"%{search}%"
