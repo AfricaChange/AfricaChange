@@ -48,14 +48,27 @@ def dashboard():
     taux_list = Rate.query.all()
     
     stats = {
-        "pending": Transaction.query.filter_by(statut="en_attente").count(),
-        "success": Transaction.query.filter_by(statut="valide").count(),
-        "failed": Transaction.query.filter_by(statut="echoue").count(),
+        "pending": Transaction.query.filter(
+        Transaction.statut == "en_attente"
+        ).count(),
+
+        "success": Transaction.query.filter(
+        Transaction.statut == "valide"
+        ).count(),
+
+        "failed": Transaction.query.filter(
+        Transaction.statut == "echoue"
+        ).count(),
+
+        "blocked": Transaction.query.filter(
+        Transaction.statut == "bloque"
+        ).count(),
+
+        "refunded": Transaction.query.filter(
+        Transaction.statut == "rembourse"
+        ).count(),
     }
 
-    latest = Transaction.query.order_by(
-        Transaction.date_transaction.desc()
-    ).limit(10)
 
     return render_template(
         'admin_dashboard.html',
@@ -289,8 +302,9 @@ def historique_envois():
 
     query = Conversion.query.order_by(Conversion.date_conversion.desc())
 
-    if statut and statut in ["en_attente", "envoyée", "échouée"]:
-        query = query.filter_by(statut=statut)
+    if statut and statut in ["en_attente", "paiement_en_cours", "valide", "echoue"]:
+       query = query.filter(Conversion.statut == statut)
+
 
     pagination = query.paginate(page=page, per_page=10, error_out=False)
     conversions = pagination.items
@@ -407,17 +421,24 @@ def admin_maintenance():
     
     
 @admin.route("/transactions")
+@admin_required
 def transactions():
-    if not session.get("is_admin"):
-        abort(403)
-
     status = request.args.get("status")
     provider = request.args.get("provider")
     search = request.args.get("q")
 
     query = Transaction.query
 
-    if status:
+    # ✅ Statuts autorisés uniquement
+    allowed_statuses = [
+        "en_attente",
+        "valide",
+        "echoue",
+        "bloque",
+        "rembourse"
+    ]
+
+    if status in allowed_statuses:
         query = query.filter(Transaction.statut == status)
 
     if provider:
@@ -425,7 +446,7 @@ def transactions():
 
     if search:
         like = f"%{search}%"
-        query = query.filter(Transaction.reference.like(like))
+        query = query.filter(Transaction.reference.ilike(like))
 
     transactions = (
         query
@@ -436,8 +457,10 @@ def transactions():
 
     return render_template(
         "admin/transactions.html",
-        transactions=transactions
+        transactions=transactions,
+        current_status=status
     )
+
 
 @admin.route("/risques")
 def risques():

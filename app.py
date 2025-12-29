@@ -29,13 +29,13 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
 
-from migrations.ensure_schema import( ensure_paiement_transaction_reference,
-    ensure_paiement_idempotency_key
-)
-
-with app.app_context():
-    ensure_paiement_transaction_reference()
-    ensure_paiement_idempotency_key()
+#from migrations.ensure_schema import( ensure_paiement_transaction_reference,
+#    ensure_paiement_idempotency_key
+#)
+#
+#with app.app_context():
+#   ensure_paiement_transaction_reference()
+#  ensure_paiement_idempotency_key()
 
 
 #une expiration de session
