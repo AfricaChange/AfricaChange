@@ -2,20 +2,21 @@ from database import db
 from models import Transaction, AdminAction, AuditLog, Refund
 from services.ledger_service import LedgerService
 from services.risk_engine import RiskEngine
+from services.constants import PaymentStatus
 from datetime import datetime
 
 
 class AdminActions:
     """
-    Actions critiques ADMIN (validation, blocage, remboursement)
-    Toute action est :
-    - tracée
-    - auditée
-    - irréversible
+    Actions critiques ADMIN :
+    - validate
+    - block
+    - refund
+    Toutes les actions sont tracées et auditées
     """
 
     # --------------------------------------------------
-    # 🔐 UTILITAIRE : CHECK ADMIN
+    # 🔐 CHECK ADMIN
     # --------------------------------------------------
     @staticmethod
     def _require_admin(admin_id):
@@ -43,16 +44,16 @@ class AdminActions:
         ))
 
     # ==================================================
-    # ✅ ACTION 1 — VALIDATION MANUELLE
+    # ✅ VALIDATION MANUELLE
     # ==================================================
     @staticmethod
-    def validate(*, tx, admin_id, ip, reason=None):
+    def validate(*, tx: Transaction, admin_id, ip, reason=None):
         AdminActions._require_admin(admin_id)
 
-        if tx.statut == "valide":
+        if tx.statut == PaymentStatus.VALIDE.value:
             raise ValueError("Transaction déjà validée")
 
-        tx.statut = "valide"
+        tx.statut = PaymentStatus.VALIDE.value
 
         LedgerService.record(
             reference=tx.reference,
@@ -77,16 +78,19 @@ class AdminActions:
         )
 
     # ==================================================
-    # ⛔ ACTION 2 — BLOQUER TRANSACTION
+    # ⛔ BLOQUER TRANSACTION
     # ==================================================
     @staticmethod
-    def block(*, tx, admin_id, ip, reason):
+    def block(*, tx: Transaction, admin_id, ip, reason):
         AdminActions._require_admin(admin_id)
 
-        if tx.statut in ("bloque", "rembourse"):
+        if tx.statut in (
+            PaymentStatus.BLOQUE.value,
+            PaymentStatus.REMBOURSE.value
+        ):
             raise ValueError("Transaction déjà traitée")
 
-        tx.statut = "bloque"
+        tx.statut = PaymentStatus.BLOQUE.value
 
         RiskEngine.log(
             reference=tx.reference,
@@ -109,13 +113,13 @@ class AdminActions:
         )
 
     # ==================================================
-    # 💸 ACTION 3 — REMBOURSEMENT
+    # 💸 REMBOURSEMENT
     # ==================================================
     @staticmethod
-    def refund(*, tx, admin_id, ip, amount, reason):
+    def refund(*, tx: Transaction, admin_id, ip, amount, reason):
         AdminActions._require_admin(admin_id)
 
-        if tx.statut != "valide":
+        if tx.statut != PaymentStatus.VALIDE.value:
             raise ValueError("Seules les transactions validées sont remboursables")
 
         refund = Refund(
@@ -123,7 +127,7 @@ class AdminActions:
             amount=amount,
             reason=reason,
             admin_id=admin_id,
-            status="completed"
+            status="completed"  # statut interne refund
         )
         db.session.add(refund)
 
@@ -138,7 +142,7 @@ class AdminActions:
             description="Remboursement admin"
         )
 
-        tx.statut = "rembourse"
+        tx.statut = PaymentStatus.REMBOURSE.value
 
         AdminActions._log_action(
             admin_id, "refund", "transaction",
