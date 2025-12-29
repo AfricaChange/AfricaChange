@@ -28,6 +28,13 @@ from routes.admin_transactions import admin_tx
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
+
+from migrations.ensure_schema import ensure_paiement_transaction_reference
+
+with app.app_context():
+    ensure_paiement_transaction_reference()
+
+
 #une expiration de session
 app.permanent_session_lifetime = timedelta(minutes=30)
 

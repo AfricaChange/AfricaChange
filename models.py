@@ -2,7 +2,7 @@ from database import db
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
-
+from services.constants import PaymentStatus
 
 # ======================================================
 # 👤 UTILISATEUR
@@ -103,7 +103,7 @@ class Conversion(db.Model):
     receiver_phone = db.Column(db.String(20))
 
     reference = db.Column(db.String(50), unique=True, index=True)
-    statut = db.Column(db.String(20), default='en_attente')
+    statut = db.Column(db.String(20), default=PaymentStatus.EN_ATTENTE.value)
 
     date_conversion = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
 
@@ -145,7 +145,7 @@ class Transaction(db.Model):
     type = db.Column(db.String(20), nullable=False)  # depot / retrait / paiement
     montant = db.Column(db.Float, nullable=False)
 
-    statut = db.Column(db.String(20), default='en_attente')
+    statut = db.Column(db.String(20), default=PaymentStatus.EN_ATTENTE.value)   
     fournisseur = db.Column(db.String(50), nullable=False)
 
     reference = db.Column(db.String(100), unique=True, nullable=False)
@@ -175,7 +175,8 @@ class Paiement(db.Model):
     sender_phone = db.Column(db.String(20), nullable=False)
     receiver_phone = db.Column(db.String(20), nullable=False)
 
-    statut = db.Column(db.String(20), default='en_attente')
+    statut = db.Column(db.String(20), default=PaymentStatus.EN_ATTENTE.value)
+
     date_paiement = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
 
     conversion = db.relationship('Conversion', backref=db.backref('paiement', uselist=False))
@@ -356,7 +357,8 @@ class Refund(db.Model):
     reason = db.Column(db.Text)
 
     admin_id = db.Column(db.Integer, db.ForeignKey("admin_user.id"))
-    status = db.Column(db.String(20))  # pending / completed / failed
+    status = db.Column(db.String(20), default=PaymentStatus.EN_ATTENTE.value)   # pending / completed / failed
+   
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
