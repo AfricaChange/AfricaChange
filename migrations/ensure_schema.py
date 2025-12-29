@@ -32,3 +32,21 @@ def ensure_paiement_transaction_reference():
             conn.commit()
         else:
             print("✅ Colonne paiement.transaction_reference déjà présente")
+
+
+def ensure_paiement_idempotency_key():
+    with db.engine.connect() as conn:
+        res = conn.execute(text("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='paiement'
+              AND column_name='idempotency_key'
+        """))
+        if not res.fetchone():
+            print("🔧 Ajout colonne paiement.idempotency_key")
+            conn.execute(text("""
+                ALTER TABLE paiement
+                ADD COLUMN idempotency_key VARCHAR(100)
+            """))
+        else:
+            print("✅ Colonne paiement.idempotency_key déjà présente")
