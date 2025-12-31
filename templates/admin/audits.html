@@ -1,5 +1,39 @@
 {% extends "base_admin.html" %}
 {% block content %}
-<h1 class="text-2xl font-bold">📜 Journaux d’audit</h1>
-<p class="text-gray-500 mt-4">Module en cours de finalisation.</p>
+
+<h1 class="text-2xl font-bold mb-6">📜 Journaux d’audit</h1>
+
+<table class="w-full bg-white shadow rounded text-sm">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="p-2">Date</th>
+      <th class="p-2">Acteur</th>
+      <th class="p-2">Événement</th>
+      <th class="p-2">IP</th>
+      <th class="p-2">Détails</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr class="border-t">
+      <td class="p-2 text-xs">
+        {{ log.created_at.strftime('%d/%m/%Y %H:%M') }}
+      </td>
+      <td class="p-2">
+        {{ log.actor_type }}
+      </td>
+      <td class="p-2 font-semibold">
+        {{ log.event }}
+      </td>
+      <td class="p-2 font-mono text-xs">
+        {{ log.ip_address }}
+      </td>
+      <td class="p-2 text-xs text-gray-600">
+        {{ log.payload }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 {% endblock %}

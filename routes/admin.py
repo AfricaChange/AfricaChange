@@ -1,13 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from database import db
-from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme, Parametre
+from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme, Parametre, RiskEvent, AuditLog, Utilisateur
 import io
 from datetime import datetime
 from openpyxl import Workbook
 from io import BytesIO 
 from functools import wraps
-
-
+ 
 
 
 
@@ -468,17 +467,51 @@ def transactions():
     )
 
 
+
+
 @admin.route("/risques")
+@admin_required
 def risques():
-    return render_template("admin/risques.html")
+    risks = (
+        RiskEvent.query
+        .order_by(RiskEvent.created_at.desc())
+        .limit(100)
+        .all()
+    )
+
+    return render_template(
+        "admin/risques.html",
+        risks=risks
+    )
+
     
 @admin.route("/utilisateurs")
+@admin_required
 def utilisateurs():
-    return render_template("admin/utilisateurs.html")
+    users = Utilisateur.query.order_by(Utilisateur.id.desc()).all()
+
+    return render_template(
+        "admin/utilisateurs.html",
+        users=users
+    )
+
     
+
+
 
 @admin.route("/audits")
 @admin_required
 def audits():
-    return render_template("admin/audits.html")
+    logs = (
+        AuditLog.query
+        .order_by(AuditLog.created_at.desc())
+        .limit(100)
+        .all()
+    )
+
+    return render_template(
+        "admin/audits.html",
+        logs=logs
+    )
+
     
