@@ -13,23 +13,56 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-center">
     <div class="bg-blue-100 p-4 rounded-lg">
       <p class="text-gray-600">Utilisateurs inscrits</p>
-      <p id="stat-users" class="text-2xl font-bold text-blue-700">
+      <p class="text-2xl font-bold text-blue-700">
         {{ total_users or 0 }}
       </p>
-
     </div>
+
     <div class="bg-green-100 p-4 rounded-lg">
       <p class="text-gray-600">Fonds totaux</p>
-      <p id="stat-funds" class="text-2xl font-bold text-green-700">
+      <p class="text-2xl font-bold text-green-700">
         {{ (total_fonds or 0) | round(2) }} FCFA
       </p>
     </div>
+
     <div class="bg-yellow-100 p-4 rounded-lg">
       <p class="text-gray-600">Transactions</p>
-      <p id="stat-transactions" class="text-2xl font-bold text-yellow-700">
+      <p class="text-2xl font-bold text-yellow-700">
         {{ total_transactions or 0 }}
       </p>
     </div>
+  </div>
+
+  <!-- ===================== -->
+  <!-- 📡 STATUTS TEMPS RÉEL -->
+  <!-- ===================== -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10 text-center">
+
+    <div class="bg-yellow-100 p-4 rounded">
+      <p class="text-sm">⏳ Paiements en attente</p>
+      <p class="text-2xl font-bold">{{ tx_pending or 0 }}</p>
+    </div>
+
+    <div class="bg-green-100 p-4 rounded">
+      <p class="text-sm">✅ Paiements validés</p>
+      <p class="text-2xl font-bold">{{ tx_valid or 0 }}</p>
+    </div>
+
+    <div class="bg-red-100 p-4 rounded">
+      <p class="text-sm">⛔ Paiements bloqués</p>
+      <p class="text-2xl font-bold">{{ tx_blocked or 0 }}</p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded">
+      <p class="text-sm">❌ Paiements échoués</p>
+      <p class="text-2xl font-bold">{{ tx_failed or 0 }}</p>
+    </div>
+
+    <div class="bg-blue-100 p-4 rounded">
+      <p class="text-sm">🕒 Conversions non payées</p>
+      <p class="text-2xl font-bold">{{ conv_pending or 0 }}</p>
+    </div>
+
   </div>
 
   <!-- ===================== -->
@@ -41,43 +74,33 @@
     </h2>
 
     <div class="flex flex-wrap gap-4">
-      <a href="{{ url_for('admin_tx.liste', status='bloque') }}"
+
+      <a href="{{ url_for('admin.transactions', status='bloque') }}"
          class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
         ⛔ Transactions bloquées
-        <span id="stat-blocked"
-              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
-          0
+        <span class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
+          {{ tx_blocked or 0 }}
         </span>
       </a>
 
-
-      <a href="{{ url_for('admin_tx.liste', status='en_attente') }}"
-         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
+      <a href="{{ url_for('admin.transactions', status='en_attente') }}"
+         class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 flex items-center gap-2">
         ⏳ Paiements en attente
-        <span id="stat-blocked"
-              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
-          0
+        <span class="bg-white text-yellow-700 text-xs px-2 py-1 rounded-full font-bold">
+          {{ tx_pending or 0 }}
         </span>
       </a>
-        
-      
 
-      
       <a href="{{ url_for('admin.risques') }}"
-         class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2">
+         class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 flex items-center gap-2">
         ⚠️ Alertes risques
-        <span id="stat-risks"
-              class="bg-white text-red-700 text-xs px-2 py-1 rounded-full font-bold">
-          0
-        </span>
       </a>
-        
-      
 
-      <a href="{{ url_for('admin_tx.liste') }}"
+      <a href="{{ url_for('admin.transactions') }}"
          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         🧾 Gérer les transactions
       </a>
+
     </div>
   </div>
 

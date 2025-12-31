@@ -47,36 +47,42 @@ def dashboard():
     # 👉 Récupération des taux actuels
     taux_list = Rate.query.all()
     
-    stats = {
-        "pending": Transaction.query.filter(
-        Transaction.statut == "en_attente"
-        ).count(),
+    # 🔴 TRANSACTIONS
+    tx_pending = Transaction.query.filter_by(statut="en_attente").count()
+    tx_valid = Transaction.query.filter_by(statut="valide").count()
+    tx_blocked = Transaction.query.filter_by(statut="bloque").count()
+    tx_failed = Transaction.query.filter_by(statut="echoue").count()
 
-        "success": Transaction.query.filter(
-        Transaction.statut == "valide"
-        ).count(),
+    # 🔵 CONVERSIONS (avant paiement)
+    conv_pending = Conversion.query.filter_by(statut="en_attente").count()
 
-        "failed": Transaction.query.filter(
-        Transaction.statut == "echoue"
-        ).count(),
+    total_transactions = Transaction.query.count()
+    total_fonds = db.session.query(db.func.sum(Compte.solde)).scalar() or 0.0
 
-        "blocked": Transaction.query.filter(
-        Transaction.statut == "bloque"
-        ).count(),
+    # dernières transactions
+    transactions = (
+        Transaction.query
+        .order_by(Transaction.date_transaction.desc())
+        .limit(10)
+        .all()
+    )
 
-        "refunded": Transaction.query.filter(
-        Transaction.statut == "rembourse"
-        ).count(),
-    }
-
+    taux_list = Rate.query.all()
 
     return render_template(
-        'admin_dashboard.html',
+        "admin_dashboard.html",
         total_users=total_users,
         total_transactions=total_transactions,
         total_fonds=total_fonds,
         transactions=transactions,
-        taux_list=taux_list
+        taux_list=taux_list,
+
+        # 👇 STATS TEMPS RÉEL
+        tx_pending=tx_pending,
+        tx_valid=tx_valid,
+        tx_blocked=tx_blocked,
+        tx_failed=tx_failed,
+        conv_pending=conv_pending
     )
 
    
