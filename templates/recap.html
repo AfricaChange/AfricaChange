@@ -89,4 +89,47 @@
   </div>
 
 </div>
+
+<script>
+function secureSubmit(button) {
+  const provider = button.dataset.provider;
+  const reference = button.dataset.reference;
+
+  if (!provider || !reference) {
+    alert("Données de paiement manquantes");
+    return;
+  }
+
+  button.disabled = true;
+  button.innerText = "Traitement en cours...";
+
+  fetch(`/paiement/${provider}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token() }}"
+    },
+    body: JSON.stringify({
+      reference: reference
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.payment_url) {
+      window.location.href = data.payment_url;
+    } else {
+      alert(data.error || "Erreur paiement");
+      button.disabled = false;
+      button.innerText = provider === "orange"
+        ? "🟠 Payer avec Orange Money"
+        : "🌊 Payer avec Wave";
+    }
+  })
+  .catch(() => {
+    alert("Erreur réseau");
+    button.disabled = false;
+  });
+}
+</script>
+
 {% endblock %}
