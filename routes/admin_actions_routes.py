@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, session
 from models import Transaction
 from services.admin_actions import AdminActions
+from database import db
+
 
 admin_actions_bp = Blueprint("admin_actions", __name__, url_prefix="/admin/actions")
 

@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>{% block title %}Admin – AfricaChange{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    window.csrfToken = "{{ csrf_token() }}";
+  </script>
   <script src="{{ url_for('static', filename='js/admin-ui.js') }}"></script>
   <script src="{{ url_for('static', filename='js/admin-actions.js') }}"></script>
   <script src="{{ url_for('static', filename='js/admin-live.js') }}"></script>
