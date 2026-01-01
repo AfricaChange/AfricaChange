@@ -8,7 +8,6 @@ from routes.paiement import paiement
 from routes.convert import convert
 from flask_wtf.csrf import CSRFError, generate_csrf
 from extensions import csrf
-from models import Parametre
 from flask_wtf import CSRFProtect
 from flask_talisman import Talisman
 from flask_limiter import Limiter
@@ -19,7 +18,7 @@ from datetime import timedelta
 from extensions import limiter
 from routes.admin_transactions import admin_tx
 from routes.admin_actions_routes import admin_actions_bp
-
+import models 
 
 
 
