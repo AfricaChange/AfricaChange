@@ -70,25 +70,27 @@
   <!-- Boutons paiement -->
   <div class="mt-6 space-y-3">
     
-    <button onclick="alert('CLICK OK')"
-        class="w-full bg-orange-500 text-white py-3 rounded-lg">
-     🟠 Payer avec Orange Money
+    <button
+        data-pay
+        data-provider="orange"
+        data-reference="{{ conversion.reference }}"
+        class="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600">
+        🟠 Payer avec Orange Money
     </button>
 
-    
-
-    <!-- Wave -->
-    <button onclick="secureSubmit(this)"
-            data-provider="wave"
-            data-reference="{{ conversion.reference }}"
-            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition">
-      🌊 Payer avec Wave
+    <button
+        data-pay
+        data-provider="wave"
+        data-reference="{{ conversion.reference }}"
+        class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700">
+        🌊 Payer avec Wave
     </button>
+
 
   </div>
 
 </div>
-
+<!--
 <script>
 function secureSubmit(button) {
   const provider = button.dataset.provider;
@@ -130,5 +132,8 @@ function secureSubmit(button) {
   });
 }
 </script>
+-->
+<script src="{{ url_for('static', filename='js/recap_payment.js') }}"></script>
+
 
 {% endblock %}
