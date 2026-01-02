@@ -20,8 +20,6 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 # ======================================================
 # 🔶 ORANGE MONEY – route de controle
 # ======================================================
-from services.orange_provider import OrangeProvider
-
 @paiement.route("/init", methods=["POST"])
 def init_paiement():
     ...

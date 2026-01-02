@@ -1,73 +1,14 @@
-function adminAction(action, reference) {
-  const reason = prompt("Motif obligatoire :");
-  if (!reason) return;
-
-  fetch(`/admin/actions/${action}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrf_token
-    },
-    body: JSON.stringify({
-      reference: reference,
-      reason: reason
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      alert("Action effectuée avec succès");
-      location.reload();
-    } else {
-      alert(data.error || "Erreur");
-    }
-  });
-}
-
-function adminRefund(reference) {
-  const amount = prompt("Montant à rembourser :");
-  const reason = prompt("Motif du remboursement :");
-
-  if (!amount || !reason) return;
-
-  fetch("/admin/actions/refund", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrf_token
-    },
-    body: JSON.stringify({
-      reference: reference,
-      amount: amount,
-      reason: reason
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      alert("Remboursement effectué");
-      location.reload();
-    } else {
-      alert(data.error || "Erreur");
-    }
-  });
-}
-
-
-let adminAction = null;
-let adminReference = null;
+let currentAction = null;
+let currentReference = null;
 
 function openAdminModal(action, reference) {
-  adminAction = action;
-  adminReference = reference;
+  currentAction = action;
+  currentReference = reference;
 
   document.getElementById("adminModal").classList.remove("hidden");
-  document.getElementById("adminModalTitle").innerText =
-    action === "validate" ? "Validation manuelle" :
-    action === "block" ? "Blocage de transaction" :
-    "Remboursement";
+  document.getElementById("adminReason").value = "";
 
-  document.getElementById("refundAmount").classList.toggle(
+  document.getElementById("refundAmountWrapper").classList.toggle(
     "hidden",
     action !== "refund"
   );
@@ -80,22 +21,26 @@ function closeAdminModal() {
 function confirmAdminAction() {
   const reason = document.getElementById("adminReason").value.trim();
   if (!reason) {
-    alert("La raison est obligatoire");
+    alert("Motif obligatoire");
     return;
   }
 
   const payload = {
-    reference: adminReference,
+    reference: currentReference,
     reason: reason
   };
 
-  if (adminAction === "refund") {
+  if (currentAction === "refund") {
     payload.amount = parseFloat(
       document.getElementById("refundAmount").value
     );
+    if (!payload.amount || payload.amount <= 0) {
+      alert("Montant invalide");
+      return;
+    }
   }
 
-  fetch(`/admin/actions/${adminAction}`, {
+  fetch(`/admin/actions/${currentAction}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -104,6 +49,12 @@ function confirmAdminAction() {
     body: JSON.stringify(payload)
   })
   .then(r => r.json())
-  .then(() => window.location.reload())
-  .catch(() => alert("Erreur admin"));
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || "Erreur admin");
+    }
+  })
+  .catch(() => alert("Erreur réseau"));
 }
