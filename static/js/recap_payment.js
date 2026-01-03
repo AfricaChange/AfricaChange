@@ -1,18 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll(".pay-btn");
-
-  buttons.forEach(btn => {
+  document.querySelectorAll(".pay-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       const provider = btn.dataset.provider;
       const reference = btn.dataset.reference;
 
-      console.log("Paiement init :", provider, reference);
-
-      btn.disabled = true;
-      btn.innerText = "⏳ Initialisation du paiement...";
+      const phone = prompt("Numéro de téléphone de paiement :");
+      if (!phone) return;
 
       try {
-        const res = await fetch("/paiement/init", {
+        const response = await fetch("/paiement/init", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -20,30 +16,27 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify({
             provider: provider,
-            reference: reference
+            reference: reference,
+            phone: phone
           })
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if (!res.ok || data.error) {
-          throw new Error(data.error || "Erreur paiement");
+        if (!response.ok || !data.success) {
+          alert(data.error || "Erreur paiement");
+          return;
         }
 
-        if (!data.payment_url) {
-          throw new Error("URL de paiement manquante");
+        if (data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          alert("Lien de paiement indisponible");
         }
 
-        // 🔥 REDIRECTION ORANGE / WAVE
-        window.location.href = data.payment_url;
-
-      } catch (err) {
-        alert("❌ " + err.message);
-        btn.disabled = false;
-        btn.innerText =
-          provider === "orange"
-            ? "🟠 Payer avec Orange Money"
-            : "🌊 Payer avec Wave";
+      } catch (e) {
+        alert("Erreur réseau");
+        console.error(e);
       }
     });
   });
