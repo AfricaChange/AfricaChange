@@ -63,7 +63,7 @@ csp = app.config.get("CSP", None)
 talisman = Talisman(
     app,
     content_security_policy=csp,
-    force_https=True,               # redirige vers HTTPS en prod
+    force_https=False,               # redirige vers HTTPS en prod
     session_cookie_secure=True,
     strict_transport_security=True,
     strict_transport_security_max_age=31536000,  # 1 an
