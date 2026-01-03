@@ -93,6 +93,7 @@ if not app.debug:
    
     
 # 🔴🔴🔴 MIDDLEWARE DE MAINTENANCE 🔴🔴🔴
+"""
 @app.before_request
 def check_maintenance_mode():
     # Laisser passer les fichiers statiques
@@ -134,7 +135,7 @@ def maintenance():
     message = app.config.get("MAINTENANCE_MESSAGE", "")
     return render_template("maintenance.html", message=message), 503
 
-    
+ """   
 
 
 # Enregistrement de la route principale
