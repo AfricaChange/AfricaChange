@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".pay-btn").forEach(btn => {
+  const buttons = document.querySelectorAll("[data-provider]");
+
+  buttons.forEach(btn => {
     btn.addEventListener("click", async () => {
       const provider = btn.dataset.provider;
       const reference = btn.dataset.reference;
@@ -8,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!phone) return;
 
       try {
-        const response = await fetch("/paiement/init", {
+        const res = await fetch("/paiement/init", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -21,22 +23,23 @@ document.addEventListener("DOMContentLoaded", () => {
           })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok || !data.success) {
+        if (!res.ok || data.error) {
           alert(data.error || "Erreur paiement");
           return;
         }
 
+        // 🔴 REDIRECTION VERS ORANGE / WAVE
         if (data.payment_url) {
           window.location.href = data.payment_url;
         } else {
-          alert("Lien de paiement indisponible");
+          alert("Lien de paiement non reçu");
         }
 
-      } catch (e) {
+      } catch (err) {
+        console.error(err);
         alert("Erreur réseau");
-        console.error(e);
       }
     });
   });
