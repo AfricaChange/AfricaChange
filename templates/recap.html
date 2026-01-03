@@ -5,7 +5,7 @@
 
   <!-- Navigation -->
   <div class="flex justify-between mb-4">
-    <button onclick="safeBack()"
+    <button onclick="window.history.back()"
             class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
       ⬅ Retour
     </button>
@@ -61,83 +61,31 @@
     </div>
   </div>
 
-  <!-- Consentement -->
+  <!-- Avertissement -->
   <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-    ⚠️ En continuant, vous confirmez l’exactitude des informations ci-dessus.
+    ⚠️ En continuant, vous confirmez l’exactitude des informations.
     Cette opération est irréversible après paiement.
   </div>
 
   <!-- Boutons paiement -->
   <div class="mt-6 space-y-3">
-    
-    <!-- Boutons paiement -->
-    <!-- Orange Money -->
     <button
-        class="pay-btn w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition"
-        data-provider="orange"
-        data-reference="{{ conversion.reference }}"
-    >
-       🟠 Payer avec Orange Money
+      data-provider="orange"
+      data-reference="{{ conversion.reference }}"
+      class="pay-btn w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600">
+      🟠 Payer avec Orange Money
     </button>
 
-    <!-- Wave -->
     <button
-       class="pay-btn w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition"
-       data-provider="wave"
-       data-reference="{{ conversion.reference }}"
-    >
-       🌊 Payer avec Wave
+      data-provider="wave"
+      data-reference="{{ conversion.reference }}"
+      class="pay-btn w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700">
+      🌊 Payer avec Wave
     </button>
-
-
   </div>
 
 </div>
-<!--
-<script>
-function secureSubmit(button) {
-  const provider = button.dataset.provider;
-  const reference = button.dataset.reference;
 
-  if (!provider || !reference) {
-    alert("Données de paiement manquantes");
-    return;
-  }
-
-  button.disabled = true;
-  button.innerText = "Traitement en cours...";
-
-  fetch(`/paiement/${provider}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": "{{ csrf_token() }}"
-    },
-    body: JSON.stringify({
-      reference: reference
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.payment_url) {
-      window.location.href = data.payment_url;
-    } else {
-      alert(data.error || "Erreur paiement");
-      button.disabled = false;
-      button.innerText = provider === "orange"
-        ? "🟠 Payer avec Orange Money"
-        : "🌊 Payer avec Wave";
-    }
-  })
-  .catch(() => {
-    alert("Erreur réseau");
-    button.disabled = false;
-  });
-}
-</script>
--->
-{% block scripts %}
+<!-- JS paiement -->
 <script src="{{ url_for('static', filename='js/recap_payment.js') }}"></script>
-
-
 {% endblock %}
