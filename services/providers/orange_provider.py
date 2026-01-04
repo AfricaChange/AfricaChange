@@ -21,8 +21,7 @@ class OrangeProvider:
         # ✅ ORANGE SONATEL SANDBOX
         self.oauth_url = "https://api.sandbox.orange-sonatel.com/oauth/token"
         self.webpay_url = (
-            "https://api.sandbox.orange-sonatel.com/"
-            "orange-money-webpay/dev/v1/webpayment"
+            "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
         )
 
     # --------------------------------------------------
@@ -49,37 +48,37 @@ class OrangeProvider:
     # 💳 INIT WEB PAYMENT
     # --------------------------------------------------
     def init_payment(self, amount, phone, reference):
-    token = self.get_access_token()
+        token = self.get_access_token()
 
-    url = "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
+        url = "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
 
-    payload = {
-        "partner": {
+        payload = {
+            "partner": {
             "idType": "CODE",
             "id": "TEST"
-        },
-        "customer": {
+            },
+            "customer": {
             "idType": "MSISDN",
             "id": phone
-        },
-        "amount": {
+            },
+            "amount": {
             "value": int(amount),
             "unit": "XOF"
-        },
-        "reference": reference,
-        "description": "AfricaChange paiement"
-    }
+            },
+            "reference": reference,
+            "description": "AfricaChange paiement"
+        }
 
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
 
-    r = requests.post(url, json=payload, headers=headers, timeout=10)
-    r.raise_for_status()
+        r = requests.post(url, json=payload, headers=headers, timeout=10)
+        r.raise_for_status()
 
-    return r.json()
+        return r.json()
 
     
     # --------------------------------------------------
