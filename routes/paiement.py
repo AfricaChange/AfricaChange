@@ -27,46 +27,29 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 # ======================================================
 # 🔶 ORANGE MONEY – INITIATION
 # ======================================================
-@paiement.route('/orange', methods=['POST'])
+@paiement.route("/orange", methods=["POST"])
 @csrf.exempt
 def paiement_orange():
     data = request.get_json(silent=True) or {}
-
     reference = data.get("reference")
-    telephone = data.get("telephone")
 
-    if not reference or not telephone:
-        return jsonify({"error": "Données manquantes"}), 400
+    if not reference:
+        return jsonify({"error": "Référence manquante"}), 400
 
-    try:
-        conversion = PaymentService.lock_conversion(reference)
-        montant = conversion.montant_initial
+    conversion = Conversion.query.filter_by(reference=reference).first()
+    if not conversion:
+        return jsonify({"error": "Conversion introuvable"}), 404
 
-        provider = OrangeProvider()
-        result = provider.init_payment(
-            amount=montant,
-            phone=telephone,
-            reference=conversion.reference
-        )
+    provider = OrangeProvider()
 
-        transaction = PaymentService.create_transaction(
-            conversion,
-            fournisseur="Orange Money",
-            montant=montant
-        )
+    result = provider.init_payment(
+        amount=conversion.montant_initial,
+        reference=conversion.reference,
+        return_url=url_for("paiement.orange_callback", _external=True)
+    )
 
-        PaymentService.create_paiement(
-            conversion,
-            transaction.reference,
-            telephone
-        )
+    return jsonify(result)
 
-        db.session.commit()
-        return jsonify({"success": True, "payment_url": result["payment_url"]})
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
 
 
 # ======================================================

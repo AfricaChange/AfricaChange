@@ -1,32 +1,23 @@
 import requests
 import base64
 import os
-from services.constants import PaymentStatus
 
 
 class OrangeProvider:
-
-    ORANGE_STATUS_MAP = {
-        "SUCCESS": PaymentStatus.VALIDE.value,
-        "PENDING": PaymentStatus.EN_ATTENTE.value,
-        "FAILED": PaymentStatus.ECHOUE.value,
-        "CANCELLED": PaymentStatus.ECHOUE.value,
-        "EXPIRED": PaymentStatus.ECHOUE.value,
-    }
-
     def __init__(self):
         self.client_id = os.getenv("ORANGE_CLIENT_ID")
         self.client_secret = os.getenv("ORANGE_CLIENT_SECRET")
 
-        # ✅ ORANGE SONATEL SANDBOX
+        # SANDBOX SONATEL
         self.oauth_url = "https://api.sandbox.orange-sonatel.com/oauth/token"
         self.webpay_url = (
-            "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
+            "https://api.sandbox.orange-sonatel.com/"
+            "orange-money-webpay/dev/v1/webpayment"
         )
 
-    # --------------------------------------------------
-    # 🔐 OAuth Token
-    # --------------------------------------------------
+    # ===============================
+    # 🔐 OAUTH TOKEN
+    # ===============================
     def get_access_token(self):
         credentials = f"{self.client_id}:{self.client_secret}"
         encoded = base64.b64encode(credentials.encode()).decode()
@@ -41,51 +32,43 @@ class OrangeProvider:
 
         r = requests.post(self.oauth_url, headers=headers, data=data, timeout=10)
         r.raise_for_status()
-
         return r.json()["access_token"]
 
-    # --------------------------------------------------
-    # 💳 INIT WEB PAYMENT
-    # --------------------------------------------------
-    def init_payment(self, amount, phone, reference):
+    # ===============================
+    # 💳 INIT PAYMENT (WEBPAY)
+    # ===============================
+    def init_payment(self, *, amount, reference, return_url):
         token = self.get_access_token()
 
-        url = "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
-
         payload = {
-            "partner": {
-            "idType": "CODE",
-            "id": "TEST"
-            },
-            "customer": {
-            "idType": "MSISDN",
-            "id": phone
-            },
-            "amount": {
-            "value": int(amount),
-            "unit": "XOF"
-            },
-            "reference": reference,
-            "description": "AfricaChange paiement"
+            "merchant_key": "TEST",  # sandbox
+            "currency": "XOF",
+            "order_id": reference,
+            "amount": int(amount),
+            "return_url": return_url,
+            "cancel_url": return_url,
+            "notif_url": return_url,
+            "lang": "fr",
         }
 
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "Accept": "application/json"
         }
 
-        r = requests.post(url, json=payload, headers=headers, timeout=10)
+        r = requests.post(self.webpay_url, json=payload, headers=headers, timeout=10)
         r.raise_for_status()
 
-        return r.json()
+        data = r.json()
+        return {
+            "payment_url": data.get("payment_url") or data.get("redirect_url")
+        }
 
-    
-    # --------------------------------------------------
-    # 🔁 CALLBACK
-    # --------------------------------------------------
-    def map_status(self, orange_status: str) -> str:
-        status = self.ORANGE_STATUS_MAP.get(orange_status)
-        if not status:
-            raise ValueError(f"Statut Orange inconnu : {orange_status}")
-        return status
+    # ===============================
+    # CALLBACK
+    # ===============================
+    def verify_callback(self, raw_payload, headers):
+        return True
+
+    def is_valid_status(self, payload):
+        return payload.get("status") in ("SUCCESS", "FAILED")
