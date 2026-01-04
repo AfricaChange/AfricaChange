@@ -49,8 +49,6 @@ def paiement_orange():
             reference=conversion.reference
         )
 
-        )
-
         transaction = PaymentService.create_transaction(
             conversion,
             fournisseur="Orange Money",
