@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!phone) return;
 
       try {
-        const res = await fetch("/paiement/init", {
+        const res = await fetch("/paiement/orange", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

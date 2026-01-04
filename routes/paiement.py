@@ -20,37 +20,7 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 # ======================================================
 # 🔶 ORANGE MONEY – route de controle
 # ======================================================
-@paiement.route("/init", methods=["POST"])
-@csrf.exempt
-def init_paiement():
-    data = request.get_json(silent=True) or {}
 
-    provider = data.get("provider")
-    reference = data.get("reference")
-    phone = data.get("phone")
-
-    if not provider or not reference or not phone:
-        return jsonify({"error": "Données manquantes"}), 400
-
-    conversion = Conversion.query.filter_by(reference=reference).first()
-    if not conversion:
-        return jsonify({"error": "Conversion introuvable"}), 404
-
-    try:
-        if provider == "orange":
-            orange = OrangeProvider()
-            result = provider.init_payment(
-                amount=montant,
-                reference=conversion.reference,
-                return_url=url_for("paiement.orange_callback", _external=True)
-            )
-
-            return jsonify({"success": True, **result})
-
-        return jsonify({"error": "Provider non supporté"}), 400
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 
