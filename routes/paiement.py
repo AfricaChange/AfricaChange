@@ -45,8 +45,10 @@ def paiement_orange():
         provider = OrangeProvider()
         result = provider.init_payment(
             amount=montant,
-            reference=conversion.reference,
-            return_url=url_for("paiement.orange_callback", _external=True)
+            phone=telephone,
+            reference=conversion.reference
+        )
+
         )
 
         transaction = PaymentService.create_transaction(
