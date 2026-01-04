@@ -2,22 +2,18 @@ import requests
 import base64
 import os
 
-
 class OrangeProvider:
+
     def __init__(self):
         self.client_id = os.getenv("ORANGE_CLIENT_ID")
         self.client_secret = os.getenv("ORANGE_CLIENT_SECRET")
 
-        # SANDBOX SONATEL
         self.oauth_url = "https://api.sandbox.orange-sonatel.com/oauth/token"
         self.webpay_url = (
             "https://api.sandbox.orange-sonatel.com/"
             "orange-money-webpay/dev/v1/webpayment"
         )
 
-    # ===============================
-    # 🔐 OAUTH TOKEN
-    # ===============================
     def get_access_token(self):
         credentials = f"{self.client_id}:{self.client_secret}"
         encoded = base64.b64encode(credentials.encode()).decode()
@@ -25,7 +21,6 @@ class OrangeProvider:
         headers = {
             "Authorization": f"Basic {encoded}",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json",
         }
 
         data = {"grant_type": "client_credentials"}
@@ -34,21 +29,18 @@ class OrangeProvider:
         r.raise_for_status()
         return r.json()["access_token"]
 
-    # ===============================
-    # 💳 INIT PAYMENT (WEBPAY)
-    # ===============================
-    def init_payment(self, *, amount, reference, return_url):
+    def init_payment(self, amount, reference, return_url):
         token = self.get_access_token()
 
         payload = {
-            "merchant_key": "TEST",  # sandbox
+            "merchant_key": "TEST",
             "currency": "XOF",
             "order_id": reference,
             "amount": int(amount),
             "return_url": return_url,
             "cancel_url": return_url,
             "notif_url": return_url,
-            "lang": "fr",
+            "lang": "fr"
         }
 
         headers = {
@@ -60,15 +52,4 @@ class OrangeProvider:
         r.raise_for_status()
 
         data = r.json()
-        return {
-            "payment_url": data.get("payment_url") or data.get("redirect_url")
-        }
-
-    # ===============================
-    # CALLBACK
-    # ===============================
-    def verify_callback(self, raw_payload, headers):
-        return True
-
-    def is_valid_status(self, payload):
-        return payload.get("status") in ("SUCCESS", "FAILED")
+        return {"payment_url": data.get("payment_url")}

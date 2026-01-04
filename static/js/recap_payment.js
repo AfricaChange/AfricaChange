@@ -1,46 +1,30 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll("[data-provider]");
-
-  buttons.forEach(btn => {
+  document.querySelectorAll("[data-provider]").forEach(btn => {
     btn.addEventListener("click", async () => {
       const provider = btn.dataset.provider;
       const reference = btn.dataset.reference;
 
-      const telephone = prompt("Numéro de téléphone de paiement :");
-      if (!telephone) {
-        alert("Numéro requis");
-        return;
-      }
-
       try {
-        const response = await fetch("/paiement/orange", {
+        const res = await fetch(`/paiement/${provider}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": window.csrfToken
-          },
-          body: JSON.stringify({
-            reference: reference,
-            telephone: telephone
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference })
         });
 
-        const data = await response.json();
+        const text = await res.text();
+        console.log("BACKEND RESPONSE:", text);
 
-        if (!response.ok) {
-          alert(data.error || "Erreur paiement");
-          return;
-        }
+        const data = JSON.parse(text);
 
         if (data.payment_url) {
-          window.location.href = data.payment_url; // 🚀 REDIRECTION ORANGE
+          window.location.href = data.payment_url;
         } else {
-          alert("URL de paiement introuvable");
+          alert(data.error || "Erreur paiement");
         }
 
-      } catch (err) {
-        console.error(err);
-        alert("Erreur réseau");
+      } catch (e) {
+        console.error(e);
+        alert("Erreur réseau ou serveur");
       }
     });
   });

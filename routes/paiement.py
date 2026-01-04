@@ -27,10 +27,10 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 # ======================================================
 # 🔶 ORANGE MONEY – INITIATION
 # ======================================================
-@paiement.route("/orange", methods=["POST"])
+@paiement.route('/orange', methods=['POST'])
 @csrf.exempt
 def paiement_orange():
-    data = request.get_json(silent=True) or {}
+    data = request.get_json() or {}
     reference = data.get("reference")
 
     if not reference:
@@ -40,15 +40,23 @@ def paiement_orange():
     if not conversion:
         return jsonify({"error": "Conversion introuvable"}), 404
 
-    provider = OrangeProvider()
+    try:
+        provider = OrangeProvider()
 
-    result = provider.init_payment(
-        amount=conversion.montant_initial,
-        reference=conversion.reference,
-        return_url=url_for("paiement.orange_callback", _external=True)
-    )
+        result = provider.init_payment(
+            amount=conversion.montant_initial,
+            reference=conversion.reference,
+            return_url=url_for("paiement.orange_callback", _external=True)
+        )
 
-    return jsonify(result)
+        return jsonify({
+            "success": True,
+            "payment_url": result["payment_url"]
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 
