@@ -18,18 +18,15 @@ class OrangeProvider:
         self.client_id = os.getenv("ORANGE_CLIENT_ID")
         self.client_secret = os.getenv("ORANGE_CLIENT_SECRET")
 
-        if not self.client_id or not self.client_secret:
-            raise RuntimeError("Clés Orange manquantes")
-
-        # ✅ SANDBOX SONATEL
+        # ✅ ORANGE SONATEL SANDBOX
         self.oauth_url = "https://api.sandbox.orange-sonatel.com/oauth/token"
-        self.payment_url = (
+        self.webpay_url = (
             "https://api.sandbox.orange-sonatel.com/"
             "orange-money-webpay/dev/v1/webpayment"
         )
 
     # --------------------------------------------------
-    # 🔐 TOKEN OAUTH
+    # 🔐 OAuth Token
     # --------------------------------------------------
     def get_access_token(self):
         credentials = f"{self.client_id}:{self.client_secret}"
@@ -43,19 +40,15 @@ class OrangeProvider:
 
         data = {"grant_type": "client_credentials"}
 
-        r = requests.post(self.oauth_url, headers=headers, data=data, timeout=15)
-
-        if r.status_code != 200:
-            raise RuntimeError(
-                f"Orange OAuth error {r.status_code} : {r.text}"
-            )
+        r = requests.post(self.oauth_url, headers=headers, data=data, timeout=10)
+        r.raise_for_status()
 
         return r.json()["access_token"]
 
     # --------------------------------------------------
-    # 💳 INIT PAIEMENT
+    # 💳 INIT WEB PAYMENT
     # --------------------------------------------------
-    def init_payment(self, *, amount, reference, return_url):
+    def init_payment(self, amount, reference, return_url):
         token = self.get_access_token()
 
         payload = {
@@ -76,24 +69,19 @@ class OrangeProvider:
         }
 
         r = requests.post(
-            self.payment_url,
+            self.webpay_url,
             json=payload,
             headers=headers,
-            timeout=20
+            timeout=10
         )
-
-        if r.status_code not in (200, 201):
-            raise RuntimeError(
-                f"Orange init error {r.status_code} : {r.text}"
-            )
+        r.raise_for_status()
 
         data = r.json()
 
         return {
-            "payment_url": data.get("payment_url")
-                or data.get("redirect_url")
+            "payment_url": data.get("payment_url") or data.get("redirect_url")
         }
-
+    
     # --------------------------------------------------
     # 🔁 CALLBACK
     # --------------------------------------------------
