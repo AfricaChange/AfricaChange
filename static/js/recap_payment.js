@@ -6,35 +6,36 @@ document.addEventListener("DOMContentLoaded", () => {
       const provider = btn.dataset.provider;
       const reference = btn.dataset.reference;
 
-      const phone = prompt("Numéro de téléphone de paiement :");
-      if (!phone) return;
+      const telephone = prompt("Numéro de téléphone de paiement :");
+      if (!telephone) {
+        alert("Numéro requis");
+        return;
+      }
 
       try {
-        const res = await fetch("/paiement/orange", {
+        const response = await fetch("/paiement/orange", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": window.csrfToken
           },
           body: JSON.stringify({
-            provider: provider,
             reference: reference,
-            phone: phone
+            telephone: telephone
           })
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if (!res.ok || data.error) {
+        if (!response.ok) {
           alert(data.error || "Erreur paiement");
           return;
         }
 
-        // 🔴 REDIRECTION VERS ORANGE / WAVE
         if (data.payment_url) {
-          window.location.href = data.payment_url;
+          window.location.href = data.payment_url; // 🚀 REDIRECTION ORANGE
         } else {
-          alert("Lien de paiement non reçu");
+          alert("URL de paiement introuvable");
         }
 
       } catch (err) {
