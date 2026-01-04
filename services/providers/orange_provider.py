@@ -1,15 +1,27 @@
 import requests
 import base64
 import os
+from services.constants import PaymentStatus
 
 
 class OrangeProvider:
+
+    ORANGE_STATUS_MAP = {
+        "SUCCESS": PaymentStatus.VALIDE.value,
+        "PENDING": PaymentStatus.EN_ATTENTE.value,
+        "FAILED": PaymentStatus.ECHOUE.value,
+        "CANCELLED": PaymentStatus.ECHOUE.value,
+        "EXPIRED": PaymentStatus.ECHOUE.value,
+    }
 
     def __init__(self):
         self.client_id = os.getenv("ORANGE_CLIENT_ID")
         self.client_secret = os.getenv("ORANGE_CLIENT_SECRET")
 
-        # ✅ SANDBOX ORANGE SONATEL
+        if not self.client_id or not self.client_secret:
+            raise RuntimeError("Clés Orange manquantes")
+
+        # ✅ SANDBOX SONATEL
         self.oauth_url = "https://api.sandbox.orange-sonatel.com/oauth/token"
         self.payment_url = (
             "https://api.sandbox.orange-sonatel.com/"
@@ -17,12 +29,9 @@ class OrangeProvider:
         )
 
     # --------------------------------------------------
-    # 🔐 OAuth Token
+    # 🔐 TOKEN OAUTH
     # --------------------------------------------------
     def get_access_token(self):
-        if not self.client_id or not self.client_secret:
-            raise Exception("ORANGE_CLIENT_ID ou ORANGE_CLIENT_SECRET manquant")
-
         credentials = f"{self.client_id}:{self.client_secret}"
         encoded = base64.b64encode(credentials.encode()).decode()
 
@@ -32,23 +41,21 @@ class OrangeProvider:
             "Accept": "application/json",
         }
 
-        data = {
-            "grant_type": "client_credentials"
-        }
+        data = {"grant_type": "client_credentials"}
 
         r = requests.post(self.oauth_url, headers=headers, data=data, timeout=15)
 
         if r.status_code != 200:
-            raise Exception(
-                f"OAuth Orange échoué ({r.status_code}) : {r.text}"
+            raise RuntimeError(
+                f"Orange OAuth error {r.status_code} : {r.text}"
             )
 
         return r.json()["access_token"]
 
     # --------------------------------------------------
-    # 💳 INIT PAYMENT
+    # 💳 INIT PAIEMENT
     # --------------------------------------------------
-    def init_payment(self, amount, phone, reference, return_url):
+    def init_payment(self, *, amount, reference, return_url):
         token = self.get_access_token()
 
         payload = {
@@ -72,12 +79,12 @@ class OrangeProvider:
             self.payment_url,
             json=payload,
             headers=headers,
-            timeout=15
+            timeout=20
         )
 
         if r.status_code not in (200, 201):
-            raise Exception(
-                f"Init paiement Orange échoué ({r.status_code}) : {r.text}"
+            raise RuntimeError(
+                f"Orange init error {r.status_code} : {r.text}"
             )
 
         data = r.json()
@@ -88,8 +95,10 @@ class OrangeProvider:
         }
 
     # --------------------------------------------------
-    def verify_callback(self, raw_payload, headers):
-        return True
-
-    def is_valid_status(self, payload):
-        return payload.get("status") in ("SUCCESS", "FAILED")
+    # 🔁 CALLBACK
+    # --------------------------------------------------
+    def map_status(self, orange_status: str) -> str:
+        status = self.ORANGE_STATUS_MAP.get(orange_status)
+        if not status:
+            raise ValueError(f"Statut Orange inconnu : {orange_status}")
+        return status

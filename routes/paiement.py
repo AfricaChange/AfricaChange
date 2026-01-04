@@ -142,11 +142,11 @@ def orange_callback():
         if not provider.is_valid_status(payload):
             raise ValueError("Statut Orange inconnu")
 
-        tx.statut = (
-            PaymentStatus.VALIDE.value
-            if payload.get("status") == "SUCCESS"
-            else PaymentStatus.ECHOUE.value
-        )
+        orange_status = payload.get("status")
+
+        provider = OrangeProvider()
+        tx.statut = provider.map_status(orange_status)
+
 
         LedgerService.record(
             reference=tx.reference,
