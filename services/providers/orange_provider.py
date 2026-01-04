@@ -48,39 +48,39 @@ class OrangeProvider:
     # --------------------------------------------------
     # 💳 INIT WEB PAYMENT
     # --------------------------------------------------
-    def init_payment(self, amount, reference, return_url):
-        token = self.get_access_token()
+    def init_payment(self, amount, phone, reference):
+    token = self.get_access_token()
 
-        payload = {
-            "merchant_key": "TEST",
-            "currency": "XOF",
-            "order_id": reference,
-            "amount": int(amount),
-            "return_url": return_url,
-            "cancel_url": return_url,
-            "notif_url": return_url,
-            "lang": "fr",
-            "reference": reference,
-        }
+    url = "https://api.sandbox.orange-sonatel.com/api/eWallet/v1/payments"
 
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        }
+    payload = {
+        "partner": {
+            "idType": "CODE",
+            "id": "TEST"
+        },
+        "customer": {
+            "idType": "MSISDN",
+            "id": phone
+        },
+        "amount": {
+            "value": int(amount),
+            "unit": "XOF"
+        },
+        "reference": reference,
+        "description": "AfricaChange paiement"
+    }
 
-        r = requests.post(
-            self.webpay_url,
-            json=payload,
-            headers=headers,
-            timeout=10
-        )
-        r.raise_for_status()
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
 
-        data = r.json()
+    r = requests.post(url, json=payload, headers=headers, timeout=10)
+    r.raise_for_status()
 
-        return {
-            "payment_url": data.get("payment_url") or data.get("redirect_url")
-        }
+    return r.json()
+
     
     # --------------------------------------------------
     # 🔁 CALLBACK
