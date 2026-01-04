@@ -39,12 +39,12 @@ def init_paiement():
     try:
         if provider == "orange":
             orange = OrangeProvider()
-            result = orange.init_payment(
-                amount=conversion.montant_initial,
-                phone=phone,
+            result = provider.init_payment(
+                amount=montant,
                 reference=conversion.reference,
                 return_url=url_for("paiement.orange_callback", _external=True)
             )
+
             return jsonify({"success": True, **result})
 
         return jsonify({"error": "Provider non supporté"}), 400
