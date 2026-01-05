@@ -14,7 +14,6 @@ from services.risk_engine import RiskEngine
 from services.alert_service import AlertService
 from services.constants import PaymentStatus
 
-
 paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 
 # ======================================================

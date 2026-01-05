@@ -1,3 +1,7 @@
+import requests
+import base64
+import os
+
 class OrangeProvider:
 
     def __init__(self):
