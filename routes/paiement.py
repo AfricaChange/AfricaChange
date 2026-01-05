@@ -31,31 +31,26 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 @csrf.exempt
 def paiement_orange():
     data = request.get_json() or {}
-    reference = data.get("reference")
 
-    if not reference:
-        return jsonify({"error": "Référence manquante"}), 400
+    reference = data.get("reference")
+    phone = data.get("telephone")
+
+    if not reference or not phone:
+        return jsonify({"error": "Données manquantes"}), 400
 
     conversion = Conversion.query.filter_by(reference=reference).first()
     if not conversion:
         return jsonify({"error": "Conversion introuvable"}), 404
 
-    try:
-        provider = OrangeProvider()
+    provider = OrangeProvider()
+    result = provider.init_payment(
+        amount=conversion.montant_initial,
+        phone=phone,
+        reference=reference
+    )
 
-        result = provider.init_payment(
-            amount=conversion.montant_initial,
-            reference=conversion.reference,
-            return_url=url_for("paiement.orange_callback", _external=True)
-        )
+    return jsonify({"success": True, "status": result["status"]})
 
-        return jsonify({
-            "success": True,
-            "payment_url": result["payment_url"]
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 
