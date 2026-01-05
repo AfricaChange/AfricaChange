@@ -30,26 +30,52 @@ paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 @paiement.route('/orange', methods=['POST'])
 @csrf.exempt
 def paiement_orange():
-    data = request.get_json() or {}
+    try:
+        data = request.get_json(force=True)
+        reference = data.get("reference")
+        telephone = data.get("telephone")
 
-    reference = data.get("reference")
-    phone = data.get("telephone")
+        if not reference or not telephone:
+            return jsonify({"error": "Données manquantes"}), 400
 
-    if not reference or not phone:
-        return jsonify({"error": "Données manquantes"}), 400
+        conversion = PaymentService.lock_conversion(reference)
+        montant = conversion.montant_initial
 
-    conversion = Conversion.query.filter_by(reference=reference).first()
-    if not conversion:
-        return jsonify({"error": "Conversion introuvable"}), 404
+        provider = OrangeProvider()
 
-    provider = OrangeProvider()
-    result = provider.init_payment(
-        amount=conversion.montant_initial,
-        phone=phone,
-        reference=reference
-    )
+        payment = provider.init_payment(
+            amount=montant,
+            phone=telephone,
+            reference=conversion.reference,
+            return_url=url_for("paiement.orange_callback", _external=True)
+        )
 
-    return jsonify({"success": True, "status": result["status"]})
+        transaction = PaymentService.create_transaction(
+            conversion,
+            fournisseur="Orange Money",
+            montant=montant
+        )
+
+        PaymentService.create_paiement(
+            conversion,
+            transaction.reference,
+            telephone
+        )
+
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "payment_url": payment.get("payment_url")
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "error": str(e),
+            "step": "paiement_orange"
+        }), 500
+
 
 
 
