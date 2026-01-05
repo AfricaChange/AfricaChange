@@ -1,31 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("[data-provider]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const provider = btn.dataset.provider;
-      const reference = btn.dataset.reference;
+  const orangeBtn = document.querySelector(
+    "button[data-provider='orange']"
+  );
 
-      try {
-        const res = await fetch(`/paiement/${provider}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reference })
-        });
+  if (!orangeBtn) return;
 
-        const text = await res.text();
-        console.log("BACKEND RESPONSE:", text);
+  orangeBtn.addEventListener("click", async () => {
+    const reference = orangeBtn.dataset.reference;
 
-        const data = JSON.parse(text);
+    const telephone = prompt("Numéro de téléphone de paiement :");
+    if (!telephone) return;
 
-        if (data.payment_url) {
-          window.location.href = data.payment_url;
-        } else {
-          alert(data.error || "Erreur paiement");
-        }
+    console.log("SEND →", { reference, telephone });
 
-      } catch (e) {
-        console.error(e);
-        alert("Erreur réseau ou serveur");
-      }
+    const response = await fetch("/paiement/orange", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        reference: reference,
+        telephone: telephone
+      })
     });
-  });
-});
+
+    const data = await response.json();
+    console.log("BACKEND RESPONSE:", data);
+
+    if (!response.ok) {
+      alert(data.error || "Erreur paiement Orange");
+     
