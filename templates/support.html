@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-8">
+
+  <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">
+    🛠️ Support & Assistance
+  </h1>
+
+  <p class="text-center text-gray-600 mb-6">
+    Une difficulté ? Un paiement bloqué ? Une question ?
+    <br>Notre équipe AfricaChange est là pour vous aider.
+  </p>
+
+  <form method="POST" class="space-y-4">
+
+    <input type="text" name="nom" placeholder="Votre nom"
+           class="w-full border rounded px-4 py-2" required>
+
+    <input type="email" name="email" placeholder="Votre email"
+           class="w-full border rounded px-4 py-2" required>
+
+    <input type="text" name="sujet" placeholder="Sujet (optionnel)"
+           class="w-full border rounded px-4 py-2">
+
+    <textarea name="message" rows="4"
+              placeholder="Expliquez votre problème..."
+              class="w-full border rounded px-4 py-2" required></textarea>
+
+    <button type="submit"
+            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+      Envoyer le message
+    </button>
+  </form>
+
+  <div class="mt-6 bg-gray-50 p-4 rounded">
+    <h2 class="font-semibold mb-2">📞 Contacts directs</h2>
+    <p>📧 Email : <strong>gayemouhamadou98@gmail.com</strong></p>
+    <p>📱 Téléphone 1 : <strong>+221 78 127 23 81</strong></p>
+    <p>📱 Téléphone 2 : <strong>611 71 05 42</strong></p>
+  </div>
+
+</div>
+<div class="mt-6 bg-green-50 p-4 rounded">
+  <h2 class="font-semibold mb-2">📞 Contact rapide (WhatsApp)</h2>
+
+  <a href="https://wa.me/221781272381?text=Bonjour%20AfricaChange%2C%20j’ai%20besoin%20d’aide"
+     target="_blank"
+     class="block bg-green-600 text-white px-4 py-2 rounded mb-2 text-center">
+     💬 WhatsApp Sénégal
+  </a>
+
+  <a href="https://wa.me/224611710542?text=Bonjour%20AfricaChange%2C%20j’ai%20un%20souci%20avec%20mon%20paiement"
+     target="_blank"
+     class="block bg-green-700 text-white px-4 py-2 rounded text-center">
+     💬 WhatsApp Guinée
+  </a>
+
+  <p class="mt-3 text-sm text-gray-600">
+    📧 Email : gayemouhamadou98@gmail.com
+  </p>
+</div>
+
+{% endblock %}
