@@ -139,6 +139,8 @@
       <a href="{{ url_for('convert.convertir') }}" class="block text-sm text-gray-700">
         Convertir
       </a>
+	  <a href="{{ url_for('support.index') }}">🆘 Support</a>
+
 
       {% if session.get('user_id') %}
         <a href="{{ url_for('convert.historique') }}" class="block text-sm text-gray-700">
@@ -181,7 +183,8 @@
   </main>
 
   <footer class="bg-white border-t py-4 text-center text-sm text-gray-500">
-    © {{ (config.get('APP_NAME') or 'AfricaChange') }}
+    <a href="{{ url_for('support.index') }}">Support</a>
+    © {{ (config.get('APP_NAME') or 'AfricaChange') }}	
   </footer>
 
   <!-- 🔐 Helper JS CSRF (AJOUT) -->
