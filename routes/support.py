@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 support = Blueprint("support", __name__)
 
 @support.route("/support", methods=["GET", "POST"])
-def support_page():
+def index():
     if request.method == "POST":
         nom = request.form.get("nom")
         email = request.form.get("email")
