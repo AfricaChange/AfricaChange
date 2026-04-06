@@ -1,0 +1,15 @@
+<form method="POST" enctype="multipart/form-data" class="space-y-4">
+    <input name="numero" placeholder="Numéro" required>
+    <input name="montant" type="number" placeholder="Montant" required>
+    <input name="transaction_id" placeholder="ID Transaction" required>
+
+    <select name="methode">
+        <option>Orange Money</option>
+        <option>Wave</option>
+        <option>MTN</option>
+    </select>
+
+    <input type="file" name="preuve">
+
+    <button type="submit">Envoyer</button>
+</form>

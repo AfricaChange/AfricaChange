@@ -3,6 +3,9 @@ from database import db
 from models import Conversion, Rate, Transaction
 from datetime import datetime
 import uuid
+from paiements.models import Depot, Retrait, Notification
+from flask_login import login_required, current_user
+
 main = Blueprint('main', __name__)
 
 @main.route('/')
@@ -57,3 +60,23 @@ def conversion():
                            taux_cfa_gnf=taux_cfa_gnf,
                            taux_gnf_cfa=taux_gnf_cfa,
                            montant_converti=montant_converti)
+#POUR LES ENVOIS MANUELS
+@main.route('/dashboard')
+@login_required
+def dashboard():
+
+    depots = Depot.query.filter_by(user_id=current_user.id)\
+        .order_by(Depot.date.desc()).all()
+
+    retraits = Retrait.query.filter_by(user_id=current_user.id)\
+        .order_by(Retrait.date.desc()).all()
+
+    notifications = Notification.query.filter_by(user_id=current_user.id)\
+        .order_by(Notification.date.desc()).all()
+
+    return render_template(
+        'dashboard.html',
+        depots=depots,
+        retraits=retraits,
+        notifications=notifications
+    )

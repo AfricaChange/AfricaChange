@@ -1,0 +1,62 @@
+<table>
+    <tr>
+        <th>User</th>
+        <th>Montant</th>
+        <th>Statut</th>
+        <th>Action</th>
+    </tr>
+
+    {% for d in depots %}
+    <tr>
+        <td>{{ d.user_id }}</td>
+        <td>{{ d.montant }}</td>
+        <td>{{ d.statut }}</td>
+        <td>
+            <a href="/paiements/admin/valider/{{ d.id }}">Valider</a>
+            <a href="/paiements/admin/refuser/{{ d.id }}">Refuser</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="p-6">
+    <h2 class="text-xl font-bold mb-4">Gestion des dépôts</h2>
+
+    <table class="min-w-full bg-white shadow rounded">
+        <thead>
+            <tr class="bg-gray-100">
+                <th>ID</th>
+                <th>Utilisateur</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for d in depots %}
+            <tr class="border-b">
+                <td>{{ d.id }}</td>
+                <td>{{ d.user_id }}</td>
+                <td>{{ d.montant }}</td>
+
+                <td>
+                    <span class="
+                        {% if d.statut == 'valide' %}text-green-600
+                        {% elif d.statut == 'refuse' %}text-red-600
+                        {% elif d.statut == 'suspect' %}text-yellow-600
+                        {% endif %}
+                    ">
+                        {{ d.statut }}
+                    </span>
+                </td>
+
+                <td class="space-x-2">
+                    <a href="/paiements/admin/valider/{{ d.id }}" class="text-green-500">✔</a>
+                    <a href="/paiements/admin/refuser/{{ d.id }}" class="text-red-500">✖</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

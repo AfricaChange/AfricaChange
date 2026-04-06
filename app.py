@@ -20,7 +20,7 @@ from routes.admin_transactions import admin_tx
 from routes.admin_actions_routes import admin_actions_bp
 import models 
 from routes.support import support
-
+from paiements.routes import paiements_bp
 
 
 
@@ -148,7 +148,7 @@ app.register_blueprint(convert)
 app.register_blueprint(admin_tx)
 app.register_blueprint(admin_actions_bp)
 app.register_blueprint(support)
-
+app.register_blueprint(paiements_bp, url_prefix="/paiements")
 
 
 # -----------------------------

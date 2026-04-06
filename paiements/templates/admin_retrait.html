@@ -1,0 +1,21 @@
+<table>
+<tr>
+    <th>User</th>
+    <th>Montant</th>
+    <th>Statut</th>
+    <th>Action</th>
+</tr>
+
+{% for r in retraits %}
+<tr>
+    <td>{{ r.user_id }}</td>
+    <td>{{ r.montant }}</td>
+    <td>{{ r.statut }}</td>
+
+    <td>
+        <a href="/paiements/admin/retrait/valider/{{ r.id }}">✔</a>
+        <a href="/paiements/admin/retrait/refuser/{{ r.id }}">✖</a>
+    </td>
+</tr>
+{% endfor %}
+</table>

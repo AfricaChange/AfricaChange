@@ -1,0 +1,84 @@
+<div class="p-6 bg-gray-50 min-h-screen">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <span class="text-sm text-gray-500">Bienvenue {{ current_user.username }}</span>
+    </div>
+
+    <!-- SOLDE -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow mb-6">
+        <h2 class="text-lg">Solde disponible</h2>
+        <p class="text-3xl font-bold mt-2">{{ current_user.solde }} GNF</p>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <a href="/paiements/depot" class="bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg text-center">
+            💰 Déposer
+        </a>
+
+        <a href="/paiements/retrait" class="bg-red-500 hover:bg-red-600 text-white p-4 rounded-lg text-center">
+            💸 Retirer
+        </a>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- DEPOTS -->
+        <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="font-bold mb-3">📥 Dépôts récents</h3>
+
+            {% for d in depots[:5] %}
+            <div class="flex justify-between border-b py-2">
+                <span>{{ d.montant }} GNF</span>
+
+                <span class="
+                    {% if d.statut == 'valide' %}text-green-600
+                    {% elif d.statut == 'refuse' %}text-red-600
+                    {% elif d.statut == 'suspect' %}text-yellow-600
+                    {% else %}text-gray-500
+                    {% endif %}
+                ">
+                    {{ d.statut }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- RETRAITS -->
+        <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="font-bold mb-3">📤 Retraits récents</h3>
+
+            {% for r in retraits[:5] %}
+            <div class="flex justify-between border-b py-2">
+                <span>{{ r.montant }} GNF</span>
+
+                <span class="
+                    {% if r.statut == 'valide' %}text-green-600
+                    {% elif r.statut == 'refuse' %}text-red-600
+                    {% elif r.statut == 'suspect' %}text-yellow-600
+                    {% else %}text-gray-500
+                    {% endif %}
+                ">
+                    {{ r.statut }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="bg-white p-4 rounded-xl shadow mt-6">
+        <h3 class="font-bold mb-3">🔔 Notifications</h3>
+
+        {% for n in notifications[:5] %}
+        <div class="border-b py-2 text-gray-600">
+            {{ n.message }}
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
