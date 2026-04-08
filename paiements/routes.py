@@ -21,7 +21,7 @@ from database import db
 from models import Utilisateur  # adapte si ton User est ailleurs
 from paiements.services import verifier_fraude
 from paiements.utils import admin_required
-
+from convert import convertir
 
 
 
@@ -42,9 +42,22 @@ def depot():
 
         # ✅ récupérer montant AVANT
         montant = float(request.form['montant'])
+        taux = get_taux(devise_source, devise_cible)  # adapte selon ton convert.py
 
+        montant_converti = convertir(montant, devise_source, devise_cible)
+
+        profit = montant - montant_converti
+        devise_source = request.form.get('devise_source')
+        devise_cible = request.form.get('devise_cible')
+
+        # 🔥 TON SYSTEME EXISTANT
+        montant_converti = convertir(montant, devise_source, devise_cible)
+        
         # ✅ anti-fraude
         etat = verifier_fraude(current_user, montant)
+
+        
+        
 
         # Upload fichier
         fichier = request.files.get('preuve')
@@ -59,12 +72,22 @@ def depot():
         data = {
             "user_id": current_user.id,
             "numero": request.form['numero'],
-            "montant": montant,
+
+            # 🔥 IMPORTANT
+            "montant": montant_converti,      # ce que tu envoies
+            "montant_source": montant,        # ce que tu reçois
+
+            "devise_source": devise_source,
+            "devise_cible": devise_cible,
+            
+            "taux": taux,
+            "profit": profit,
+
             "transaction_id": transaction_id,
             "methode": request.form['methode'],
             "preuve": filename,
             "statut": "en_attente"
-        }
+}
 
         # ✅ appliquer statut anti-fraude
         if etat == "suspect":

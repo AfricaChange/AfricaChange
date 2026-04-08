@@ -7,7 +7,23 @@ class Depot(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
 
     numero = db.Column(db.String(20))
+
+    # 🔥 montant final (ce que tu envoies)
     montant = db.Column(db.Float)
+
+    # 🔥 montant initial (ce que tu reçois)
+    montant_source = db.Column(db.Float)
+
+    # 🔥 devises
+    devise_source = db.Column(db.String(10))
+    devise_cible = db.Column(db.String(10))
+
+    # 🔥 taux utilisé
+    taux = db.Column(db.Float)
+
+    # 🔥 profit
+    profit = db.Column(db.Float)
+
     transaction_id = db.Column(db.String(100), unique=True)
 
     methode = db.Column(db.String(50))
@@ -17,7 +33,7 @@ class Depot(db.Model):
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
     
-    role = db.Column(db.String(20), default="user")  # user / admin
+    
 
 class LogDepot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
