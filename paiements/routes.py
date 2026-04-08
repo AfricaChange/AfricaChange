@@ -17,10 +17,10 @@ from paiements.services import (
     valider_retrait_service,
     refuser_retrait_service
 )
-from app import db
-from models import User  # adapte si ton User est ailleurs
+from database import db
+from models import Utilisateur  # adapte si ton User est ailleurs
 from paiements.services import verifier_fraude
-from utils import admin_required
+from paiements.utils import admin_required
 
 
 
@@ -33,13 +33,21 @@ UPLOAD_FOLDER = "static/uploads"
 @login_required
 def depot():
     if request.method == 'POST':
+
         transaction_id = request.form['transaction_id']
 
         if verifier_transaction_unique(transaction_id):
             flash("Transaction déjà utilisée", "danger")
             return redirect(url_for('paiements.depot'))
 
-        fichier = request.files['preuve']
+        # ✅ récupérer montant AVANT
+        montant = float(request.form['montant'])
+
+        # ✅ anti-fraude
+        etat = verifier_fraude(current_user, montant)
+
+        # Upload fichier
+        fichier = request.files.get('preuve')
         filename = None
 
         if fichier:
@@ -47,19 +55,27 @@ def depot():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             fichier.save(filepath)
 
+        # Données dépôt
         data = {
             "user_id": current_user.id,
             "numero": request.form['numero'],
-            "montant": float(request.form['montant']),
+            "montant": montant,
             "transaction_id": transaction_id,
             "methode": request.form['methode'],
-            "preuve": filename
+            "preuve": filename,
+            "statut": "en_attente"
         }
+
+        # ✅ appliquer statut anti-fraude
+        if etat == "suspect":
+            data["statut"] = "suspect"
+        elif etat == "verification":
+            data["statut"] = "en_verification"
 
         creer_depot(data)
 
         flash("Dépôt envoyé, en attente de validation", "info")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('main.dashboard'))  # ⚠️ correction ici
 
     return render_template('depot.html')
 
@@ -83,28 +99,7 @@ def valider_depot(id):
     flash("Dépôt validé", "success")
     return redirect(url_for('paiements.admin_depots'))
 
-
-@paiements_bp.route('/admin/refuser/<int:id>')
-@login_required
-def refuser_depot(id):
-    depot = Depot.query.get_or_404(id)
-
-    refuser_depot_service(depot)
-
-    flash("Dépôt refusé", "danger")
-    return redirect(url_for('paiements.admin_depots'))
-    
-    
-#MODIFIER CREATION DEPOT   
-
-etat = verifier_fraude(current_user, float(request.form['montant']))
-
-data["statut"] = "en_attente"
-
-if etat == "suspect":
-    data["statut"] = "suspect"
-elif etat == "verification":
-    data["statut"] = "en_verification"    
+  
     
 #DEMANDE UTILISATEUR
 @paiements_bp.route('/retrait', methods=['GET', 'POST'])

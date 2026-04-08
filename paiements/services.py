@@ -1,5 +1,5 @@
 from paiements.models import Depot, LogDepot
-from app import db
+from database import db
 
 def verifier_transaction_unique(transaction_id):
     return Depot.query.filter_by(transaction_id=transaction_id).first()
