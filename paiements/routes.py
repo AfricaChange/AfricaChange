@@ -24,6 +24,14 @@ from convert import convertir
 from flask import jsonify
 from convert import convertir  # ton fichier existant
 from paiements.models import ConfigPaiement
+from models import Parametre
+
+
+
+
+
+
+
 
 UPLOAD_FOLDER = "static/uploads"
 
@@ -31,16 +39,11 @@ UPLOAD_FOLDER = "static/uploads"
 @paiements_bp.route('/depot', methods=['GET', 'POST'])
 @login_required
 def depot():
-#--------------------------------------------------------
-#BLOQUER / AUTORISER DEPOTS 
+    mode = Parametre.query.filter_by(cle="mode_systeme").first()
 
-    config = ConfigPaiement.query.first()
-
-    if not config or not config.mode_manuel:
-        flash("Dépôts temporairement désactivés", "danger")
+    if mode and mode.valeur != "manuel":
+        flash("Mode manuel désactivé", "danger")
         return redirect(url_for('main.dashboard'))
-    
-#-----------------------------------------------------------------------    
     if request.method == 'POST':
 
         transaction_id = request.form['transaction_id']
@@ -235,19 +238,3 @@ def calcul():
         "taux": taux
     })    
     
-#AJOUT D'UN BOUTON ADMIN
-@paiements_bp.route('/admin/toggle-mode')
-@login_required
-@admin_required
-def toggle_mode():
-    config = ConfigPaiement.query.first()
-
-    if not config:
-        config = ConfigPaiement(mode_manuel=True)
-        db.session.add(config)
-
-    config.mode_manuel = not config.mode_manuel
-    db.session.commit()
-
-    flash("Mode manuel activé/désactivé", "info")
-    return redirect(url_for('paiements.admin_depots'))    
