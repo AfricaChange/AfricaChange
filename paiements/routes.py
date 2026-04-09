@@ -4,14 +4,13 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from paiements import paiements_bp
-from paiements.models import Depot
+from paiements.models import Depot,Retrait
 from paiements.services import (
     verifier_transaction_unique,
     creer_depot,
     valider_depot_service,
     refuser_depot_service
 )
-from paiements.models import Retrait
 from paiements.services import (
     demander_retrait,
     valider_retrait_service,
@@ -19,12 +18,12 @@ from paiements.services import (
 )
 from database import db
 from models import Utilisateur  # adapte si ton User est ailleurs
-from paiements.services import verifier_fraude
+from paiements.services import verifier_fraude, generer_reference,notifier
 from paiements.utils import admin_required
 from convert import convertir
-
-
-
+from flask import jsonify
+from convert import convertir  # ton fichier existant
+from paiements.models import ConfigPaiement
 
 UPLOAD_FOLDER = "static/uploads"
 
@@ -32,6 +31,16 @@ UPLOAD_FOLDER = "static/uploads"
 @paiements_bp.route('/depot', methods=['GET', 'POST'])
 @login_required
 def depot():
+#--------------------------------------------------------
+#BLOQUER / AUTORISER DEPOTS 
+
+    config = ConfigPaiement.query.first()
+
+    if not config or not config.mode_manuel:
+        flash("Dépôts temporairement désactivés", "danger")
+        return redirect(url_for('main.dashboard'))
+    
+#-----------------------------------------------------------------------    
     if request.method == 'POST':
 
         transaction_id = request.form['transaction_id']
@@ -52,7 +61,7 @@ def depot():
 
         # 🔥 TON SYSTEME EXISTANT
         montant_converti = convertir(montant, devise_source, devise_cible)
-        
+        reference = generer_reference()
         # ✅ anti-fraude
         etat = verifier_fraude(current_user, montant)
 
@@ -86,8 +95,9 @@ def depot():
             "transaction_id": transaction_id,
             "methode": request.form['methode'],
             "preuve": filename,
+            "reference": reference,
             "statut": "en_attente"
-}
+}          
 
         # ✅ appliquer statut anti-fraude
         if etat == "suspect":
@@ -96,7 +106,13 @@ def depot():
             data["statut"] = "en_verification"
 
         creer_depot(data)
+        message = message_depot(depot)
+        lien_whatsapp = generer_lien_whatsapp(depot.numero, message)
 
+        return render_template(
+               'confirmation.html',
+               lien_whatsapp=lien_whatsapp
+        ) 
         flash("Dépôt envoyé, en attente de validation", "info")
         return redirect(url_for('main.dashboard'))  # ⚠️ correction ici
 
@@ -118,6 +134,8 @@ def valider_depot(id):
     user = User.query.get(depot.user_id)
 
     valider_depot_service(depot, user)
+    
+    # notifier(user.id, f"Dépôt validé - Réf: {depot.reference}")
 
     flash("Dépôt validé", "success")
     return redirect(url_for('paiements.admin_depots'))
@@ -193,3 +211,43 @@ def stats():
         revenus=total_revenus,
         depots=total_depots
     )    
+    
+
+
+@paiements_bp.route('/calcul', methods=['POST'])
+@login_required
+def calcul():
+    montant = float(request.json.get('montant', 0))
+    devise_source = request.json.get('devise_source')
+    devise_cible = request.json.get('devise_cible')
+
+    if not montant:
+        return jsonify({"error": "Montant invalide"}), 400
+
+    montant_converti = convertir(montant, devise_source, devise_cible)
+
+    # 👉 adapte si tu as une fonction taux
+    taux = montant_converti / montant if montant else 0
+
+    return jsonify({
+        "montant_source": montant,
+        "montant_converti": montant_converti,
+        "taux": taux
+    })    
+    
+#AJOUT D'UN BOUTON ADMIN
+@paiements_bp.route('/admin/toggle-mode')
+@login_required
+@admin_required
+def toggle_mode():
+    config = ConfigPaiement.query.first()
+
+    if not config:
+        config = ConfigPaiement(mode_manuel=True)
+        db.session.add(config)
+
+    config.mode_manuel = not config.mode_manuel
+    db.session.commit()
+
+    flash("Mode manuel activé/désactivé", "info")
+    return redirect(url_for('paiements.admin_depots'))    

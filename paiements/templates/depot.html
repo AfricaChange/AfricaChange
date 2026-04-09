@@ -1,15 +1,115 @@
-<form method="POST" enctype="multipart/form-data" class="space-y-4">
-    <input name="numero" placeholder="Numéro" required>
-    <input name="montant" type="number" placeholder="Montant" required>
-    <input name="transaction_id" placeholder="ID Transaction" required>
+<div class="p-6 max-w-xl mx-auto">
 
-    <select name="methode">
-        <option>Orange Money</option>
-        <option>Wave</option>
-        <option>MTN</option>
-    </select>
+    <h2 class="text-xl font-bold mb-4">💰 Dépôt</h2>
 
-    <input type="file" name="preuve">
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
 
-    <button type="submit">Envoyer</button>
-</form>
+        <input name="numero" placeholder="Votre numéro" class="w-full border p-2 rounded" required>
+
+        <input name="montant" type="number" placeholder="Montant à envoyer" class="w-full border p-2 rounded" required>
+
+        <input name="transaction_id" placeholder="ID Transaction" class="w-full border p-2 rounded" required>
+
+        <select name="methode" class="w-full border p-2 rounded">
+            <option>Orange Money</option>
+            <option>Wave</option>
+        </select>
+
+        <!-- 🔥 NOUVEAU -->
+        <select name="devise_source" class="w-full border p-2 rounded">
+            <option value="XOF">XOF</option>
+            <option value="GNF">GNF</option>
+        </select>
+
+        <select name="devise_cible" class="w-full border p-2 rounded">
+            <option value="GNF">GNF</option>
+            <option value="XOF">XOF</option>
+        </select>
+
+        <input type="file" name="preuve" class="w-full">
+
+        <button class="bg-green-500 text-white w-full py-2 rounded">
+            Continuer
+        </button>
+
+    </form>
+
+    <!-- 🔥 INSTRUCTIONS -->
+    <div class="mt-6 bg-yellow-100 p-4 rounded">
+        <p class="font-bold">Instructions :</p>
+        <p>1. Envoyez l'argent au numéro :</p>
+
+        <div class="flex justify-between items-center bg-white p-2 rounded mt-2">
+            <span id="numero">620000000</span>
+            <button onclick="copier()" class="text-blue-500">Copier</button>
+        </div>
+
+        <p class="mt-2">2. Entrez l'ID de transaction</p>
+        <p>3. Soumettez le formulaire</p>
+    </div>
+    <div id="recap" class="mt-6 hidden bg-blue-50 p-4 rounded">
+        <h3 class="font-bold mb-2">📊 Récapitulatif</h3>
+
+        <p>Montant envoyé : <span id="montant_send"></span></p>
+        <p>Montant reçu : <span id="montant_receive"></span></p>
+        <p>Taux : <span id="taux"></span></p>
+        <p class="text-green-600 font-bold mt-2">✔ Vérifiez avant de continuer</p>
+		<p class="text-sm text-gray-500 mt-2">
+           ⚠️ Le montant final peut légèrement varier selon les frais
+        </p>
+    </div>
+	<div class="bg-green-100 p-3 rounded mt-4">
+        <p class="font-bold">🔑 Votre référence sera générée automatiquement</p>
+        <p>Utilisez-la en cas de problème ou support</p>
+		<p class="text-green-600 font-bold">
+           Référence : {{ d.reference }}
+        </p>
+    </div>
+</div>
+
+<script>
+function copier() {
+    const texte = document.getElementById("numero").innerText;
+    navigator.clipboard.writeText(texte);
+    alert("Numéro copié !");
+}
+</script>
+<script>
+async function calculer() {
+    let montant = document.querySelector("input[name='montant']").value;
+    let devise_source = document.querySelector("select[name='devise_source']").value;
+    let devise_cible = document.querySelector("select[name='devise_cible']").value;
+
+    if (!montant) return;
+
+    let response = await fetch("/paiements/calcul", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            montant: montant,
+            devise_source: devise_source,
+            devise_cible: devise_cible
+        })
+    });
+
+    let data = await response.json();
+
+    document.getElementById("recap").classList.remove("hidden");
+
+    document.getElementById("montant_send").innerText =
+        data.montant_source + " " + devise_source;
+
+    document.getElementById("montant_receive").innerText =
+        Math.round(data.montant_converti) + " " + devise_cible;
+
+    document.getElementById("taux").innerText =
+        "1 " + devise_source + " = " + data.taux.toFixed(2) + " " + devise_cible;
+}
+
+// auto update
+document.querySelector("input[name='montant']").addEventListener("input", calculer);
+document.querySelector("select[name='devise_source']").addEventListener("change", calculer);
+document.querySelector("select[name='devise_cible']").addEventListener("change", calculer);
+</script>

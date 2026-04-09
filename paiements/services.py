@@ -1,5 +1,44 @@
 from paiements.models import Depot, LogDepot
 from database import db
+import random
+from datetime import datetime
+import urllib.parse
+
+
+
+
+
+
+def message_support(user, reference=None):
+    msg = f"Bonjour AfricaChangeX,\n\nJe suis {user.username}."
+
+    if reference:
+        msg += f"\nRéférence : {reference}"
+
+    msg += "\n\nJ’ai besoin d’assistance."
+
+    return msg
+
+def generer_lien_whatsapp(numero, message):
+    message_encode = urllib.parse.quote(message)
+    return f"https://wa.me/{numero}?text={message_encode}"
+
+def message_depot(depot):
+    return f"""
+AfricaChangeX
+
+Référence: {depot.reference}
+
+Montant reçu: {depot.montant_source} {depot.devise_source}
+Montant à envoyer: {depot.montant} {depot.devise_cible}
+
+Merci pour votre confiance.
+"""
+
+def generer_reference():
+    date_str = datetime.utcnow().strftime("%Y%m%d")
+    code = random.randint(1000, 9999)
+    return f"ACX-{date_str}-{code}"
 
 def verifier_transaction_unique(transaction_id):
     return Depot.query.filter_by(transaction_id=transaction_id).first()

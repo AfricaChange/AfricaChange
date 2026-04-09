@@ -39,6 +39,7 @@
                 <td>{{ d.id }}</td>
                 <td>{{ d.user_id }}</td>
                 <td>{{ d.montant }}</td>
+				<td>{{ d.reference }}</td>
 
                 <td>
                     <span class="
@@ -54,6 +55,16 @@
                 <td class="space-x-2">
                     <a href="/paiements/admin/valider/{{ d.id }}" class="text-green-500">✔</a>
                     <a href="/paiements/admin/refuser/{{ d.id }}" class="text-red-500">✖</a>
+					
+					<a href="https://wa.me/224611710542?text=Bonjour%20AfricaChangeX%2C%20j'ai%20un%20problème%20avec%20la%20référence%20{{ d.reference }}"
+                       target="_blank"
+                       class="text-blue-500">
+                       Support
+                    </a>
+					<a href="/paiements/admin/toggle-mode"
+                       class="bg-blue-500 text-white px-4 py-2 rounded">
+                       🔄 Activer / Désactiver dépôts
+                    </a>
                 </td>
             </tr>
             {% endfor %}

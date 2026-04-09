@@ -132,3 +132,4 @@ class Config:
 
     MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
     MAILJET_SECRET_KEY = os.getenv("MAILJET_SECRET_KEY")
+    SUPPORT_WHATSAPP = os.getenv( "2246XXXXXXX")

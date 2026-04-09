@@ -32,7 +32,7 @@ class Depot(db.Model):
     statut = db.Column(db.String(50), default="en_attente")
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    reference = db.Column(db.String(50), unique=True)
     
 
 class LogDepot(db.Model):
@@ -68,3 +68,9 @@ class Revenu(db.Model):
     montant = db.Column(db.Float)
     source = db.Column(db.String(50))  # depot / retrait
     date = db.Column(db.DateTime, default=datetime.utcnow)    
+    
+    
+    
+class ConfigPaiement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    mode_manuel = db.Column(db.Boolean, default=True)    
