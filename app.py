@@ -26,6 +26,15 @@ from paiements.routes import paiements_bp
 
 
 app = Flask(__name__)
+
+
+@app.before_request
+def allow_meta_bot():
+    user_agent = request.headers.get('User-Agent', '').lower()
+
+    # Autoriser Meta / Facebook crawler
+    if "facebookexternalhit" in user_agent or "meta" in user_agent:
+        return None
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
 
