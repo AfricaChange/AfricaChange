@@ -35,6 +35,8 @@ def allow_meta_bot():
     # Autoriser Meta / Facebook crawler
     if "facebookexternalhit" in user_agent or "meta" in user_agent:
         return None
+        
+        
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
 
