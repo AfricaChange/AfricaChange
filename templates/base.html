@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="facebook-domain-verification" content="3qivmst0r58vwrny8s4dz0u3oar512" />
   <meta name="facebook-domain-verification" content="fwh5zumx3018ik60mxobr8e9o7ta2e" />
+  <meta name="facebook-domain-verification" content="qw3mgnwlo40spyzosnqtcxogn1mthn" />
   <!-- 🔐 CSRF TOKEN (utilisable JS / fetch) -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -16,15 +17,15 @@
   <!--  logo et notes -->  
   <meta property="og:title" content="AfricaChangeX">
   <meta property="og:description" content="Plateforme de change entre devises africaines">
-  <meta property="og:image" content="https://www.africachange.net/static/img/logo.png">
-  <meta property="og:url" content="https://www.africachange.net">
+  <meta property="og:image" content="https://www.africachangex.com/static/img/logo.png">
+  <meta property="og:url" content="https://www.africachangex.com">
   <meta property="og:type" content="website">  
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <!-- <meta property="fb:app_id" content="1668825537898117">-->
   
   
-  <title>AfricaChange</title>
+  <title>AfricaChangeX</title>
   
   <script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
 
@@ -74,7 +75,7 @@
 
     <!-- LOGO -->
     <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
-      <span class="text-xl font-bold text-indigo-600">AfricaChange</span>
+      <span class="text-xl font-bold text-indigo-600">AfricaChangeX</span>
     </a>
 
     <!-- ACTIONS (toujours visibles) -->
@@ -196,7 +197,7 @@
 
   <footer class="bg-white border-t py-4 text-center text-sm text-gray-500">
     <a href="{{ url_for('support.index') }}">Support</a>
-    © {{ (config.get('APP_NAME') or 'AfricaChange') }}	
+    © {{ (config.get('APP_NAME') or 'AfricaChangeX') }}	
   </footer>
 
   <!-- 🔐 Helper JS CSRF (AJOUT) -->
