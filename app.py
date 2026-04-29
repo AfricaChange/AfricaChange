@@ -1,4 +1,4 @@
-from flask import Flask, render_template,session, request,Response
+from flask import Flask, render_template,session, request,Response,redirect
 from config import Config
 from database import db
 from routes.main import main
@@ -30,6 +30,26 @@ from webhook import webhook_bp
 
 app = Flask(__name__)
 
+
+
+
+
+@app.before_request
+def force_domain():
+    url = request.url
+
+    # Forcer HTTPS
+    if request.headers.get("X-Forwarded-Proto", "http") != "https":
+        url = url.replace("http://", "https://")
+
+    # Forcer www
+    if not request.host.startswith("www."):
+        url = url.replace("://", "://www.")
+
+    if url != request.url:
+        return redirect(url, code=301)
+
+
 '''
 @app.before_request
 def allow_meta_bot():
@@ -39,7 +59,7 @@ def allow_meta_bot():
     if "facebookexternalhit" in user_agent or "facebot" in user_agent:
         return None
         
-'''
+
 
 
 @app.before_request
@@ -68,6 +88,7 @@ def robots():
 @app.route('/test')
 def test():
     return "OK", 200
+'''
         
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
@@ -107,6 +128,7 @@ limiter.init_app(app)
 # si tu as blueprints, CSRFProtect couvrira tout automatiquement
 
 # ---------- Security Headers via Talisman ----------
+'''
 csp = app.config.get("CSP", None)
 talisman = Talisman(
     app,
@@ -118,7 +140,7 @@ talisman = Talisman(
     strict_transport_security_include_subdomains=True,
 )
 
-
+'''
 # ---------- Logging : ne pas logguer secret (production) ----------
 if not app.debug:
     log_dir = os.path.join(os.path.dirname(__file__), "logs")
