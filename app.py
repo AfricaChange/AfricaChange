@@ -1,4 +1,4 @@
-from flask import Flask, render_template,session, request
+from flask import Flask, render_template,session, request,Response
 from config import Config
 from database import db
 from routes.main import main
@@ -25,6 +25,9 @@ from webhook import webhook_bp
 
 
 
+
+
+
 app = Flask(__name__)
 
 
@@ -33,9 +36,18 @@ def allow_meta_bot():
     user_agent = request.headers.get('User-Agent', '').lower()
 
     # Autoriser Meta / Facebook crawler
-    if "facebookexternalhit" in user_agent or "meta" in user_agent:
+    if "facebookexternalhit" in user_agent or "facebot" in user_agent:
         return None
         
+
+@app.route('/robots.txt')
+def robots():
+    return Response(
+        "User-agent: *\nAllow: /\n\nUser-agent: facebookexternalhit\nAllow: /\nUser-agent: Facebot\nAllow: /",
+        mimetype="text/plain"
+    )
+
+
         
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
@@ -74,7 +86,7 @@ limiter.init_app(app)
 csp = app.config.get("CSP", None)
 talisman = Talisman(
     app,
-    content_security_policy=csp,
+    content_security_policy=None,
     force_https=True,               # redirige vers HTTPS en prod
     session_cookie_secure=True,
     strict_transport_security=True,
@@ -148,6 +160,7 @@ def maintenance():
     return render_template("maintenance.html", message=message), 503
 
  """   
+
 
 
 # Enregistrement de la route principale
