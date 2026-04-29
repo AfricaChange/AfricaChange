@@ -30,7 +30,7 @@ from webhook import webhook_bp
 
 app = Flask(__name__)
 
-
+'''
 @app.before_request
 def allow_meta_bot():
     user_agent = request.headers.get('User-Agent', '').lower()
@@ -39,6 +39,18 @@ def allow_meta_bot():
     if "facebookexternalhit" in user_agent or "facebot" in user_agent:
         return None
         
+'''
+
+
+@app.before_request
+def allow_facebook_bot():
+    user_agent = request.headers.get('User-Agent', '').lower()
+
+    # Autoriser Facebook bot
+    if "facebookexternalhit" in user_agent or "facebot" in user_agent:
+        return None
+
+
 
 @app.route('/robots.txt')
 def robots():
@@ -52,22 +64,26 @@ def robots():
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
 
-#from migrations.ensure_schema import( ensure_paiement_transaction_reference,
-#    ensure_paiement_idempotency_key
-#)
-#
-#with app.app_context():
-#   ensure_paiement_transaction_reference()
-#  ensure_paiement_idempotency_key()
+
+'''
+from migrations.ensure_schema import( ensure_paiement_transaction_reference,
+    ensure_paiement_idempotency_key
+)
+
+with app.app_context():
+   ensure_paiement_transaction_reference()
+  ensure_paiement_idempotency_key()
 
 
-#une expiration de session
+une expiration de session
 app.permanent_session_lifetime = timedelta(minutes=30)
 
-# Initialisation CSRF
+ Initialisation CSRF
 csrf.init_app(app)
 
-# 🔁 Injection du helper csrf_token() dans les templates
+ 🔁 Injection du helper csrf_token() dans les templates
+'''
+
 @app.context_processor
 def inject_globals():
     return {
