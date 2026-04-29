@@ -65,7 +65,9 @@ def robots():
         mimetype="text/plain"
     )
 
-
+@app.route('/test')
+def test():
+    return "OK", 200
         
 app.config.from_object(Config)
 db.init_app(app)              # Initialisation de la base de données
