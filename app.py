@@ -138,7 +138,7 @@ limiter.init_app(app)
 # si tu as blueprints, CSRFProtect couvrira tout automatiquement
 
 # ---------- Security Headers via Talisman ----------
-'''
+
 csp = app.config.get("CSP", None)
 talisman = Talisman(
     app,
@@ -150,7 +150,7 @@ talisman = Talisman(
     strict_transport_security_include_subdomains=True,
 )
 
-'''
+
 # ---------- Logging : ne pas logguer secret (production) ----------
 if not app.debug:
     log_dir = os.path.join(os.path.dirname(__file__), "logs")
