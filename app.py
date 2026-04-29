@@ -32,7 +32,17 @@ app = Flask(__name__)
 
 
 
+@app.before_request
+def handle_all():
+    ua = request.headers.get('User-Agent', '').lower()
 
+    # Autoriser Facebook sans redirection
+    if "facebookexternalhit" in ua or "facebot" in ua:
+        return None
+
+    # Redirection normale pour utilisateurs
+    if request.headers.get("X-Forwarded-Proto", "http") != "https":
+        return redirect(request.url.replace("http://", "https://"), code=301)
 
 @app.before_request
 def force_domain():
