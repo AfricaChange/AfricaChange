@@ -51,6 +51,12 @@ def allow_facebook_bot():
         return None
 
 
+@app.before_request
+def bypass_for_facebook():
+    user_agent = request.headers.get('User-Agent', '').lower()
+
+    if "facebookexternalhit" in user_agent or "facebot" in user_agent:
+        return "", 200
 
 @app.route('/robots.txt')
 def robots():
