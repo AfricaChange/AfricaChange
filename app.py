@@ -22,7 +22,7 @@ import models
 from routes.support import support
 from paiements.routes import paiements_bp
 from webhook import webhook_bp
-from routes.legal import legal_bp
+from routes.legal import legal
 
 
 
@@ -232,7 +232,7 @@ app.register_blueprint(admin_actions_bp)
 app.register_blueprint(support)
 app.register_blueprint(paiements_bp, url_prefix="/paiements")
 app.register_blueprint(webhook_bp)
-app.register_blueprint(legal_bp)
+app.register_blueprint(legal)
 # -----------------------------
 # 🔴 GESTION DES PAGES D’ERREUR
 # -----------------------------
