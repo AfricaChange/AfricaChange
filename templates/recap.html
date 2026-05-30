@@ -59,6 +59,13 @@
         En attente de paiement
       </span>
     </div>
+
+    <div class="flex justify-between">
+      <span class="text-gray-600">Source de liquidité</span>
+      <span class="font-semibold">
+        {{ conversion.liquidity_label if conversion.compte_systeme_id or conversion.merchant_id else "Attribution automatique au paiement" }}
+      </span>
+    </div>
   </div>
 
   <!-- Avertissement -->

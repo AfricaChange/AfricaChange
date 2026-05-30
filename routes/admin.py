@@ -1,11 +1,28 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from database import db
-from models import Utilisateur, Rate, Compte, Transaction, Conversion, CompteSysteme, Parametre, RiskEvent, AuditLog, Utilisateur
+from models import (
+    AuditLog,
+    Compte,
+    CompteSysteme,
+    Conversion,
+    Dispute,
+    Merchant,
+    MerchantRate,
+    Parametre,
+    Rate,
+    RiskEvent,
+    Settlement,
+    Transaction,
+    Utilisateur,
+)
 import io
 from datetime import datetime
 from openpyxl import Workbook
 from io import BytesIO 
 from functools import wraps
+from services.liquidity_service import LiquidityService
+from services.dispute_service import DisputeService
+from services.settlement_service import SettlementService
  
 
 
@@ -189,7 +206,10 @@ def export_conversions():
         "Référence",
         "Date conversion",
         "Statut",
-        "Compte système"
+        "Source liquidité",
+        "Porteur risque",
+        "Compte système",
+        "Marchand"
     ]
     ws.append(headers)
 
@@ -207,7 +227,10 @@ def export_conversions():
             c.reference,
             c.date_conversion.strftime("%Y-%m-%d %H:%M:%S") if c.date_conversion else "",
             c.statut,
-            c.compte_systeme.nom if c.compte_systeme else ""
+            c.liquidity_source_type,
+            c.risk_bearer,
+            c.compte_systeme.nom if c.compte_systeme else "",
+            c.merchant.nom if c.merchant else ""
         ])
 
     # Sauvegarde en mémoire
@@ -378,6 +401,249 @@ def supprimer_compte(id):
     return redirect(url_for('admin.comptes_systeme'))
 
 
+@admin.route('/marchands', methods=['GET', 'POST'])
+@admin_required
+def marchands():
+    if request.method == 'POST':
+        action = request.form.get("action", "").strip()
+
+        try:
+            if action == "create_merchant":
+                code = request.form.get("code", "").strip().upper()
+                nom = request.form.get("nom", "").strip()
+                telephone = request.form.get("telephone", "").strip()
+                email = request.form.get("email", "").strip() or None
+                pays = request.form.get("pays", "").strip()
+                min_ticket = float(request.form.get("min_ticket", 0) or 0)
+                max_ticket_raw = request.form.get("max_ticket", "").strip()
+                max_ticket = float(max_ticket_raw) if max_ticket_raw else None
+                solde_disponible = float(request.form.get("solde_disponible", 0) or 0)
+
+                if not all([code, nom, telephone, pays]):
+                    raise ValueError("Code, nom, telephone et pays sont obligatoires.")
+                if min_ticket < 0 or solde_disponible < 0:
+                    raise ValueError("Les montants ne peuvent pas etre negatifs.")
+                if max_ticket is not None and max_ticket <= 0:
+                    raise ValueError("Le ticket maximum doit etre superieur a 0.")
+                if max_ticket is not None and max_ticket < min_ticket:
+                    raise ValueError("Le ticket maximum doit etre superieur ou egal au minimum.")
+
+                merchant = Merchant(
+                    code=code,
+                    nom=nom,
+                    telephone=telephone,
+                    email=email,
+                    pays=pays,
+                    actif=request.form.get("actif") == "on",
+                    verifie=request.form.get("verifie") == "on",
+                    risk_score=int(request.form.get("risk_score", 0) or 0),
+                    solde_disponible=solde_disponible,
+                    min_ticket=min_ticket,
+                    max_ticket=max_ticket,
+                )
+                db.session.add(merchant)
+                db.session.commit()
+                flash(f"Marchand {merchant.nom} ajoute avec succes.", "success")
+                return redirect(url_for('admin.marchands'))
+
+            if action == "create_rate":
+                merchant_id = int(request.form.get("merchant_id", 0) or 0)
+                from_currency = request.form.get("from_currency", "").strip().upper()
+                to_currency = request.form.get("to_currency", "").strip().upper()
+                rate_value = float(request.form.get("rate", 0) or 0)
+
+                if not merchant_id or not all([from_currency, to_currency]):
+                    raise ValueError("Marchand et paire de devises obligatoires.")
+                if rate_value <= 0:
+                    raise ValueError("Le taux marchand doit etre superieur a 0.")
+
+                merchant = Merchant.query.get_or_404(merchant_id)
+                existing = MerchantRate.query.filter_by(
+                    merchant_id=merchant.id,
+                    from_currency=from_currency,
+                    to_currency=to_currency,
+                ).first()
+
+                if existing:
+                    existing.rate = rate_value
+                    existing.actif = request.form.get("actif_rate") == "on"
+                    flash(f"Taux mis a jour pour {merchant.nom}.", "success")
+                else:
+                    merchant_rate = MerchantRate(
+                        merchant_id=merchant.id,
+                        from_currency=from_currency,
+                        to_currency=to_currency,
+                        rate=rate_value,
+                        actif=request.form.get("actif_rate") == "on",
+                    )
+                    db.session.add(merchant_rate)
+                    flash(f"Taux ajoute pour {merchant.nom}.", "success")
+
+                db.session.commit()
+                return redirect(url_for('admin.marchands'))
+
+            raise ValueError("Action admin invalide.")
+
+        except Exception as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
+            return redirect(url_for('admin.marchands'))
+
+    merchants = Merchant.query.order_by(Merchant.created_at.desc()).all()
+    merchant_rates = MerchantRate.query.order_by(
+        MerchantRate.merchant_id.asc(),
+        MerchantRate.from_currency.asc(),
+        MerchantRate.to_currency.asc(),
+    ).all()
+    return render_template(
+        'admin_merchants.html',
+        merchants=merchants,
+        merchant_rates=merchant_rates,
+    )
+
+
+@admin.route('/marchands/toggle/<int:id>', methods=['POST'])
+@admin_required
+def toggle_marchand(id):
+    merchant = Merchant.query.get_or_404(id)
+    merchant.actif = not merchant.actif
+    db.session.commit()
+    flash(f"Marchand {merchant.nom} {'active' if merchant.actif else 'desactive'}.", "info")
+    return redirect(url_for('admin.marchands'))
+
+
+@admin.route('/marchands/verify/<int:id>', methods=['POST'])
+@admin_required
+def verify_marchand(id):
+    merchant = Merchant.query.get_or_404(id)
+    merchant.verifie = not merchant.verifie
+    db.session.commit()
+    flash(f"Verification de {merchant.nom} mise a jour.", "info")
+    return redirect(url_for('admin.marchands'))
+
+
+@admin.route('/marchands/supprimer/<int:id>', methods=['POST'])
+@admin_required
+def supprimer_marchand(id):
+    merchant = Merchant.query.get_or_404(id)
+    has_active_conversions = Conversion.query.filter_by(
+        merchant_id=merchant.id,
+    ).filter(
+        Conversion.statut.in_(["en_attente", "paiement_en_cours"])
+    ).first()
+
+    if has_active_conversions:
+        flash("Suppression refusee: ce marchand a des conversions en cours.", "warning")
+        return redirect(url_for('admin.marchands'))
+
+    MerchantRate.query.filter_by(merchant_id=merchant.id).delete()
+    db.session.delete(merchant)
+    db.session.commit()
+    flash(f"Marchand {merchant.nom} supprime.", "danger")
+    return redirect(url_for('admin.marchands'))
+
+
+@admin.route('/marchands/rates/toggle/<int:id>', methods=['POST'])
+@admin_required
+def toggle_taux_marchand(id):
+    merchant_rate = MerchantRate.query.get_or_404(id)
+    merchant_rate.actif = not merchant_rate.actif
+    db.session.commit()
+    flash("Taux marchand mis a jour.", "info")
+    return redirect(url_for('admin.marchands'))
+
+
+@admin.route('/reglements')
+@admin_required
+def reglements():
+    status = request.args.get("status", "").strip()
+    query = Settlement.query.order_by(Settlement.created_at.desc())
+
+    if status in {"pending", "completed"}:
+        query = query.filter_by(status=status)
+
+    settlements = query.all()
+    pending_count = Settlement.query.filter_by(status="pending").count()
+    completed_count = Settlement.query.filter_by(status="completed").count()
+    return render_template(
+        "admin_settlements.html",
+        settlements=settlements,
+        selected_status=status,
+        pending_count=pending_count,
+        completed_count=completed_count,
+    )
+
+
+@admin.route('/reglements/<int:id>/complete', methods=['POST'])
+@admin_required
+def complete_reglement(id):
+    settlement = Settlement.query.get_or_404(id)
+    notes = request.form.get("notes", "").strip() or None
+
+    try:
+        SettlementService.complete_settlement(
+            settlement=settlement,
+            admin_id=session.get("user_id"),
+            ip=request.remote_addr,
+            notes=notes,
+        )
+        db.session.commit()
+        flash(f"Reglement {settlement.reference} cloture.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+
+    return redirect(url_for('admin.reglements'))
+
+
+@admin.route('/conversions/release-expired', methods=['POST'])
+@admin_required
+def release_expired_conversions():
+    expired = LiquidityService.expire_stale_reservations()
+    if expired:
+        db.session.commit()
+        flash(f"{len(expired)} reservation(s) expiree(s) liberee(s).", "success")
+    else:
+        db.session.rollback()
+        flash("Aucune reservation expiree a liberer.", "info")
+    return redirect(url_for('admin.liste_conversions'))
+
+
+@admin.route('/conversions/<reference>/force-release', methods=['POST'])
+@admin_required
+def force_release_conversion(reference):
+    conversion = Conversion.query.filter_by(reference=reference).first_or_404()
+
+    if conversion.liquidity_source_type != "merchant":
+        flash("Cette conversion n'utilise pas la liquidite marchand.", "warning")
+        return redirect(url_for('admin.liste_conversions'))
+
+    try:
+        released = LiquidityService.release_expired_reservation(
+            conversion,
+            reason="admin_force_release",
+        )
+        if not released:
+            raise ValueError("Aucune reservation active a liberer.")
+
+        db.session.add(
+            AuditLog(
+                actor_type="admin",
+                actor_id=session.get("user_id"),
+                event="merchant_reservation_force_released",
+                payload={"reference": conversion.reference},
+                ip_address=request.remote_addr,
+            )
+        )
+        db.session.commit()
+        flash(f"Reservation de {reference} liberee.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+
+    return redirect(url_for('admin.liste_conversions'))
+
+
 
 
 
@@ -513,5 +779,87 @@ def audits():
         "admin/audits.html",
         logs=logs
     )
+
+
+@admin.route("/litiges")
+@admin_required
+def litiges():
+    status = request.args.get("status", "").strip()
+    query = Dispute.query.order_by(Dispute.created_at.desc())
+    if status in {"open", "resolved"}:
+        query = query.filter_by(status=status)
+
+    disputes = query.limit(200).all()
+    return render_template(
+        "admin_disputes.html",
+        disputes=disputes,
+        current_status=status,
+    )
+
+
+@admin.route("/litiges/<int:id>/resolve", methods=["POST"])
+@admin_required
+def resolve_litige(id):
+    dispute = Dispute.query.get_or_404(id)
+    note = request.form.get("note", "").strip() or None
+
+    try:
+        DisputeService.resolve_dispute(
+            dispute=dispute,
+            admin_id=session.get("user_id"),
+            ip=request.remote_addr,
+            resolution_note=note,
+        )
+        db.session.commit()
+        flash(f"Litige {dispute.reference} resolu.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+
+    return redirect(url_for("admin.litiges"))
+
+
+@admin.route("/marchands/<int:id>/suspend", methods=["POST"])
+@admin_required
+def suspend_marchand(id):
+    merchant = Merchant.query.get_or_404(id)
+    reason = request.form.get("reason", "").strip() or "admin_suspension"
+
+    try:
+        DisputeService.suspend_merchant(
+            merchant=merchant,
+            admin_id=session.get("user_id"),
+            ip=request.remote_addr,
+            reason=reason,
+        )
+        db.session.commit()
+        flash(f"Marchand {merchant.nom} suspendu.", "warning")
+    except Exception as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+
+    return redirect(request.referrer or url_for("admin.marchands"))
+
+
+@admin.route("/marchands/<int:id>/reinstate", methods=["POST"])
+@admin_required
+def reinstate_marchand(id):
+    merchant = Merchant.query.get_or_404(id)
+    reason = request.form.get("reason", "").strip() or None
+
+    try:
+        DisputeService.reinstate_merchant(
+            merchant=merchant,
+            admin_id=session.get("user_id"),
+            ip=request.remote_addr,
+            reason=reason,
+        )
+        db.session.commit()
+        flash(f"Marchand {merchant.nom} reactive.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+
+    return redirect(request.referrer or url_for("admin.marchands"))
 
     

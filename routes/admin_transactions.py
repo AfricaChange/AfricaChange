@@ -1,8 +1,9 @@
 #DEPENDANCES
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
 from database import db
-from models import Transaction, Paiement, Conversion, Utilisateur
+from models import Transaction, Paiement, Conversion
 from services.admin_actions import AdminActions
+from services.dispute_service import DisputeService
 from services.risk_engine import RiskEngine
 
 
@@ -48,13 +49,13 @@ def detail(reference):
         transaction_reference=tx.reference
     ).first()
 
-    conversion = Conversion.query.get(tx.user_id)
+    conversion = paiement.conversion if paiement else None
 
     risk_score = RiskEngine.score_transaction(tx, request.remote_addr)
 
     return render_template(
         "admin/transaction_detail.html",
-        transaction=tx,
+        tx=tx,
         paiement=paiement,
         conversion=conversion,
         risk_score=risk_score
@@ -127,6 +128,35 @@ def refund(reference):
         db.session.commit()
         flash("Remboursement effectué 🔁", "success")
 
+    except Exception as e:
+        db.session.rollback()
+        flash(str(e), "danger")
+
+    return redirect(url_for("admin_tx.detail", reference=reference))
+
+
+@admin_tx.route("/<reference>/dispute", methods=["POST"])
+def dispute(reference):
+    tx = Transaction.query.filter_by(reference=reference).first_or_404()
+    reason = request.form.get("reason", "").strip()
+    details = request.form.get("details", "").strip() or None
+    suspend_merchant = request.form.get("suspend_merchant") == "on"
+
+    if not reason:
+        flash("Motif de litige obligatoire", "warning")
+        return redirect(url_for("admin_tx.detail", reference=reference))
+
+    try:
+        DisputeService.open_transaction_dispute(
+            tx=tx,
+            admin_id=session.get("user_id"),
+            ip=request.remote_addr,
+            reason=reason,
+            details=details,
+            suspend_merchant=suspend_merchant,
+        )
+        db.session.commit()
+        flash("Litige ouvert avec succes.", "warning")
     except Exception as e:
         db.session.rollback()
         flash(str(e), "danger")

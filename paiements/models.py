@@ -33,7 +33,8 @@ class Depot(db.Model):
 
     date = db.Column(db.DateTime, default=datetime.utcnow)
     reference = db.Column(db.String(50), unique=True)
-    
+    recu_confirme = db.Column(db.Boolean, default=False)
+    date_confirmation = db.Column(db.DateTime)
 
 class LogDepot(db.Model):
     id = db.Column(db.Integer, primary_key=True)

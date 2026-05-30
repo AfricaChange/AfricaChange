@@ -13,6 +13,7 @@ from services.ledger_service import LedgerService
 from services.risk_engine import RiskEngine
 from services.alert_service import AlertService
 from services.constants import PaymentStatus
+from services.liquidity_service import LiquidityService
 
 paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
 
@@ -38,6 +39,7 @@ def paiement_orange():
             return jsonify({"error": "Données manquantes"}), 400
 
         conversion = PaymentService.lock_conversion(reference)
+        PaymentService.assign_liquidity(conversion)
         montant = conversion.montant_initial
 
         provider = OrangeProvider()
@@ -116,6 +118,11 @@ def orange_callback():
         if risk_score >= RiskEngine.HIGH_RISK:
             AlertService.critical(f"🚨 Transaction bloquée {reference}")
             tx.statut = PaymentStatus.BLOQUE.value
+            LiquidityService.finalize_from_transaction_reference(
+                tx.reference,
+                success=False,
+                failure_status=tx.statut,
+            )
             db.session.commit()
             return "Transaction bloquée", 403
 
@@ -126,6 +133,11 @@ def orange_callback():
 
         provider = OrangeProvider()
         tx.statut = provider.map_status(orange_status)
+        LiquidityService.finalize_from_transaction_reference(
+            tx.reference,
+            success=(tx.statut == PaymentStatus.VALIDE.value),
+            failure_status=tx.statut,
+        )
 
 
         LedgerService.record(
@@ -177,6 +189,7 @@ def simuler(conversion_id):
     )
 
     db.session.add(tx)
+    LiquidityService.finalize_conversion(conversion, success=True)
     db.session.commit()
 
     flash("Paiement simulé avec succès", "success")
@@ -199,6 +212,7 @@ def paiement_wave():
 
     try:
         conversion = PaymentService.lock_conversion(reference)
+        PaymentService.assign_liquidity(conversion)
         montant = conversion.montant_initial
 
         provider = WaveProvider()
@@ -252,10 +266,19 @@ def wave_callback():
         risk_score = RiskEngine.score_transaction(tx, ip)
         if risk_score >= RiskEngine.HIGH_RISK:
             tx.statut = PaymentStatus.BLOQUE.value
+            LiquidityService.finalize_from_transaction_reference(
+                tx.reference,
+                success=False,
+                failure_status=tx.statut,
+            )
             db.session.commit()
             return "Transaction Wave bloquée", 403
 
         tx.statut = PaymentStatus.VALIDE.value
+        LiquidityService.finalize_from_transaction_reference(
+            tx.reference,
+            success=True,
+        )
 
         LedgerService.record(
             reference=tx.reference,

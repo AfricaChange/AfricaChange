@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import session
 import uuid
 from services.constants import PaymentStatus
+from services.liquidity_service import LiquidityService
 
 
 class PaymentService:
@@ -51,6 +52,10 @@ class PaymentService:
         )
         db.session.add(transaction)
         return transaction
+
+    @staticmethod
+    def assign_liquidity(conversion):
+        return LiquidityService.assign_for_conversion(conversion)
 
     # ==================================================
     # 💳 CREATE PAIEMENT

@@ -1,0 +1,82 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-bold text-blue-700">Litiges</h2>
+    <p class="text-sm text-gray-600 mt-2">Suivi des dossiers sensibles relies aux transactions et aux marchands.</p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <form method="GET" class="flex gap-3 items-center">
+      <select name="status" class="border p-2 rounded">
+        <option value="" {% if not current_status %}selected{% endif %}>Tous</option>
+        <option value="open" {% if current_status == 'open' %}selected{% endif %}>Ouverts</option>
+        <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolus</option>
+      </select>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">Reference</th>
+            <th class="p-2 text-left">Transaction</th>
+            <th class="p-2 text-left">Marchand</th>
+            <th class="p-2 text-left">Motif</th>
+            <th class="p-2 text-center">Statut</th>
+            <th class="p-2 text-left">Date</th>
+            <th class="p-2 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dispute in disputes %}
+          <tr class="border-b hover:bg-gray-50 align-top">
+            <td class="p-2 font-mono">{{ dispute.reference }}</td>
+            <td class="p-2">{{ dispute.transaction.reference if dispute.transaction else "—" }}</td>
+            <td class="p-2">
+              {% if dispute.merchant %}
+                {{ dispute.merchant.nom }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td class="p-2">
+              <div class="font-medium">{{ dispute.reason }}</div>
+              {% if dispute.details %}
+              <div class="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{{ dispute.details }}</div>
+              {% endif %}
+            </td>
+            <td class="p-2 text-center">
+              {% if dispute.status == "open" %}
+              <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Ouvert</span>
+              {% else %}
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Resolu</span>
+              {% endif %}
+            </td>
+            <td class="p-2">{{ dispute.created_at.strftime('%d/%m/%Y %H:%M') if dispute.created_at else "" }}</td>
+            <td class="p-2 text-center">
+              {% if dispute.status == "open" %}
+              <form method="POST" action="{{ url_for('admin.resolve_litige', id=dispute.id) }}" class="space-y-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <textarea name="note" rows="2" class="w-44 border p-2 rounded text-xs" placeholder="Note de resolution"></textarea>
+                <button type="submit" class="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700">
+                  Resoudre
+                </button>
+              </form>
+              {% else %}
+              <span class="text-xs text-gray-500">Cloture</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center p-4 text-gray-500">Aucun litige.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

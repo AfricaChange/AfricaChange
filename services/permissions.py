@@ -8,3 +8,4 @@ def admin_required(f):
             return "Accès refusé", 403
         return f(*args, **kwargs)
     return wrapper
+ 

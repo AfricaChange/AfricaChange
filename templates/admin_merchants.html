@@ -1,0 +1,243 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-bold text-blue-700 mb-2">Reseau de marchands</h2>
+    <p class="text-sm text-gray-600">Gestion rapide des marchands hybrides, de leur liquidite et de leurs taux.</p>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <section class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Ajouter un marchand</h3>
+      <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create_merchant">
+
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Code</label>
+          <input type="text" name="code" required class="w-full border p-2 rounded" placeholder="MRC-SN-01">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Nom</label>
+          <input type="text" name="nom" required class="w-full border p-2 rounded" placeholder="Marchand Dakar Centre">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Telephone</label>
+          <input type="text" name="telephone" required class="w-full border p-2 rounded" placeholder="+221770000000">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Email</label>
+          <input type="email" name="email" class="w-full border p-2 rounded" placeholder="merchant@example.com">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Pays</label>
+          <select name="pays" required class="w-full border p-2 rounded">
+            <option value="SN">Senegal (SN)</option>
+            <option value="GN">Guinee (GN)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Score risque</label>
+          <input type="number" name="risk_score" min="0" max="100" value="0" class="w-full border p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Solde disponible</label>
+          <input type="number" name="solde_disponible" step="0.01" min="0" value="0" class="w-full border p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Ticket minimum</label>
+          <input type="number" name="min_ticket" step="0.01" min="0" value="0" class="w-full border p-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Ticket maximum</label>
+          <input type="number" name="max_ticket" step="0.01" min="0" class="w-full border p-2 rounded" placeholder="optionnel">
+        </div>
+        <div class="flex items-center gap-4">
+          <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" name="actif" checked>
+            Actif
+          </label>
+          <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" name="verifie">
+            Verifie
+          </label>
+        </div>
+
+        <div class="md:col-span-2 text-right">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Ajouter le marchand
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Ajouter ou mettre a jour un taux marchand</h3>
+      <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create_rate">
+
+        <div class="md:col-span-2">
+          <label class="block text-sm text-gray-700 mb-1">Marchand</label>
+          <select name="merchant_id" required class="w-full border p-2 rounded">
+            <option value="">Choisir un marchand</option>
+            {% for merchant in merchants %}
+            <option value="{{ merchant.id }}">{{ merchant.nom }} - {{ merchant.code }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Devise source</label>
+          <select name="from_currency" required class="w-full border p-2 rounded">
+            <option value="CFA">CFA</option>
+            <option value="GNF">GNF</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Devise cible</label>
+          <select name="to_currency" required class="w-full border p-2 rounded">
+            <option value="GNF">GNF</option>
+            <option value="CFA">CFA</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-700 mb-1">Taux</label>
+          <input type="number" name="rate" step="0.0001" min="0.0001" required class="w-full border p-2 rounded">
+        </div>
+        <div class="flex items-center">
+          <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" name="actif_rate" checked>
+            Taux actif
+          </label>
+        </div>
+
+        <div class="md:col-span-2 text-right">
+          <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+            Enregistrer le taux
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <section class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Marchands actifs</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">Code</th>
+            <th class="p-2 text-left">Nom</th>
+            <th class="p-2 text-left">Pays</th>
+            <th class="p-2 text-right">Solde dispo</th>
+            <th class="p-2 text-right">Solde verrouille</th>
+            <th class="p-2 text-center">Risque</th>
+            <th class="p-2 text-center">Etat</th>
+            <th class="p-2 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for merchant in merchants %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2 font-mono">{{ merchant.code }}</td>
+            <td class="p-2">{{ merchant.nom }}</td>
+            <td class="p-2">{{ merchant.pays }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(merchant.solde_disponible) }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(merchant.solde_verrouille) }}</td>
+            <td class="p-2 text-center">{{ merchant.risk_score }}</td>
+            <td class="p-2 text-center">
+              {% if merchant.actif %}
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Actif</span>
+              {% else %}
+              <span class="bg-red-100 text-red-700 px-2 py-1 rounded">Inactif</span>
+              {% endif %}
+              {% if merchant.verifie %}
+              <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded ml-1">Verifie</span>
+              {% else %}
+              <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded ml-1">Non verifie</span>
+              {% endif %}
+              {% if merchant.suspended_at %}
+              <div class="text-xs text-red-600 mt-1">Suspendu</div>
+              {% endif %}
+            </td>
+            <td class="p-2 text-center space-x-2">
+              <form method="POST" action="{{ url_for('admin.toggle_marchand', id=merchant.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-blue-600 hover:underline">Activer/Desactiver</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.verify_marchand', id=merchant.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-emerald-600 hover:underline">Verifier</button>
+              </form>
+              {% if merchant.suspended_at %}
+              <form method="POST" action="{{ url_for('admin.reinstate_marchand', id=merchant.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-green-700 hover:underline">Reactiver</button>
+              </form>
+              {% else %}
+              <form method="POST" action="{{ url_for('admin.suspend_marchand', id=merchant.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="reason" value="admin_manual_suspension">
+                <button type="submit" class="text-amber-700 hover:underline">Suspendre</button>
+              </form>
+              {% endif %}
+              <form method="POST" action="{{ url_for('admin.supprimer_marchand', id=merchant.id) }}" class="inline" onsubmit="return confirm('Supprimer ce marchand ?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-red-600 hover:underline">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center p-4 text-gray-500">Aucun marchand enregistre.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Taux marchands</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">Marchand</th>
+            <th class="p-2 text-left">Paire</th>
+            <th class="p-2 text-right">Taux</th>
+            <th class="p-2 text-center">Etat</th>
+            <th class="p-2 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for merchant_rate in merchant_rates %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2">{{ merchant_rate.merchant.nom }}</td>
+            <td class="p-2">{{ merchant_rate.from_currency }} -> {{ merchant_rate.to_currency }}</td>
+            <td class="p-2 text-right">{{ merchant_rate.rate }}</td>
+            <td class="p-2 text-center">
+              {% if merchant_rate.actif %}
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Actif</span>
+              {% else %}
+              <span class="bg-red-100 text-red-700 px-2 py-1 rounded">Inactif</span>
+              {% endif %}
+            </td>
+            <td class="p-2 text-center">
+              <form method="POST" action="{{ url_for('admin.toggle_taux_marchand', id=merchant_rate.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-blue-600 hover:underline">Basculer</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center p-4 text-gray-500">Aucun taux marchand enregistre.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

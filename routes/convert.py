@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, request, jsonify, session, flash, redirect, url_for
 from database import db
-from models import Rate, Conversion, Utilisateur, CompteSysteme
+from models import Rate, Conversion
 from datetime import datetime
 import random
 import string
 from extensions import csrf
 from sqlalchemy import or_
+from services.liquidity_service import LiquidityService
+from services.constants import PaymentStatus
 
 # 🟢 Blueprint
 convert = Blueprint('convert', __name__, url_prefix='/convert')
@@ -149,36 +151,20 @@ def confirmer_envoi_par_reference(reference):
         return jsonify({"error": "Conversion déjà traitée."}), 400
 
     try:
-        mapping_pays = {
-            "CFA": "SN",
-            "GNF": "GN",
-        }
-        pays_cible = mapping_pays.get(conversion.to_currency)
-
-        compte_systeme = (
-            CompteSysteme.query
-            .filter_by(pays=pays_cible, actif=True)
-            .order_by(CompteSysteme.id.asc())
-            .first()
-        )
-
-        if not compte_systeme:
-            return jsonify({"error": "Aucun compte système actif disponible"}), 404
-
-        conversion.compte_systeme_id = compte_systeme.id
-
-        # ✅ STATUT NORMALISÉ
-        conversion.statut = 'paiement_en_cours'
+        LiquidityService.assign_for_conversion(conversion)
+        conversion.statut = PaymentStatus.EN_COURS.value
 
         db.session.commit()
 
+        actor = conversion.merchant.nom if conversion.merchant else conversion.compte_systeme.nom
         return jsonify({
-            "message": f"✅ Paiement en cours via {compte_systeme.nom}",
+            "message": f"✅ Paiement en cours via {actor}",
+            "liquidity_source": conversion.liquidity_source_type,
             "reference": conversion.reference
         }), 200
 
     except Exception:
-        conversion.statut = 'echoue'
+        conversion.statut = PaymentStatus.ECHOUE.value
         db.session.commit()
         return jsonify({"error": "Erreur lors du traitement"}), 500
 

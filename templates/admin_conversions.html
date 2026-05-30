@@ -1,24 +1,30 @@
 {% extends "base_admin.html" %}
 {% block content %}
 <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md mt-6">
-  <h2 class="text-2xl font-bold text-blue-600 mb-6">📊 Suivi des conversions</h2>
+  <h2 class="text-2xl font-bold text-blue-600 mb-6">Suivi des conversions</h2>
 
-  <!-- Filtres -->
-  <form method="get" class="flex flex-wrap gap-3 mb-6">
-    <input type="text" name="telephone" placeholder="Téléphone"
-           value="{{ filtre_tel }}" class="border p-2 rounded w-48" />
-    <input type="date" name="date" value="{{ filtre_date }}" class="border p-2 rounded w-48" />
-    <select name="devise" class="border p-2 rounded w-40">
-      <option value="">Toutes devises</option>
-      <option value="CFA" {% if filtre_devise == 'CFA' %}selected{% endif %}>CFA</option>
-      <option value="GNF" {% if filtre_devise == 'GNF' %}selected{% endif %}>GNF</option>
-    </select>
-    <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+  <div class="flex flex-wrap gap-3 mb-6 items-center">
+    <form method="get" class="flex flex-wrap gap-3">
+      <input type="text" name="telephone" placeholder="Telephone"
+             value="{{ filtre_tel }}" class="border p-2 rounded w-48" />
+      <input type="date" name="date" value="{{ filtre_date }}" class="border p-2 rounded w-48" />
+      <select name="devise" class="border p-2 rounded w-40">
+        <option value="">Toutes devises</option>
+        <option value="CFA" {% if filtre_devise == 'CFA' %}selected{% endif %}>CFA</option>
+        <option value="GNF" {% if filtre_devise == 'GNF' %}selected{% endif %}>GNF</option>
+      </select>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('admin.release_expired_conversions') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="bg-amber-500 text-white px-4 py-2 rounded hover:bg-amber-600">Liberer les expirees</button>
+    </form>
+
     <a href="{{ url_for('admin.export_conversions') }}"
-       class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-auto">⬇️ Export Excel</a>
-  </form>
+       class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-auto">Export Excel</a>
+  </div>
 
-  <!-- Tableau -->
   <div class="overflow-x-auto">
     <table class="w-full border-collapse">
       <thead class="bg-gray-100 text-gray-700">
@@ -28,9 +34,13 @@
           <th class="p-2 text-left">Vers</th>
           <th class="p-2 text-right">Montant initial</th>
           <th class="p-2 text-right">Montant converti</th>
-          <th class="p-2 text-left">Téléphone envoyeur</th>
-          <th class="p-2 text-left">Téléphone récepteur</th>
-          <th class="p-2 text-left">Référence</th>
+          <th class="p-2 text-left">Telephone envoyeur</th>
+          <th class="p-2 text-left">Telephone recepteur</th>
+          <th class="p-2 text-left">Reference</th>
+          <th class="p-2 text-left">Liquidite</th>
+          <th class="p-2 text-left">Risque</th>
+          <th class="p-2 text-left">Reservation</th>
+          <th class="p-2 text-center">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -44,27 +54,43 @@
           <td class="p-2">{{ c.sender_phone }}</td>
           <td class="p-2">{{ c.receiver_phone }}</td>
           <td class="p-2 text-gray-600">{{ c.reference }}</td>
+          <td class="p-2">{{ c.liquidity_label }}</td>
+          <td class="p-2">{{ c.risk_bearer }}</td>
+          <td class="p-2">
+            {% if c.reserved_until %}
+              {{ c.reserved_until.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="p-2 text-center">
+            {% if c.liquidity_source_type == 'merchant' and c.locked_amount > 0 %}
+            <form method="POST" action="{{ url_for('admin.force_release_conversion', reference=c.reference) }}" onsubmit="return confirm('Liberer cette reservation ?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="text-amber-600 hover:underline">Force release</button>
+            </form>
+            {% else %}
+              —
+            {% endif %}
+          </td>
         </tr>
         {% else %}
-        <tr><td colspan="8" class="text-center p-4 text-gray-500">Aucune conversion trouvée.</td></tr>
+        <tr><td colspan="12" class="text-center p-4 text-gray-500">Aucune conversion trouvee.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
   <div class="flex justify-between mt-6">
-    
-    <a href="{{ url_for('admin.dashboard') }}" 
+    <a href="{{ url_for('admin.dashboard') }}"
        class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 transition">
-       ⬅ Retour
+       Retour
     </a>
 
-    <a href="{{ url_for('main.accueil') }}" 
+    <a href="{{ url_for('main.accueil') }}"
        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-       🏠 Accueil
+       Accueil
     </a>
-
   </div>
-
-
 </div>
 {% endblock %}

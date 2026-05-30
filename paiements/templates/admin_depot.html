@@ -51,7 +51,13 @@
                         {{ d.statut }}
                     </span>
                 </td>
-
+                <td>
+                {% if d.recu_confirme %}
+                    <span class="text-green-600">Confirmé</span>
+                {% else %}
+                    <span class="text-red-500">Non confirmé</span>
+                {% endif %}
+                </td>
                 <td class="space-x-2">
                     <a href="/paiements/admin/valider/{{ d.id }}" class="text-green-500">✔</a>
                     <a href="/paiements/admin/refuser/{{ d.id }}" class="text-red-500">✖</a>

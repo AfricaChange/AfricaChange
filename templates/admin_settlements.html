@@ -1,0 +1,84 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-bold text-blue-700">Reglements marchands</h2>
+    <p class="text-sm text-gray-600 mt-2">Cloture des dettes marchands et verification de la commission plateforme.</p>
+    <div class="mt-4 flex gap-3 text-sm">
+      <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded">En attente: {{ pending_count }}</span>
+      <span class="bg-green-100 text-green-700 px-3 py-1 rounded">Completes: {{ completed_count }}</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <form method="GET" class="flex gap-3 items-center">
+      <select name="status" class="border p-2 rounded">
+        <option value="" {% if not selected_status %}selected{% endif %}>Tous</option>
+        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>En attente</option>
+        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completes</option>
+      </select>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">Reference</th>
+            <th class="p-2 text-left">Marchand</th>
+            <th class="p-2 text-left">Conversion</th>
+            <th class="p-2 text-right">Brut</th>
+            <th class="p-2 text-right">Commission</th>
+            <th class="p-2 text-right">Net</th>
+            <th class="p-2 text-center">Statut</th>
+            <th class="p-2 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for settlement in settlements %}
+          <tr class="border-b hover:bg-gray-50 align-top">
+            <td class="p-2 font-mono">{{ settlement.reference }}</td>
+            <td class="p-2">{{ settlement.merchant.nom }}</td>
+            <td class="p-2">
+              {{ settlement.conversion.reference if settlement.conversion else '—' }}<br>
+              <span class="text-xs text-gray-500">{{ settlement.currency }}</span>
+            </td>
+            <td class="p-2 text-right">{{ '%.2f'|format(settlement.gross_amount) }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(settlement.platform_fee) }}</td>
+            <td class="p-2 text-right font-semibold text-emerald-700">{{ '%.2f'|format(settlement.net_amount) }}</td>
+            <td class="p-2 text-center">
+              {% if settlement.status == 'pending' %}
+              <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">En attente</span>
+              {% else %}
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Complete</span>
+              {% endif %}
+            </td>
+            <td class="p-2 text-center">
+              {% if settlement.status == 'pending' %}
+              <form method="POST" action="{{ url_for('admin.complete_reglement', id=settlement.id) }}" class="space-y-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <textarea name="notes" class="w-48 border p-2 rounded text-xs" rows="2" placeholder="Note de reglement"></textarea>
+                <button type="submit" class="bg-emerald-600 text-white px-3 py-2 rounded hover:bg-emerald-700">
+                  Cloturer
+                </button>
+              </form>
+              {% else %}
+              <div class="text-xs text-gray-500">
+                {{ settlement.settled_at.strftime('%d/%m/%Y %H:%M') if settlement.settled_at else '' }}
+              </div>
+            {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center p-4 text-gray-500">Aucun reglement disponible.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

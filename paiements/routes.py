@@ -25,7 +25,7 @@ from flask import jsonify
 from convert import convertir  # ton fichier existant
 from paiements.models import ConfigPaiement
 from models import Parametre
-
+from datetime import datetime
 
 
 
@@ -100,7 +100,7 @@ def depot():
             "preuve": filename,
             "reference": reference,
             "statut": "en_attente"
-}          
+}           
 
         # ✅ appliquer statut anti-fraude
         if etat == "suspect":
@@ -238,3 +238,23 @@ def calcul():
         "taux": taux
     })    
     
+
+
+@paiements_bp.route('/confirmer/<int:id>')
+@login_required
+def confirmer_reception(id):
+
+    depot = Depot.query.get_or_404(id)
+
+    # sécurité : vérifier que c’est bien son dépôt
+    if depot.user_id != current_user.id:
+        flash("Accès refusé", "danger")
+        return redirect(url_for('main.dashboard'))
+
+    depot.recu_confirme = True
+    depot.date_confirmation = datetime.utcnow()
+
+    db.session.commit()
+
+    flash("Réception confirmée ✅", "success")
+    return redirect(url_for('main.dashboard'))
