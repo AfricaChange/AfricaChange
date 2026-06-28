@@ -169,6 +169,12 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="text-emerald-600 hover:underline">Verifier</button>
               </form>
+              <a href="{{ url_for('admin.merchant_dashboard', id=merchant.id) }}" class="text-sky-700 hover:underline">
+                Dashboard
+              </a>
+              <a href="{{ url_for('admin.merchant_wallet', id=merchant.id) }}" class="text-violet-700 hover:underline">
+                Wallet
+              </a>
               {% if merchant.suspended_at %}
               <form method="POST" action="{{ url_for('admin.reinstate_marchand', id=merchant.id) }}" class="inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

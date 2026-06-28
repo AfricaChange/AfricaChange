@@ -14,8 +14,70 @@ from services.risk_engine import RiskEngine
 from services.alert_service import AlertService
 from services.constants import PaymentStatus
 from services.liquidity_service import LiquidityService
+from services.payment_mode_service import PaymentModeService
 
 paiement = Blueprint('paiement', __name__, url_prefix='/paiement')
+
+
+def _record_successful_internal_payment(conversion, transaction):
+    LedgerService.record(
+        reference=transaction.reference,
+        compte="user_wallet",
+        sens="debit",
+        montant=transaction.montant,
+        devise="XOF",
+        provider=transaction.fournisseur,
+        transaction_id=transaction.id,
+        description="Paiement utilisateur"
+    )
+
+    LedgerService.record(
+        reference=transaction.reference,
+        compte=f"system_{transaction.fournisseur.lower().replace(' ', '_')}",
+        sens="credit",
+        montant=transaction.montant,
+        devise="XOF",
+        provider=transaction.fournisseur,
+        transaction_id=transaction.id,
+        description="Encaissement systeme"
+    )
+
+
+def _manual_payment_response(provider_name, conversion, transaction):
+    return jsonify({
+        "success": True,
+        "mode": PaymentModeService.MANUAL,
+        "message": f"Paiement {provider_name} enregistre pour traitement manuel.",
+        "reference": conversion.reference,
+        "transaction_reference": transaction.reference,
+        "redirect_url": url_for("convert.recap", reference=conversion.reference),
+    })
+
+
+def _simulation_payment_response(provider_name, conversion, telephone):
+    transaction = PaymentService.create_transaction(
+        conversion,
+        fournisseur=f"{provider_name} Simulation",
+        montant=conversion.montant_initial
+    )
+    PaymentService.create_paiement(
+        conversion,
+        transaction.reference,
+        telephone
+    )
+
+    transaction.statut = PaymentStatus.VALIDE.value
+    LiquidityService.finalize_conversion(conversion, success=True)
+    _record_successful_internal_payment(conversion, transaction)
+
+    return jsonify({
+        "success": True,
+        "mode": PaymentModeService.SIMULATION,
+        "message": f"Paiement {provider_name} simulé avec succes.",
+        "reference": conversion.reference,
+        "transaction_reference": transaction.reference,
+        "redirect_url": url_for("auth.tableau_de_bord"),
+    })
 
 # ======================================================
 # 🔶 ORANGE MONEY – route de controle
@@ -41,6 +103,26 @@ def paiement_orange():
         conversion = PaymentService.lock_conversion(reference)
         PaymentService.assign_liquidity(conversion)
         montant = conversion.montant_initial
+        mode = PaymentModeService.get_mode()
+
+        if mode == PaymentModeService.SIMULATION:
+            response = _simulation_payment_response("Orange Money", conversion, telephone)
+            db.session.commit()
+            return response
+
+        if mode == PaymentModeService.MANUAL:
+            transaction = PaymentService.create_transaction(
+                conversion,
+                fournisseur="Orange Money",
+                montant=montant
+            )
+            PaymentService.create_paiement(
+                conversion,
+                transaction.reference,
+                telephone
+            )
+            db.session.commit()
+            return _manual_payment_response("Orange Money", conversion, transaction)
 
         provider = OrangeProvider()
 
@@ -214,6 +296,26 @@ def paiement_wave():
         conversion = PaymentService.lock_conversion(reference)
         PaymentService.assign_liquidity(conversion)
         montant = conversion.montant_initial
+        mode = PaymentModeService.get_mode()
+
+        if mode == PaymentModeService.SIMULATION:
+            response = _simulation_payment_response("Wave", conversion, telephone)
+            db.session.commit()
+            return response
+
+        if mode == PaymentModeService.MANUAL:
+            transaction = PaymentService.create_transaction(
+                conversion,
+                fournisseur="Wave",
+                montant=montant
+            )
+            PaymentService.create_paiement(
+                conversion,
+                transaction.reference,
+                telephone
+            )
+            db.session.commit()
+            return _manual_payment_response("Wave", conversion, transaction)
 
         provider = WaveProvider()
         result = provider.create_payment(

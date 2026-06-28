@@ -5,6 +5,7 @@ from models import (
     Compte,
     CompteSysteme,
     Conversion,
+    Currency,
     Dispute,
     Merchant,
     MerchantRate,
@@ -14,6 +15,8 @@ from models import (
     Settlement,
     Transaction,
     Utilisateur,
+    WalletEntry,
+    AdminWalletAction,
 )
 import io
 from datetime import datetime
@@ -23,6 +26,10 @@ from functools import wraps
 from services.liquidity_service import LiquidityService
 from services.dispute_service import DisputeService
 from services.settlement_service import SettlementService
+from services.payment_mode_service import PaymentModeService
+from services.merchant_dashboard_service import MerchantDashboardService
+from services.merchant_wallet_admin_service import MerchantWalletAdminService
+from services.wallet_service import WalletService
  
 
 
@@ -502,6 +509,88 @@ def marchands():
     )
 
 
+@admin.route('/marchands/<int:id>/dashboard')
+@admin_required
+def merchant_dashboard(id):
+    merchant = Merchant.query.get_or_404(id)
+    snapshot = MerchantDashboardService.snapshot(merchant)
+    return render_template(
+        'admin_merchant_dashboard.html',
+        snapshot=snapshot,
+        merchant=merchant,
+    )
+
+
+@admin.route('/marchands/<int:id>/wallet', methods=['GET', 'POST'])
+@admin_required
+def merchant_wallet(id):
+    merchant = Merchant.query.get_or_404(id)
+
+    if request.method == 'POST':
+        action = request.form.get("action", "").strip().lower()
+        currency = request.form.get("currency", "").strip().upper()
+        reason = request.form.get("reason", "").strip()
+        reference = request.form.get("reference", "").strip() or None
+        high_amount_confirmed = request.form.get("confirm_high_amount") == "on"
+
+        try:
+            amount = float(request.form.get("amount", 0) or 0)
+        except (TypeError, ValueError):
+            amount = 0
+
+        try:
+            if amount <= 0:
+                raise ValueError("Le montant doit etre superieur a 0.")
+
+            result = MerchantWalletAdminService.execute(
+                merchant=merchant,
+                action=action,
+                currency=currency,
+                amount=amount,
+                admin_user_id=session.get("user_id"),
+                ip_address=request.remote_addr or "unknown",
+                reason=reason,
+                reference=reference,
+                session_identifier=request.cookies.get("session"),
+                high_amount_confirmed=high_amount_confirmed,
+            )
+            db.session.commit()
+            flash(
+                f"Operation wallet {action} appliquee sur {merchant.nom} ({currency}) - ref {result['reference']}.",
+                "success",
+            )
+            return redirect(url_for('admin.merchant_wallet', id=merchant.id))
+        except Exception as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
+            return redirect(url_for('admin.merchant_wallet', id=merchant.id))
+
+    currencies = Currency.query.filter_by(is_active=True).order_by(Currency.code.asc()).all()
+    balances = WalletService.balances_for_merchant(merchant)
+    entries = (
+        WalletEntry.query
+        .filter_by(merchant_id=merchant.id)
+        .order_by(WalletEntry.created_at.desc(), WalletEntry.id.desc())
+        .limit(20)
+        .all()
+    )
+    admin_actions = (
+        AdminWalletAction.query
+        .filter_by(merchant_id=merchant.id)
+        .order_by(AdminWalletAction.created_at.desc(), AdminWalletAction.id.desc())
+        .limit(20)
+        .all()
+    )
+    return render_template(
+        'admin_merchant_wallet.html',
+        merchant=merchant,
+        balances=balances,
+        currencies=currencies,
+        entries=entries,
+        admin_actions=admin_actions,
+    )
+
+
 @admin.route('/marchands/toggle/<int:id>', methods=['POST'])
 @admin_required
 def toggle_marchand(id):
@@ -687,6 +776,29 @@ def admin_maintenance():
         "admin_maintenance.html",
         mode=current_mode,
         message=current_message,
+    )
+
+
+@admin.route("/payment-mode", methods=["GET", "POST"])
+@admin_required
+def payment_mode():
+    if request.method == "POST":
+        selected_mode = request.form.get("payment_mode", "").strip().lower()
+
+        try:
+            PaymentModeService.set_mode(selected_mode)
+            db.session.commit()
+            flash("Mode de paiement global mis a jour.", "success")
+            return redirect(url_for("admin.payment_mode"))
+        except Exception as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
+
+    current_mode = PaymentModeService.get_mode()
+    return render_template(
+        "admin_payment_mode.html",
+        current_mode=current_mode,
+        allowed_modes=sorted(PaymentModeService.ALLOWED_MODES),
     )
     
     
