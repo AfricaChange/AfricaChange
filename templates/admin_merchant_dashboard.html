@@ -1,0 +1,164 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+  <div class="bg-white rounded-xl shadow p-6">
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">{{ merchant.nom }}</h1>
+        <p class="text-sm text-slate-500 mt-1">{{ merchant.code }} • {{ merchant.pays }}</p>
+      </div>
+      <a href="{{ url_for('admin.marchands') }}" class="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800">
+        Retour marchands
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Solde disponible</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-2">{{ '%.2f'|format(snapshot.solde_disponible) }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Solde verrouillé</div>
+      <div class="text-2xl font-bold text-amber-700 mt-2">{{ '%.2f'|format(snapshot.solde_verrouille) }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Volume 30 jours</div>
+      <div class="text-2xl font-bold text-sky-700 mt-2">{{ '%.2f'|format(snapshot.volume_30_days) }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Nombre de conversions</div>
+      <div class="text-2xl font-bold text-slate-900 mt-2">{{ snapshot.conversions_count }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Taux de réussite</div>
+      <div class="text-2xl font-bold text-green-700 mt-2">{{ '%.2f'|format(snapshot.success_rate) }}%</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Délai moyen de traitement</div>
+      <div class="text-2xl font-bold text-indigo-700 mt-2">{{ '%.2f'|format(snapshot.average_processing_minutes) }} min</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Litiges ouverts</div>
+      <div class="text-2xl font-bold text-red-700 mt-2">{{ snapshot.open_disputes }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="text-sm text-slate-500">Commissions générées</div>
+      <div class="text-2xl font-bold text-fuchsia-700 mt-2">{{ '%.2f'|format(snapshot.commissions_generated) }}</div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold text-slate-900">Détail par devise</h2>
+      <span class="text-xs text-slate-500">Les soldes disponible/verrouillé restent globaux dans le schéma actuel.</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-100 text-slate-700">
+          <tr>
+            <th class="p-2 text-left">Devise</th>
+            <th class="p-2 text-right">Volume 30j</th>
+            <th class="p-2 text-right">Conversions</th>
+            <th class="p-2 text-right">Taux réussite</th>
+            <th class="p-2 text-right">Délai moyen</th>
+            <th class="p-2 text-right">Litiges ouverts</th>
+            <th class="p-2 text-right">Platform fee</th>
+            <th class="p-2 text-right">Règlements pending</th>
+            <th class="p-2 text-right">Règlements completed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in snapshot.currency_breakdown %}
+          <tr class="border-t">
+            <td class="p-2 font-semibold">{{ row.currency }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(row.volume_30_days) }}</td>
+            <td class="p-2 text-right">{{ row.conversions_count }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(row.success_rate) }}%</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(row.average_processing_minutes) }} min</td>
+            <td class="p-2 text-right">{{ row.open_disputes }}</td>
+            <td class="p-2 text-right text-fuchsia-700 font-semibold">{{ '%.2f'|format(row.commissions_generated) }}</td>
+            <td class="p-2 text-right">{{ row.settlements_pending }}</td>
+            <td class="p-2 text-right">{{ row.settlements_completed }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="p-4 text-center text-slate-500">Aucune donnée par devise.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <section class="bg-white rounded-xl shadow p-6 xl:col-span-2">
+      <h2 class="text-lg font-semibold text-slate-900 mb-4">Conversions récentes</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-700">
+            <tr>
+              <th class="p-2 text-left">Référence</th>
+              <th class="p-2 text-left">Date</th>
+              <th class="p-2 text-right">Montant</th>
+              <th class="p-2 text-left">Statut</th>
+              <th class="p-2 text-left">Règlement</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for conversion in snapshot.recent_conversions %}
+            <tr class="border-t">
+              <td class="p-2 font-mono">{{ conversion.reference }}</td>
+              <td class="p-2">{{ conversion.date_conversion.strftime('%d/%m/%Y %H:%M') if conversion.date_conversion else '' }}</td>
+              <td class="p-2 text-right">{{ '%.2f'|format(conversion.montant_converti) }} {{ conversion.to_currency }}</td>
+              <td class="p-2">{{ conversion.statut }}</td>
+              <td class="p-2">{{ conversion.settlement_status }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="p-4 text-center text-slate-500">Aucune conversion.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="space-y-6">
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Règlements</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span>En attente</span><span class="font-semibold">{{ snapshot.settlements_pending }}</span></div>
+          <div class="flex justify-between"><span>Complétés</span><span class="font-semibold">{{ snapshot.settlements_completed }}</span></div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Litiges récents</h2>
+        <div class="space-y-3 text-sm">
+          {% for dispute in snapshot.recent_disputes %}
+          <div class="border rounded-lg p-3">
+            <div class="font-medium">{{ dispute.reference }}</div>
+            <div class="text-slate-600 mt-1">{{ dispute.reason }}</div>
+            <div class="text-xs text-slate-400 mt-1">{{ dispute.status }} • {{ dispute.created_at.strftime('%d/%m/%Y %H:%M') if dispute.created_at else '' }}</div>
+          </div>
+          {% else %}
+          <div class="text-slate-500">Aucun litige récent.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Règlements récents</h2>
+        <div class="space-y-3 text-sm">
+          {% for settlement in snapshot.recent_settlements %}
+          <div class="border rounded-lg p-3">
+            <div class="font-medium">{{ settlement.reference }}</div>
+            <div class="text-slate-600 mt-1">Net: {{ '%.2f'|format(settlement.net_amount) }} {{ settlement.currency }}</div>
+            <div class="text-xs text-slate-400 mt-1">{{ settlement.status }} • {{ settlement.created_at.strftime('%d/%m/%Y %H:%M') if settlement.created_at else '' }}</div>
+          </div>
+          {% else %}
+          <div class="text-slate-500">Aucun règlement récent.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
