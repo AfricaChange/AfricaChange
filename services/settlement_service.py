@@ -3,6 +3,7 @@ from datetime import datetime
 from database import db
 from models import AuditLog, Settlement
 from services.ledger_service import LedgerService
+from services.wallet_service import WalletService
 
 
 class SettlementService:
@@ -20,6 +21,22 @@ class SettlementService:
 
         if settlement.conversion:
             settlement.conversion.settlement_status = "completed"
+
+        if settlement.merchant:
+            WalletService.clear_pending(
+                merchant=settlement.merchant,
+                currency=settlement.currency,
+                amount=settlement.net_amount,
+                reference=settlement.reference,
+                description="Reglement marchand execute",
+                context={
+                    "provider": "merchant",
+                    "merchant_id": settlement.merchant_id,
+                    "conversion_id": settlement.conversion_id,
+                    "settlement_id": settlement.id,
+                    "settlement_reference": settlement.reference,
+                },
+            )
 
         LedgerService.record(
             reference=settlement.reference,

@@ -4,6 +4,7 @@ from database import db
 from models import CompteSysteme, Conversion, MerchantRate, Paiement, Parametre, Settlement
 from services.constants import PaymentStatus
 from services.ledger_service import LedgerService
+from services.wallet_service import WalletService
 
 
 class LiquidityService:
@@ -47,10 +48,23 @@ class LiquidityService:
         if success:
             conversion.statut = PaymentStatus.VALIDE.value
             if conversion.liquidity_source_type == LiquidityService.MERCHANT and conversion.merchant:
-                merchant = conversion.merchant
-                merchant.solde_verrouille = max(
-                    0.0,
-                    merchant.solde_verrouille - (conversion.locked_amount or 0.0),
+                gross_amount = float(conversion.locked_amount or 0.0)
+                platform_fee = min(float(conversion.platform_fee or 0.0), gross_amount)
+                net_amount = round(gross_amount - platform_fee, 2)
+                WalletService.lock_to_pending(
+                    merchant=conversion.merchant,
+                    currency=conversion.to_currency,
+                    gross_amount=gross_amount,
+                    net_amount=net_amount,
+                    reference=conversion.reference,
+                    description="Liquidite verrouillee basculee en reglement pending",
+                    context={
+                        "provider": "merchant",
+                        "merchant_id": conversion.merchant_id,
+                        "conversion_id": conversion.id,
+                        "conversion_reference": conversion.reference,
+                        "platform_fee": platform_fee,
+                    },
                 )
                 LiquidityService._ensure_pending_settlement(conversion)
                 conversion.settlement_status = "ready_for_settlement"
@@ -88,7 +102,7 @@ class LiquidityService:
                 continue
             if merchant.risk_score > LiquidityService.MAX_MERCHANT_RISK_SCORE:
                 continue
-            if not merchant.can_handle(conversion.montant_converti):
+            if not merchant.can_handle_currency(conversion.to_currency, conversion.montant_converti):
                 continue
             eligible.append(merchant_rate)
 
@@ -100,8 +114,19 @@ class LiquidityService:
         merchant = merchant_rate.merchant
         amount = float(conversion.montant_converti)
 
-        merchant.solde_disponible -= amount
-        merchant.solde_verrouille += amount
+        WalletService.lock(
+            merchant=merchant,
+            currency=conversion.to_currency,
+            amount=amount,
+            reference=conversion.reference,
+            description="Reservation liquidite marchand",
+            context={
+                "provider": "merchant",
+                "merchant_id": merchant.id,
+                "conversion_id": conversion.id,
+                "conversion_reference": conversion.reference,
+            },
+        )
 
         LedgerService.record(
             reference=conversion.reference,
@@ -190,8 +215,20 @@ class LiquidityService:
             return False
 
         merchant = conversion.merchant
-        merchant.solde_disponible += amount
-        merchant.solde_verrouille = max(0.0, merchant.solde_verrouille - amount)
+        WalletService.unlock(
+            merchant=merchant,
+            currency=conversion.to_currency,
+            amount=amount,
+            reference=conversion.reference,
+            description=f"Release liquidite marchand: {reason}",
+            context={
+                "provider": "merchant",
+                "merchant_id": merchant.id,
+                "conversion_id": conversion.id,
+                "conversion_reference": conversion.reference,
+                "release_reason": reason,
+            },
+        )
 
         LedgerService.record(
             reference=conversion.reference,

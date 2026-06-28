@@ -1,0 +1,50 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white rounded-xl shadow p-6 mt-8">
+  <h1 class="text-2xl font-bold mb-4 text-gray-800">Mode global de paiement</h1>
+  <p class="text-sm text-gray-600 mb-6">
+    Choisis comment toute la plateforme traite les paiements sans modifier le code.
+  </p>
+
+  <form method="POST" class="space-y-5">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label class="block border rounded-lg p-4 hover:bg-gray-50">
+      <div class="flex items-start gap-3">
+        <input type="radio" name="payment_mode" value="api" {% if current_mode == "api" %}checked{% endif %}>
+        <div>
+          <div class="font-semibold text-gray-800">API</div>
+          <div class="text-sm text-gray-600">Utilise les fournisseurs externes Orange/Wave comme aujourd'hui.</div>
+        </div>
+      </div>
+    </label>
+
+    <label class="block border rounded-lg p-4 hover:bg-gray-50">
+      <div class="flex items-start gap-3">
+        <input type="radio" name="payment_mode" value="manuel" {% if current_mode == "manuel" %}checked{% endif %}>
+        <div>
+          <div class="font-semibold text-gray-800">Manuel</div>
+          <div class="text-sm text-gray-600">Enregistre la transaction sans appel API externe, pour traitement manuel.</div>
+        </div>
+      </div>
+    </label>
+
+    <label class="block border rounded-lg p-4 hover:bg-gray-50">
+      <div class="flex items-start gap-3">
+        <input type="radio" name="payment_mode" value="simulation" {% if current_mode == "simulation" %}checked{% endif %}>
+        <div>
+          <div class="font-semibold text-gray-800">Simulation</div>
+          <div class="text-sm text-gray-600">Valide automatiquement les paiements pour les tests de bout en bout.</div>
+        </div>
+      </div>
+    </label>
+
+    <div class="flex items-center justify-between pt-2">
+      <div class="text-sm text-gray-500">Mode actif: <span class="font-semibold text-blue-700">{{ current_mode }}</span></div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
@@ -110,6 +111,24 @@ class Merchant(db.Model):
         if self.max_ticket is not None and amount > self.max_ticket:
             return False
         return self.solde_disponible >= amount
+
+    def can_handle_currency(self, currency: str, amount) -> bool:
+        amount = Decimal(str(amount or 0))
+        if amount <= 0 or not self.actif or not self.verifie:
+            return False
+        if amount < Decimal(str(self.min_ticket or 0.0)):
+            return False
+        if self.max_ticket is not None and amount > Decimal(str(self.max_ticket)):
+            return False
+
+        balance = MerchantBalance.query.filter_by(
+            merchant_id=self.id,
+            currency_code=currency,
+        ).first()
+        if balance:
+            return balance.available_balance >= amount
+
+        return Decimal(str(self.solde_disponible or 0.0)) >= amount
 
     def __repr__(self):
         return f"<Merchant {self.code} {self.nom}>"
@@ -339,6 +358,77 @@ class Parametre(db.Model):
         return f"<Parametre {self.cle}={self.valeur}>"
 
 
+class Currency(db.Model):
+    __tablename__ = "currency"
+
+    code = db.Column(db.String(10), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    symbol = db.Column(db.String(10), nullable=False)
+    decimal_places = db.Column(db.Integer, nullable=False, default=2)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Currency {self.code}>"
+
+
+class MerchantBalance(db.Model):
+    __tablename__ = "merchant_balance"
+
+    id = db.Column(db.Integer, primary_key=True)
+    merchant_id = db.Column(db.Integer, db.ForeignKey("merchant.id"), nullable=False, index=True)
+    currency_code = db.Column(db.String(10), db.ForeignKey("currency.code"), nullable=False, index=True)
+    available_balance = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    locked_balance = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    pending_balance = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    merchant = db.relationship("Merchant", backref="wallet_balances")
+    currency = db.relationship("Currency", backref="merchant_balances")
+
+    __table_args__ = (
+        db.UniqueConstraint("merchant_id", "currency_code", name="uq_merchant_balance_currency"),
+    )
+
+    def __repr__(self):
+        return f"<MerchantBalance merchant={self.merchant_id} {self.currency_code}>"
+
+
+class WalletEntry(db.Model):
+    __tablename__ = "wallet_entry"
+
+    id = db.Column(db.Integer, primary_key=True)
+    merchant_id = db.Column(db.Integer, db.ForeignKey("merchant.id"), nullable=False, index=True)
+    currency_code = db.Column(db.String(10), db.ForeignKey("currency.code"), nullable=False, index=True)
+    reference = db.Column(db.String(100), nullable=False, index=True)
+    operation = db.Column(db.String(30), nullable=False)
+    balance_type = db.Column(db.String(20), nullable=False)
+    direction = db.Column(db.String(10), nullable=False)
+    amount = db.Column(db.Numeric(24, 8), nullable=False)
+    before_balance = db.Column(db.Numeric(24, 8), nullable=False)
+    after_balance = db.Column(db.Numeric(24, 8), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    provider = db.Column(db.String(50), nullable=True)
+    transaction_id = db.Column(db.Integer, db.ForeignKey("transaction.id"), nullable=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey("conversion.id"), nullable=True)
+    settlement_id = db.Column(db.Integer, db.ForeignKey("settlement.id"), nullable=True)
+    context = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    merchant = db.relationship("Merchant", backref="wallet_entries")
+    currency = db.relationship("Currency", backref="wallet_entries")
+    settlement = db.relationship("Settlement", backref="wallet_entries")
+
+    def __repr__(self):
+        return f"<WalletEntry {self.operation} {self.amount} {self.currency_code}>"
+
+
 class ResetToken(db.Model):
     __tablename__ = "reset_token"
 
@@ -422,6 +512,30 @@ class AuditLog(db.Model):
     payload = db.Column(db.JSON)
     ip_address = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AdminWalletAction(db.Model):
+    __tablename__ = "admin_wallet_action"
+
+    id = db.Column(db.Integer, primary_key=True)
+    requested_by_admin_id = db.Column(db.Integer, db.ForeignKey("utilisateur.id"), nullable=False, index=True)
+    approved_by_admin_id = db.Column(db.Integer, db.ForeignKey("utilisateur.id"), nullable=True, index=True)
+    merchant_id = db.Column(db.Integer, db.ForeignKey("merchant.id"), nullable=False, index=True)
+    currency_code = db.Column(db.String(10), db.ForeignKey("currency.code"), nullable=False, index=True)
+    action = db.Column(db.String(20), nullable=False)
+    amount = db.Column(db.Numeric(24, 8), nullable=False)
+    reference = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    reason = db.Column(db.String(255), nullable=False)
+    ip_address = db.Column(db.String(50), nullable=True)
+    session_identifier = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(20), nullable=False, default="completed")
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    merchant = db.relationship("Merchant", backref="admin_wallet_actions")
+    currency = db.relationship("Currency", backref="admin_wallet_actions")
+
+    def __repr__(self):
+        return f"<AdminWalletAction {self.action} {self.reference}>"
 
 
 class Refund(db.Model):

@@ -1,0 +1,167 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+  <div class="bg-white rounded-xl shadow p-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Wallet marchand</h1>
+      <p class="text-sm text-slate-600 mt-1">{{ merchant.nom }} - {{ merchant.code }} - {{ merchant.pays }}</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="{{ url_for('admin.merchant_dashboard', id=merchant.id) }}" class="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800">
+        Dashboard
+      </a>
+      <a href="{{ url_for('admin.marchands') }}" class="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800">
+        Retour marchands
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <section class="bg-white rounded-xl shadow p-6 xl:col-span-1">
+      <h2 class="text-lg font-semibold text-slate-900 mb-4">Operation admin</h2>
+      <form method="POST" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Action</label>
+          <select name="action" required class="w-full border p-2 rounded">
+            <option value="credit">Crediter</option>
+            <option value="debit">Debiter</option>
+            <option value="lock">Verrouiller</option>
+            <option value="unlock">Deverrouiller</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Devise</label>
+          <select name="currency" required class="w-full border p-2 rounded">
+            {% for currency in currencies %}
+            <option value="{{ currency.code }}">{{ currency.code }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Montant</label>
+          <input type="number" name="amount" step="0.01" min="0.01" required class="w-full border p-2 rounded" placeholder="1000">
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Reference optionnelle</label>
+          <input type="text" name="reference" class="w-full border p-2 rounded" placeholder="MWA-MANUAL-001">
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-700 mb-1">Motif</label>
+          <textarea name="reason" rows="3" required class="w-full border p-2 rounded" placeholder="Correction manuelle, approvisionnement, blocage de precaution..."></textarea>
+        </div>
+
+        <label class="flex items-start gap-2 text-sm text-slate-700">
+          <input type="checkbox" name="confirm_high_amount" class="mt-1">
+          <span>Je confirme l'operation pour un montant potentiellement sensible si le seuil admin l'exige.</span>
+        </label>
+
+        <button type="submit" class="w-full bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+          Appliquer l'operation
+        </button>
+      </form>
+    </section>
+
+    <section class="bg-white rounded-xl shadow p-6 xl:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900">Balances par devise</h2>
+        <span class="text-xs text-slate-500">Disponible, verrouille et pending.</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-700">
+            <tr>
+              <th class="p-2 text-left">Devise</th>
+              <th class="p-2 text-right">Disponible</th>
+              <th class="p-2 text-right">Verrouille</th>
+              <th class="p-2 text-right">Pending</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in balances %}
+            <tr class="border-t">
+              <td class="p-2 font-semibold">{{ row.currency }}</td>
+              <td class="p-2 text-right text-emerald-700">{{ '%.2f'|format(row.available_balance) }}</td>
+              <td class="p-2 text-right text-amber-700">{{ '%.2f'|format(row.locked_balance) }}</td>
+              <td class="p-2 text-right text-orange-700">{{ '%.2f'|format(row.pending_balance) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="p-4 text-center text-slate-500">Aucune balance wallet pour ce marchand.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">Dernieres ecritures wallet</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-100 text-slate-700">
+          <tr>
+            <th class="p-2 text-left">Date</th>
+            <th class="p-2 text-left">Reference</th>
+            <th class="p-2 text-left">Operation</th>
+            <th class="p-2 text-left">Balance</th>
+            <th class="p-2 text-left">Sens</th>
+            <th class="p-2 text-right">Montant</th>
+            <th class="p-2 text-right">Avant</th>
+            <th class="p-2 text-right">Apres</th>
+            <th class="p-2 text-left">Motif</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr class="border-t">
+            <td class="p-2">{{ entry.created_at.strftime('%d/%m/%Y %H:%M') if entry.created_at else '' }}</td>
+            <td class="p-2 font-mono">{{ entry.reference }}</td>
+            <td class="p-2">{{ entry.operation }}</td>
+            <td class="p-2">{{ entry.balance_type }}</td>
+            <td class="p-2">{{ entry.direction }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(entry.amount) }} {{ entry.currency_code }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(entry.before_balance) }}</td>
+            <td class="p-2 text-right">{{ '%.2f'|format(entry.after_balance) }}</td>
+            <td class="p-2">{{ entry.description or '' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9" class="p-4 text-center text-slate-500">Aucune ecriture wallet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">Historique admin wallet</h2>
+    <div class="space-y-3">
+      {% for action in admin_actions %}
+      <div class="border rounded-lg p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="font-semibold text-slate-900">{{ action.currency_code }} - {{ action.action }}</div>
+          <div class="text-xs text-slate-500">{{ action.created_at.strftime('%d/%m/%Y %H:%M') if action.created_at else '' }}</div>
+        </div>
+        <div class="mt-2 text-sm text-slate-700">
+          <span class="font-mono">{{ action.reference }}</span> - {{ '%.2f'|format(action.amount) }}
+        </div>
+        <div class="mt-1 text-sm text-slate-600">{{ action.reason }}</div>
+        <div class="mt-1 text-xs text-slate-500">
+          Admin {{ action.requested_by_admin_id }} | IP {{ action.ip_address or 'N/A' }} | statut {{ action.status }}
+        </div>
+      </div>
+      {% else %}
+      <div class="text-slate-500">Aucune action admin wallet.</div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
