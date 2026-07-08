@@ -33,6 +33,7 @@ Etat de reference :
 - EPIC 7 - Moteur de reglement : partiellement termine
 - EPIC 8 - Registre multi-monnaies : termine
 - EPIC 8.5 - Wallet Administration : termine
+- EPIC 8.6 - Repository Cleanup & Technical Debt Reduction : termine
 - EPIC 9 - Treasury Intelligence : a cadrer
 - EPIC 10 - Moteur de tarification : a cadrer
 - EPIC 11 - Provider Integration : a cadrer
@@ -47,6 +48,31 @@ Cycle obligatoire :
 - tests
 - documentation
 - fusion
+
+Cycle de vie obligatoire d'un EPIC :
+1. ouverture de l'EPIC
+- objectifs
+- perimetre
+- hors perimetre
+- criteres de validation
+- risques
+2. developpement
+- code
+- tests
+- documentation
+3. revue d'architecture
+- validation
+- observations
+- dette technique creee
+- dette technique supprimee
+4. cloture
+- mise a jour de `CHANGELOG.md`
+- mise a jour de `PROJECT_MASTER.md`
+- mise a jour de `ROADMAP.md`
+5. fusion Git
+- PR validee
+- fusion
+- tag si necessaire
 
 ## Principes produit
 - Le coeur metier ne depend jamais directement d'un fournisseur.
@@ -124,6 +150,101 @@ Sources de revenus cibles :
 11. event store interne
 12. core financier
 
+## EPIC officiellement ouvert
+### EPIC 8.6 - Repository Cleanup & Technical Debt Reduction
+
+Objectifs :
+- reduire la dette technique
+- identifier les elements legacy
+- supprimer le code mort
+- uniformiser l'architecture
+- preparer le projet pour les futurs EPIC
+
+Perimetre :
+- audit du depot
+- identification du code obsolete, duplique ou inutilise
+- nettoyage des fichiers temporaires, generes et oublies
+- identification des usages SQLAlchemy 2.x deprecies
+- verification de coherence entre code, documentation et structure du projet
+
+Hors perimetre :
+- aucune nouvelle fonctionnalite produit
+- aucune refonte comportementale
+- aucune migration lourde hors dette technique explicitement documentee
+
+Criteres de validation :
+- un rapport `docs/architecture/TECH_DEBT.md`
+- la liste des suppressions effectuees
+- la liste des elements legacy conserves
+- la liste des recommandations structurelles
+- les tests executes
+- une estimation de la dette technique restante
+
+Risques :
+- suppression accidentelle d'un element encore utilise
+- confusion entre legacy temporaire et code mort reel
+- elargissement du nettoyage au-dela d'un perimetre non fonctionnel
+
+### EPIC SenePay Sandbox - Phase 1
+
+Objectif :
+- connecter AfricaChangeX au provider SenePay Sandbox via l'architecture Provider Adapter existante
+
+Perimetre :
+- appels techniques Sandbox SenePay
+- service interne de test Sandbox
+- page admin de test technique
+- journaux et audits des tests Sandbox
+- tests unitaires mock HTTP
+
+Contraintes :
+- aucune logique metier AfricaChangeX dans le provider
+- aucune dependance directe du Business Engine a SenePay
+- aucun secret commite
+- variables SenePay uniquement via `.env`
+
+Hors perimetre :
+- aucun branchement du Business Engine
+- aucune logique de pricing ou de decision metier
+- aucun webhook metier complet
+- aucune mise en production SenePay
+
+Critere de validation :
+- le provider SenePay Sandbox repond via l'adapter commun
+- la page admin `/admin/senepay-sandbox` permet de tester les endpoints cibles
+- les journaux techniques permettent de suivre requete, reponse, statut et reference interne
+- les tests automatises n'appellent pas reellement SenePay
+
+## Regles de stabilisation
+- tous les 5 EPIC, un EPIC de stabilisation doit etre planifie
+- pendant un EPIC de stabilisation, aucune nouvelle fonctionnalite n'est ajoutee
+- le travail porte uniquement sur la dette technique, les tests, la documentation, la securite et la robustesse
+
+## Categories d'EPIC
+
+EPIC d'infrastructure :
+- gouvernance
+- wallets
+- nettoyage du depot
+- cadre providers
+- core
+- qualite et tests
+
+EPIC metier :
+- treasury
+- pricing
+- conversion intelligente
+- paiements QR
+- SenePay
+- pilote Senegal <-> Guinee
+
+Regle produit :
+- a partir d'EPIC 9, chaque EPIC metier doit contribuer directement a la capacite de realiser un paiement ou une conversion reelle entre deux pays africains
+
+## Regles de gel du Core
+- `Wallet`, `Ledger`, `Settlement`, `MerchantBalance` et `WalletService` sont des composants du coeur financier
+- toute modification structurante de ce coeur exige une ADR et une revue d'architecture formelle avant implementation
+
 ## Regles d'evolution
 - Toute nouvelle integration fournisseur doit entrer dans `providers/`.
 - Toute nouvelle logique de calcul doit entrer dans `engines/`.
@@ -132,3 +253,26 @@ Sources de revenus cibles :
 - Toute evolution notable doit etre notee dans `CHANGELOG.md` et `ROADMAP.md`.
 - Aucun module financier critique ne commence sans specification validee.
 - Toute evolution d'EPIC doit etre relue et consignee dans `docs/architecture/ARCHITECT_REVIEW.md`.
+
+## Referentiel valide
+
+Le dossier `docs/referentiel/` est desormais considere comme la source officielle de connaissance d'AfricaChangeX.
+
+Le referentiel valide v1.0 comprend notamment :
+
+- la charte du referentiel
+- le cycle de vie d'un EPIC
+- la matrice de tracabilite
+- les documents de gouvernance
+- les documents metier
+- les documents d'architecture
+- les ADR
+- les hypotheses metier
+- la revue croisee du referentiel
+
+Regles associees :
+
+- toute modification substantielle du referentiel doit etre justifiee dans un `ADR` ou dans le `CHANGELOG`
+- aucune regle metier ne doit exister uniquement dans le code
+- tout EPIC doit etre coherent avec le Financial Operating Model, les ADR, le Lexique Metier, les Regles Metier, les Scenarios de Reference et les Hypotheses Metier avant fusion
+- le referentiel AfricaChangeX v1.0 constitue la base stable avant l'implementation du Business Engine

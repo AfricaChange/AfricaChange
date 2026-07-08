@@ -37,6 +37,9 @@ app = Flask(__name__)
 
 @app.before_request
 def handle_all():
+    if request.endpoint and request.endpoint.startswith("webhook."):
+        return None
+
     ua = request.headers.get('User-Agent', '').lower()
 
     # Autoriser Facebook sans redirection
@@ -49,6 +52,9 @@ def handle_all():
 
 @app.before_request
 def force_domain():
+    if request.endpoint and request.endpoint.startswith("webhook."):
+        return None
+
     url = request.url
 
     # Forcer HTTPS

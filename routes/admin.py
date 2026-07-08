@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, send_file
 from database import db
 from models import (
     AuditLog,
@@ -29,6 +29,7 @@ from services.settlement_service import SettlementService
 from services.payment_mode_service import PaymentModeService
 from services.merchant_dashboard_service import MerchantDashboardService
 from services.merchant_wallet_admin_service import MerchantWalletAdminService
+from services.senepay_sandbox_test_service import SenePaySandboxTestService
 from services.wallet_service import WalletService
  
 
@@ -799,6 +800,59 @@ def payment_mode():
         "admin_payment_mode.html",
         current_mode=current_mode,
         allowed_modes=sorted(PaymentModeService.ALLOWED_MODES),
+    )
+
+
+@admin.route("/senepay-sandbox", methods=["GET", "POST"])
+@admin_required
+def senepay_sandbox():
+    result = None
+
+    if request.method == "POST":
+        action = request.form.get("action", "").strip()
+        payload = {
+            "internal_reference": request.form.get("internal_reference", "").strip() or None,
+            "amount": request.form.get("amount", "").strip() or None,
+            "currency": request.form.get("currency", "").strip().upper() or None,
+            "description": request.form.get("description", "").strip() or None,
+            "return_url": request.form.get("return_url", "").strip() or None,
+            "cancel_url": request.form.get("cancel_url", "").strip() or None,
+            "customer_name": request.form.get("customer_name", "").strip() or None,
+            "customer_email": request.form.get("customer_email", "").strip() or None,
+            "customer_phone": request.form.get("customer_phone", "").strip() or None,
+            "phone_number": request.form.get("phone_number", "").strip() or None,
+            "operator": request.form.get("operator", "").strip() or None,
+            "country": request.form.get("country", "").strip().upper() or None,
+            "session_token": request.form.get("session_token", "").strip() or None,
+            "token": request.form.get("token", "").strip() or None,
+            "beneficiary_name": request.form.get("beneficiary_name", "").strip() or None,
+            "beneficiary_phone": request.form.get("beneficiary_phone", "").strip() or None,
+            "beneficiary_country": request.form.get("beneficiary_country", "").strip() or None,
+            "beneficiary_currency": request.form.get("beneficiary_currency", "").strip().upper() or None,
+            "callback_url": request.form.get("callback_url", "").strip() or None,
+            "payout_id": request.form.get("payout_id", "").strip() or None,
+        }
+
+        try:
+            result = SenePaySandboxTestService.execute_action(
+                action=action,
+                payload=payload,
+                admin_user_id=session.get("user_id"),
+                ip_address=request.remote_addr or "unknown",
+            )
+            db.session.commit()
+            flash(f"Test Sandbox SenePay execute: {action}.", "success")
+        except Exception as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
+
+    logs = SenePaySandboxTestService.recent_logs()
+    return render_template(
+        "admin_senepay_sandbox.html",
+        result=result,
+        logs=logs,
+        senepay_mode=current_app.config.get("SENEPAY_MODE", "sandbox"),
+        senepay_base_url=current_app.config.get("SENEPAY_BASE_URL", ""),
     )
     
     

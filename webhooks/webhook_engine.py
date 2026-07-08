@@ -1,7 +1,7 @@
 class WebhookEngine:
     @staticmethod
-    def process(*, provider, payload, headers):
-        signature_valid = provider.verify_webhook(payload, headers)
+    def process(*, provider, payload, headers, raw_payload=None):
+        signature_valid = provider.verify_webhook(raw_payload if raw_payload is not None else payload, headers)
         if not signature_valid:
             return {
                 "accepted": False,

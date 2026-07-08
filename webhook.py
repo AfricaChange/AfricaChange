@@ -1,5 +1,10 @@
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 import requests
+
+from database import db
+from providers.factory import ProviderFactory
+from services.senepay_webhook_service import SenePayWebhookService
+from webhooks.webhook_engine import WebhookEngine
 
 webhook_bp = Blueprint("webhook", __name__)
 
@@ -74,3 +79,35 @@ def envoyer_message(numero, texte):
     }
 
     requests.post(url, headers=headers, json=data)
+
+
+@webhook_bp.route("/webhooks/senepay", methods=["POST"])
+def senepay_webhook():
+    raw_payload = request.get_data(cache=False, as_text=False)
+    payload = request.get_json(silent=True) or {}
+    provider = ProviderFactory.create("senepay")
+
+    engine_result = WebhookEngine.process(
+        provider=provider,
+        payload=payload,
+        headers=request.headers,
+        raw_payload=raw_payload,
+    )
+    if not engine_result.get("accepted"):
+        return jsonify({"received": False, "reason": engine_result.get("reason")}), 401
+
+    record = SenePayWebhookService.record_webhook(
+        payload=payload,
+        raw_payload=raw_payload.decode("utf-8", errors="replace"),
+        headers=dict(request.headers),
+        ip_address=request.remote_addr,
+    )
+    db.session.commit()
+
+    return jsonify(
+        {
+            "received": True,
+            "duplicate": record.get("duplicate", False),
+            "event": payload.get("event") or request.headers.get("X-SenePay-Event"),
+        }
+    ), 200

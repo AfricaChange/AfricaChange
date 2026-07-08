@@ -1,39 +1,53 @@
-# This .gitignore is appropriate for repositories deployed to GitHub Pages and using
-# a Gemfile as specified at https://github.com/github/pages-gem#conventional
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Basic Jekyll gitignores (synchronize to Jekyll.gitignore)
-_site/
-.sass-cache/
-.jekyll-cache/
-.jekyll-metadata
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
 
-# Additional Ruby/bundler ignore for when you run: bundle install
-/vendor
+# Environment and secrets
+.env
+.env.*
+!.env.sample
+instance/*.db
+*.sqlite
+*.sqlite3
 
-# Specific ignore for GitHub Pages
-# GitHub Pages will always use its own deployed version of pages-gem 
-# This means GitHub Pages will NOT use your Gemfile.lock and therefore it is
-# counterproductive to check this file into the repository.
-# Details at https://github.com/github/pages-gem/issues/768
-Gemfile.lock
-
-
-# Environnement
-echo .env >> .gitignore
-echo instance/*.db >> .gitignore
-echo __pycache__/ >> .gitignore
-echo *.pyc >> .gitignore
-echo *.swp >> .gitignore
-
-
-
-# Logs
+# Flask / local runtime
+instance/
 logs/
 *.log
 
-# éditeur / OS
+# Test / coverage / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# IDE / OS
 .vscode/
 .idea/
 Thumbs.db
 .DS_Store
-".env" 
+
+# Build / packaging artifacts
+dist/
+build/
+*.egg-info/
+
+# Archives and temporary exports
+*.zip
+*.swp
+*.tmp
+*.bak
+
+# Local tunnel / TLS diagnostics artifacts
+.tools/
+.tmp/
+certs/

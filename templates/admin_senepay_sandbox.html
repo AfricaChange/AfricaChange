@@ -1,0 +1,176 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="space-y-6">
+  <div class="bg-white rounded-xl shadow p-6">
+    <h1 class="text-2xl font-bold text-gray-800">SenePay Sandbox</h1>
+    <p class="mt-2 text-sm text-gray-600">
+      Cette page teste uniquement la connexion technique au provider SenePay via l'adapter provider.
+    </p>
+    <div class="mt-4 grid gap-3 md:grid-cols-2 text-sm">
+      <div class="rounded-lg bg-slate-50 p-3 border">
+        <div class="text-slate-500">Mode</div>
+        <div class="font-semibold text-slate-800">{{ senepay_mode }}</div>
+      </div>
+      <div class="rounded-lg bg-slate-50 p-3 border">
+        <div class="text-slate-500">Base URL</div>
+        <div class="font-semibold text-slate-800 break-all">{{ senepay_base_url }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="bg-white rounded-xl shadow p-6 space-y-5">
+      <h2 class="text-lg font-semibold text-gray-800">Checkout Session</h2>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create_checkout_session">
+        <div class="grid gap-3 md:grid-cols-2">
+          <input class="border rounded px-3 py-2" name="amount" placeholder="Montant">
+          <input class="border rounded px-3 py-2" name="currency" placeholder="Devise (XOF)">
+          <input class="border rounded px-3 py-2" name="customer_name" placeholder="Nom client">
+          <input class="border rounded px-3 py-2" name="customer_email" placeholder="Email client">
+          <input class="border rounded px-3 py-2" name="customer_phone" placeholder="Telephone client">
+          <input class="border rounded px-3 py-2" name="internal_reference" placeholder="Reference interne">
+        </div>
+        <input class="border rounded px-3 py-2 w-full" name="description" placeholder="Description">
+        <input class="border rounded px-3 py-2 w-full" name="return_url" placeholder="URL retour">
+        <input class="border rounded px-3 py-2 w-full" name="cancel_url" placeholder="URL annulation">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Creer une session checkout</button>
+      </form>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="get_checkout_session_status">
+        <input class="border rounded px-3 py-2 w-full" name="session_token" placeholder="Session token">
+        <button class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900">Consulter le statut checkout</button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 space-y-5">
+      <h2 class="text-lg font-semibold text-gray-800">Payin Direct</h2>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create_direct_payin">
+        <div class="grid gap-3 md:grid-cols-2">
+          <input class="border rounded px-3 py-2" name="amount" placeholder="Montant">
+          <input class="border rounded px-3 py-2" name="currency" placeholder="Devise">
+          <input class="border rounded px-3 py-2" name="phone_number" placeholder="Telephone payeur">
+          <input class="border rounded px-3 py-2" name="operator" placeholder="Operateur">
+          <input class="border rounded px-3 py-2 md:col-span-2" name="internal_reference" placeholder="Reference interne">
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Lancer un payin direct</button>
+      </form>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="get_direct_payin_status">
+        <input class="border rounded px-3 py-2 w-full" name="token" placeholder="Token payin">
+        <button class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900">Consulter le statut payin</button>
+      </form>
+
+      <form method="POST" class="border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="get_wallet_balance">
+        <button class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">Consulter le solde wallet</button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 space-y-5">
+      <h2 class="text-lg font-semibold text-gray-800">Payout</h2>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="estimate_payout">
+        <div class="grid gap-3 md:grid-cols-2">
+          <input class="border rounded px-3 py-2" name="amount" placeholder="Montant">
+          <input class="border rounded px-3 py-2" name="currency" placeholder="Devise">
+          <input class="border rounded px-3 py-2" name="beneficiary_name" placeholder="Nom beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_phone" placeholder="Telephone beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_country" placeholder="Pays beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_currency" placeholder="Devise beneficiaire">
+          <input class="border rounded px-3 py-2 md:col-span-2" name="internal_reference" placeholder="Reference interne">
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Estimer un payout</button>
+      </form>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create_payout">
+        <div class="grid gap-3 md:grid-cols-2">
+          <input class="border rounded px-3 py-2" name="amount" placeholder="Montant">
+          <input class="border rounded px-3 py-2" name="currency" placeholder="Devise">
+          <input class="border rounded px-3 py-2" name="beneficiary_name" placeholder="Nom beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_phone" placeholder="Telephone beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_country" placeholder="Pays beneficiaire">
+          <input class="border rounded px-3 py-2" name="beneficiary_currency" placeholder="Devise beneficiaire">
+          <input class="border rounded px-3 py-2 md:col-span-2" name="internal_reference" placeholder="Reference interne">
+        </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Lancer un payout test</button>
+      </form>
+
+      <form method="POST" class="space-y-3 border rounded-lg p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="get_payout_status">
+        <input class="border rounded px-3 py-2 w-full" name="payout_id" placeholder="ID payout">
+        <button class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900">Consulter un payout</button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800">Dernier resultat</h2>
+      {% if result %}
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="rounded-lg border p-3 bg-slate-50">
+          <div><span class="font-semibold">Succes :</span> {{ result.success }}</div>
+          <div><span class="font-semibold">Operation :</span> {{ result.operation }}</div>
+          <div><span class="font-semibold">Reference interne :</span> {{ result.reference_interne }}</div>
+          <div><span class="font-semibold">Reference provider :</span> {{ result.reference_provider or "-" }}</div>
+          <div><span class="font-semibold">Statut SenePay :</span> {{ result.statut_senepay }}</div>
+          <div><span class="font-semibold">Message :</span> {{ result.message }}</div>
+        </div>
+        <div class="rounded-lg border p-3 bg-white overflow-auto">
+          <div class="font-semibold mb-2">Trace technique</div>
+          <pre class="text-xs whitespace-pre-wrap">{{ result.trace | tojson(indent=2) }}</pre>
+        </div>
+      </div>
+      {% else %}
+      <p class="mt-4 text-sm text-gray-600">Aucun test execute pour le moment.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold text-gray-800">Historique recent des tests Sandbox</h2>
+    <div class="mt-4 overflow-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-left text-slate-500 border-b">
+            <th class="py-2 pr-4">Date</th>
+            <th class="py-2 pr-4">Evenement</th>
+            <th class="py-2 pr-4">Reference interne</th>
+            <th class="py-2 pr-4">Statut SenePay</th>
+            <th class="py-2 pr-4">IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="border-b align-top">
+            <td class="py-2 pr-4 whitespace-nowrap">{{ log.created_at }}</td>
+            <td class="py-2 pr-4">{{ log.event }}</td>
+            <td class="py-2 pr-4">{{ log.payload.reference_interne if log.payload else "-" }}</td>
+            <td class="py-2 pr-4">{{ log.payload.statut_senepay if log.payload else "-" }}</td>
+            <td class="py-2 pr-4">{{ log.ip_address or "-" }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="py-4 text-gray-500">Aucun log Sandbox pour le moment.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

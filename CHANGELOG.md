@@ -34,3 +34,20 @@
 - ajout des controles: motif obligatoire, devise active, reference garantie, confirmation sur montant sensible
 - ajout de l'historique admin wallet dans l'interface
 - ajout des tests unitaires et d'integration admin wallet
+
+## 2026-06-28 - EPIC 8.6 repository cleanup and certification
+- creation des rapports `TECH_DEBT.md`, `LEGACY.md` et `REPOSITORY_HEALTH.md`
+- correction de `.gitignore` pour Python / Flask
+- correction des references cassees des assets admin
+- marquage explicite du legacy sur `convert.py` et dependances associees
+- suppression des artefacts Python generes (`__pycache__`, `.pyc`)
+- correction verifiee de la route support et ajout de tests dedies
+- certification interne `Fintech Foundation v0.9`
+
+## 2026-07-08 - EPIC SenePay Sandbox Phase 1
+- remplacement du provider `SenePay` placeholder par une integration Sandbox structuree via `providers/senepay_provider.py`
+- ajout des appels techniques Sandbox : checkout session, statut checkout, payin direct, statut payin, wallet balance, estimation payout, payout simple, statut payout
+- ajout du service interne `services/senepay_sandbox_test_service.py`
+- ajout de la page admin `/admin/senepay-sandbox` pour tester l'integration technique sans logique metier AfricaChangeX
+- ajout des traces techniques et audits admin pour les tests Sandbox SenePay
+- ajout des tests unitaires mock HTTP pour le provider et des tests du service/route admin
