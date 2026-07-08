@@ -107,12 +107,13 @@ class SenePayProvider(BaseProvider):
         )
 
     def create_checkout_session(self, **kwargs):
+        payload = self._build_checkout_session_payload(kwargs)
         return self._request(
             "POST",
             "/api/v1/checkout/sessions",
             operation="checkout_session_create",
-            reference=kwargs.get("reference"),
-            json_payload=kwargs,
+            reference=payload.get("OrderReference") or kwargs.get("reference"),
+            json_payload=payload,
             include_public_key=True,
         )
 
@@ -266,6 +267,37 @@ class SenePayProvider(BaseProvider):
         elif self.public_key:
             headers["X-Api-Key"] = self.public_key
         return headers
+
+    @staticmethod
+    def _build_checkout_session_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+        raw = dict(payload or {})
+        order_reference = (
+            raw.get("OrderReference")
+            or raw.get("reference")
+            or raw.get("internal_reference")
+        )
+
+        normalized = {
+            "OrderReference": order_reference,
+            "amount": raw.get("amount"),
+            "currency": raw.get("currency"),
+        }
+
+        optional_fields = {
+            "customer_name": "customer_name",
+            "customer_phone": "customer_phone",
+            "customer_email": "customer_email",
+            "success_url": "success_url",
+            "cancel_url": "cancel_url",
+            "callback_url": "callback_url",
+            "country": "country",
+            "operator": "operator",
+        }
+        for source_key, target_key in optional_fields.items():
+            if raw.get(source_key) not in (None, ""):
+                normalized[target_key] = raw.get(source_key)
+
+        return {key: value for key, value in normalized.items() if value not in (None, "")}
 
     @staticmethod
     def _parse_response(response: requests.Response):

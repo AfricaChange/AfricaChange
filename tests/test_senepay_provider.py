@@ -44,6 +44,10 @@ class SenePayProviderTestCase(unittest.TestCase):
         _, kwargs = session.request.call_args
         self.assertEqual(kwargs["method"], "POST")
         self.assertEqual(kwargs["url"], "https://api.sene-pay.com/api/v1/checkout/sessions")
+        self.assertEqual(kwargs["json"]["OrderReference"], "CHK-001")
+        self.assertNotIn("reference", kwargs["json"])
+        self.assertEqual(kwargs["json"]["amount"], "1200")
+        self.assertEqual(kwargs["json"]["currency"], "XOF")
 
     def test_wallet_balance_uses_balance_endpoint(self):
         session = Mock()
