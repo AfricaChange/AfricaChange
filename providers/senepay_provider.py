@@ -281,21 +281,30 @@ class SenePayProvider(BaseProvider):
             "OrderReference": order_reference,
             "amount": raw.get("amount"),
             "currency": raw.get("currency"),
+            "description": raw.get("description"),
         }
 
-        optional_fields = {
-            "customer_name": "customer_name",
-            "customer_phone": "customer_phone",
-            "customer_email": "customer_email",
-            "success_url": "success_url",
-            "cancel_url": "cancel_url",
-            "callback_url": "callback_url",
-            "country": "country",
-            "operator": "operator",
-        }
-        for source_key, target_key in optional_fields.items():
-            if raw.get(source_key) not in (None, ""):
-                normalized[target_key] = raw.get(source_key)
+        if raw.get("customer_name") not in (None, ""):
+            normalized["customer_name"] = raw.get("customer_name")
+        if raw.get("customer_phone") not in (None, ""):
+            normalized["customer_phone"] = raw.get("customer_phone")
+        if raw.get("customer_email") not in (None, ""):
+            normalized["customer_email"] = raw.get("customer_email")
+
+        success_url = raw.get("success_url") or raw.get("return_url")
+        cancel_url = raw.get("cancel_url")
+        webhook_url = raw.get("webhook_url") or raw.get("callback_url")
+
+        if success_url not in (None, ""):
+            normalized["successUrl"] = success_url
+        if cancel_url not in (None, ""):
+            normalized["cancelUrl"] = cancel_url
+        if webhook_url not in (None, ""):
+            normalized["webhookUrl"] = webhook_url
+        if raw.get("country") not in (None, ""):
+            normalized["country"] = raw.get("country")
+        if raw.get("operator") not in (None, ""):
+            normalized["operator"] = raw.get("operator")
 
         return {key: value for key, value in normalized.items() if value not in (None, "")}
 

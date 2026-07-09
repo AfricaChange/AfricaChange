@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, send_file
+from werkzeug.routing import BuildError
 from database import db
 from models import (
     AuditLog,
@@ -815,8 +816,10 @@ def senepay_sandbox():
             "amount": request.form.get("amount", "").strip() or None,
             "currency": request.form.get("currency", "").strip().upper() or None,
             "description": request.form.get("description", "").strip() or None,
+            "success_url": request.form.get("success_url", "").strip() or None,
             "return_url": request.form.get("return_url", "").strip() or None,
             "cancel_url": request.form.get("cancel_url", "").strip() or None,
+            "webhook_url": request.form.get("webhook_url", "").strip() or None,
             "customer_name": request.form.get("customer_name", "").strip() or None,
             "customer_email": request.form.get("customer_email", "").strip() or None,
             "customer_phone": request.form.get("customer_phone", "").strip() or None,
@@ -847,12 +850,20 @@ def senepay_sandbox():
             flash(str(exc), "danger")
 
     logs = SenePaySandboxTestService.recent_logs()
+    try:
+        default_webhook_url = url_for("webhook.senepay_webhook", _external=True)
+    except BuildError:
+        default_webhook_url = ""
+
     return render_template(
         "admin_senepay_sandbox.html",
         result=result,
         logs=logs,
         senepay_mode=current_app.config.get("SENEPAY_MODE", "sandbox"),
         senepay_base_url=current_app.config.get("SENEPAY_BASE_URL", ""),
+        default_success_url=url_for("main.accueil", _external=True),
+        default_cancel_url=url_for("main.accueil", _external=True),
+        default_webhook_url=default_webhook_url,
     )
     
     

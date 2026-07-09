@@ -35,6 +35,9 @@ class SenePayProviderTestCase(unittest.TestCase):
             reference="CHK-001",
             amount="1200",
             currency="XOF",
+            success_url="https://www.africachangex.com/payment-success",
+            cancel_url="https://www.africachangex.com/payment-cancel",
+            webhook_url="https://www.africachangex.com/webhooks/senepay",
         )
 
         self.assertTrue(result["success"])
@@ -48,6 +51,9 @@ class SenePayProviderTestCase(unittest.TestCase):
         self.assertNotIn("reference", kwargs["json"])
         self.assertEqual(kwargs["json"]["amount"], "1200")
         self.assertEqual(kwargs["json"]["currency"], "XOF")
+        self.assertEqual(kwargs["json"]["successUrl"], "https://www.africachangex.com/payment-success")
+        self.assertEqual(kwargs["json"]["cancelUrl"], "https://www.africachangex.com/payment-cancel")
+        self.assertEqual(kwargs["json"]["webhookUrl"], "https://www.africachangex.com/webhooks/senepay")
 
     def test_wallet_balance_uses_balance_endpoint(self):
         session = Mock()

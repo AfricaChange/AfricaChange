@@ -34,8 +34,9 @@
           <input class="border rounded px-3 py-2" name="internal_reference" placeholder="Reference interne">
         </div>
         <input class="border rounded px-3 py-2 w-full" name="description" placeholder="Description">
-        <input class="border rounded px-3 py-2 w-full" name="return_url" placeholder="URL retour">
-        <input class="border rounded px-3 py-2 w-full" name="cancel_url" placeholder="URL annulation">
+        <input class="border rounded px-3 py-2 w-full" name="success_url" placeholder="URL succes" value="{{ default_success_url }}">
+        <input class="border rounded px-3 py-2 w-full" name="cancel_url" placeholder="URL annulation" value="{{ default_cancel_url }}">
+        <input class="border rounded px-3 py-2 w-full" name="webhook_url" placeholder="URL webhook" value="{{ default_webhook_url }}">
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Creer une session checkout</button>
       </form>
 
