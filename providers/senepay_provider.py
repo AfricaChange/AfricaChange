@@ -328,7 +328,7 @@ class SenePayProvider(BaseProvider):
     @staticmethod
     def _extract_reference(body: Any, fallback: Optional[str]):
         if isinstance(body, dict):
-            for key in ("reference", "token", "sessionToken", "id"):
+            for key in ("reference", "token", "sessionToken", "id", "disbursement_id", "external_id"):
                 if body.get(key):
                     return str(body[key])
         return fallback

@@ -76,6 +76,33 @@ class SenePayProviderTestCase(unittest.TestCase):
         self.assertEqual(kwargs["method"], "GET")
         self.assertEqual(kwargs["url"], "https://api.sene-pay.com/api/v1/merchant/wallet/balance")
 
+    def test_create_payout_extracts_disbursement_reference(self):
+        session = Mock()
+        response = Mock()
+        response.ok = True
+        response.status_code = 200
+        response.reason = "OK"
+        response.json.return_value = {
+            "status": "submitted",
+            "disbursement_id": "DISB_A1B2C3",
+            "external_id": "PAY-001",
+            "message": "Payout initiated successfully",
+        }
+        session.request.return_value = response
+
+        provider = self._provider_with_session(session)
+        result = provider.create_payout(
+            external_id="PAY-001",
+            amount="25000",
+            phone="221771234567",
+            country="SN",
+            operator="wave",
+        )
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["reference"], "DISB_A1B2C3")
+        self.assertEqual(result["status"], "submitted")
+
     def test_request_exception_is_normalized(self):
         session = Mock()
         session.request.side_effect = requests.RequestException("timeout test")

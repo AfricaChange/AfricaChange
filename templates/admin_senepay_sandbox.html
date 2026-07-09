@@ -108,6 +108,7 @@
           <input class="border rounded px-3 py-2" name="beneficiary_currency" placeholder="Devise beneficiaire">
           <input class="border rounded px-3 py-2 md:col-span-2" name="internal_reference" placeholder="Reference interne">
         </div>
+        <input class="border rounded px-3 py-2 w-full" name="callback_url" placeholder="URL webhook payout" value="{{ default_webhook_url }}">
         <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Lancer un payout test</button>
       </form>
 
