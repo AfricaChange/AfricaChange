@@ -30,6 +30,10 @@
       <p class="text-2xl font-bold text-yellow-700">
         {{ total_transactions or 0 }}
       </p>
+      <a href="{{ url_for('admin.reporting_dashboard') }}"
+         class="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800">
+        Reporting financier
+      </a>
     </div>
   </div>
 
@@ -136,6 +140,11 @@
       <a href="{{ url_for('admin.litiges') }}"
          class="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700">
         ⚖️ Litiges
+      </a>
+
+      <a href="{{ url_for('admin.payment_mode') }}"
+         class="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700">
+        🎛️ Payment Mode
       </a>
 
       <a href="{{ url_for('admin.admin_maintenance') }}"
