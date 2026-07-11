@@ -84,6 +84,7 @@ Elle permet de s'assurer qu'aucune logique critique n'est codee sans origine met
 | Reporting par segment client | `PROFITABILITY_KPIS.md` / `SPECIFICATION_TECHNIQUE_BUSINESS_ENGINE.md` | `engines/reporting_engine/reporting_engine.py` | `test_reporting_engine.py` |
 | Transformation Conversion / Execution / Profitability en KPI lisibles | `SPECIFICATION_TECHNIQUE_BUSINESS_ENGINE.md` / `PROFITABILITY_KPIS.md` | `services/reporting_service.py` | `test_reporting_service.py` |
 | Dashboard admin read-only de reporting | `SPECIFICATION_TECHNIQUE_BUSINESS_ENGINE.md` / `PROFITABILITY_KPIS.md` | `services/reporting_service.py` / `routes/admin.py` | `test_reporting_service.py` / `test_admin_reporting_route.py` |
+| Validation fonctionnelle controlee du reporting | `VALIDATION_FONCTIONNELLE_EPIC_8_9_REPORTING.md` | `services/reporting_service.py` / `engines/reporting_engine/reporting_engine.py` | `test_reporting_validation_integration.py` |
 
 ## Regle de Maintien
 

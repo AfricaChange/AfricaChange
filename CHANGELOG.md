@@ -139,3 +139,8 @@
 - ajout du template `admin_reporting.html` avec filtres par periode, corridor, devise, marchand, mode d'execution et statut
 - ajout des agregats read-only par segment client et des vues de supervision : pertes, transactions sous prevision, provisoires vs definitives
 - ajout des tests `test_admin_reporting_route.py`
+
+## 2026-07-11 - Validation fonctionnelle EPIC 8.9
+- ajout de `tests/test_reporting_validation_integration.py` avec jeu de donnees controle pour les cas rentable, perte, provisoire, platform, merchant, hybrid, annule et rejete
+- exposition explicite de `ecart_prevision_reel` dans les lignes de reporting
+- ajout du rapport `docs/business/VALIDATION_FONCTIONNELLE_EPIC_8_9_REPORTING.md`

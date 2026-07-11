@@ -34,6 +34,7 @@ class ReportingInputRow:
     revenu_brut: Decimal = Decimal("0")
     marge_estimee: Decimal = Decimal("0")
     marge_nette: Decimal = Decimal("0")
+    ecart_prevision_reel: Decimal = Decimal("0")
     execution_cost: Decimal = Decimal("0")
     provider_fees: Decimal = Decimal("0")
     delai_execution_minutes: Decimal = Decimal("0")
@@ -50,6 +51,7 @@ class ReportingInputRow:
             "revenu_brut",
             "marge_estimee",
             "marge_nette",
+            "ecart_prevision_reel",
             "execution_cost",
             "provider_fees",
             "delai_execution_minutes",

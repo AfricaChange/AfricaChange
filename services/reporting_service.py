@@ -161,6 +161,7 @@ class ReportingService:
             revenu_brut=profitability.revenu_brut,
             marge_estimee=marge_estimee,
             marge_nette=profitability.marge_nette_reelle,
+            ecart_prevision_reel=profitability.ecart_prevision_reel,
             execution_cost=execution_cost,
             provider_fees=provider_fees,
             delai_execution_minutes=delay_minutes,
