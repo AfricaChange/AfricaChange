@@ -48,3 +48,14 @@ Aucun ecart fonctionnel non explique n'a ete observe sur le jeu de donnees contr
 - `tests/test_reporting_service.py`
 - `tests/test_reporting_engine.py`
 - `tests/test_admin_reporting_route.py`
+
+## Validation migration
+
+Une migration Alembic dediee `reporting_foundation` accompagne le perimetre EPIC 8.9.
+
+Validation operationnelle realisee :
+
+- verification que `origin/main` ne contenait pas `ConversionExecution` ni les champs de lecture ajoutes sur `Conversion` ;
+- application de `alembic upgrade head` sur une base SQLite de validation preparee a partir du schema `main` minimal ;
+- verification de la presence de la table `conversion_execution` ;
+- verification de la presence des colonnes `quote_source_amount`, `quote_target_amount`, `client_rate`, `execution_mode`, `margin_estimated` et `offer_snapshot` sur `conversion`.
