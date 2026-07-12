@@ -1,0 +1,338 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+
+{% set snapshot = dashboard_data.snapshot %}
+{% set totals = dashboard_data.totaux %}
+
+<div class="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-sky-700">Reporting financier</h1>
+      <p class="text-sm text-gray-500">
+        Lecture seule. Les chiffres provisoires restent sujets a ajustement tant que la conversion n'est pas finalisee.
+      </p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+      Retour admin
+    </a>
+  </div>
+
+  <form method="get" class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date debut</label>
+        <input type="date" name="start_date" value="{{ filters.start_date }}" class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date fin</label>
+        <input type="date" name="end_date" value="{{ filters.end_date }}" class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Corridor</label>
+        <select name="corridor" class="w-full border rounded px-3 py-2">
+          <option value="">Tous</option>
+          {% for option in corridor_options %}
+          <option value="{{ option }}" {% if filters.corridor == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Devise</label>
+        <select name="currency" class="w-full border rounded px-3 py-2">
+          <option value="">Toutes</option>
+          {% for option in currency_options %}
+          <option value="{{ option }}" {% if filters.currency == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Marchand</label>
+        <select name="merchant_id" class="w-full border rounded px-3 py-2">
+          <option value="">Tous</option>
+          {% for merchant in merchants %}
+          <option value="{{ merchant.id }}" {% if filters.merchant_id == merchant.id|string %}selected{% endif %}>{{ merchant.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+        <select name="execution_mode" class="w-full border rounded px-3 py-2">
+          <option value="">Tous</option>
+          {% for option in execution_mode_options %}
+          <option value="{{ option }}" {% if filters.execution_mode == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="xl:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+        <select name="statut" class="w-full border rounded px-3 py-2">
+          <option value="">Tous</option>
+          {% for option in status_options %}
+          <option value="{{ option }}" {% if filters.statut == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <button type="submit" class="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800">Filtrer</button>
+      <a href="{{ url_for('admin.reporting_dashboard') }}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Reinitialiser</a>
+    </div>
+  </form>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="bg-sky-50 p-4 rounded-lg border border-sky-100">
+      <p class="text-sm text-gray-600">Conversions filtrees</p>
+      <p class="text-2xl font-bold text-sky-700">{{ totals.conversions_count }}</p>
+    </div>
+    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+      <p class="text-sm text-gray-600">Marge nette</p>
+      <p class="text-2xl font-bold text-emerald-700">{{ totals.marge_nette }}</p>
+    </div>
+    <div class="bg-amber-50 p-4 rounded-lg border border-amber-100">
+      <p class="text-sm text-gray-600">Sous prevision</p>
+      <p class="text-2xl font-bold text-amber-700">{{ totals.sous_prevision_count }}</p>
+    </div>
+    <div class="bg-rose-50 p-4 rounded-lg border border-rose-100">
+      <p class="text-sm text-gray-600">Transactions en perte</p>
+      <p class="text-2xl font-bold text-rose-700">{{ totals.pertes_count }}</p>
+    </div>
+    <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+      <p class="text-sm text-gray-600">Conversions provisoires</p>
+      <p class="text-2xl font-bold text-indigo-700">{{ totals.provisoires_count }}</p>
+    </div>
+    <div class="bg-cyan-50 p-4 rounded-lg border border-cyan-100">
+      <p class="text-sm text-gray-600">Conversions definitives</p>
+      <p class="text-2xl font-bold text-cyan-700">{{ totals.definitives_count }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-slate-100 px-4 py-3 font-semibold">Par corridor</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Corridor</th>
+              <th class="px-4 py-2">Volume destination</th>
+              <th class="px-4 py-2">Marge nette</th>
+              <th class="px-4 py-2">Taux marge</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in snapshot.corridor_rows %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.corridor }}</td>
+              <td class="px-4 py-2">{{ row.volume_destination }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+              <td class="px-4 py-2">{{ row.taux_marge|round(2) }}%</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-4 py-4 text-gray-500">Aucune donnee.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-slate-100 px-4 py-3 font-semibold">Par devise</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Devise</th>
+              <th class="px-4 py-2">Volume source</th>
+              <th class="px-4 py-2">Volume destination</th>
+              <th class="px-4 py-2">Marge nette</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in snapshot.currency_rows %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.currency_code }}</td>
+              <td class="px-4 py-2">{{ row.volume_source }}</td>
+              <td class="px-4 py-2">{{ row.volume_destination }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-4 py-4 text-gray-500">Aucune donnee.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-slate-100 px-4 py-3 font-semibold">Modes d'execution</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Mode</th>
+              <th class="px-4 py-2">Conversions</th>
+              <th class="px-4 py-2">Marge nette</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in snapshot.execution_mode_rows %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.execution_mode }}</td>
+              <td class="px-4 py-2">{{ row.conversions_count }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="px-4 py-4 text-gray-500">Aucune donnee.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-slate-100 px-4 py-3 font-semibold">Rentabilite par marchand</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Marchand</th>
+              <th class="px-4 py-2">Marge nette</th>
+              <th class="px-4 py-2">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in snapshot.merchant_rows %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.merchant_nom }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+              <td class="px-4 py-2">{{ row.score }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="px-4 py-4 text-gray-500">Aucune donnee.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-slate-100 px-4 py-3 font-semibold">Rentabilite par segment client</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Segment</th>
+              <th class="px-4 py-2">Conversions</th>
+              <th class="px-4 py-2">Marge nette</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in snapshot.segment_rows %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.segment_client }}</td>
+              <td class="px-4 py-2">{{ row.conversions_count }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="px-4 py-4 text-gray-500">Aucune donnee.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-rose-50 px-4 py-3 font-semibold text-rose-700">Transactions en perte</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Reference</th>
+              <th class="px-4 py-2">Corridor</th>
+              <th class="px-4 py-2">Marge nette</th>
+              <th class="px-4 py-2">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in dashboard_data.transactions_en_perte %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.conversion_reference }}</td>
+              <td class="px-4 py-2">{{ row.corridor }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+              <td class="px-4 py-2">{{ row.statut }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-4 py-4 text-gray-500">Aucune transaction en perte.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="border rounded-lg overflow-hidden">
+      <div class="bg-amber-50 px-4 py-3 font-semibold text-amber-700">Marge reelle inferieure a la prevision</div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-left">
+            <tr>
+              <th class="px-4 py-2">Reference</th>
+              <th class="px-4 py-2">Marge estimee</th>
+              <th class="px-4 py-2">Marge nette</th>
+              <th class="px-4 py-2">Provisoire</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in dashboard_data.transactions_sous_prevision %}
+            <tr class="border-t">
+              <td class="px-4 py-2">{{ row.conversion_reference }}</td>
+              <td class="px-4 py-2">{{ row.marge_estimee }}</td>
+              <td class="px-4 py-2">{{ row.marge_nette }}</td>
+              <td class="px-4 py-2">{{ 'oui' if row.provisoire else 'non' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-4 py-4 text-gray-500">Aucune transaction sous prevision.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="border rounded-lg overflow-hidden">
+    <div class="bg-slate-100 px-4 py-3 font-semibold">Dernieres conversions filtrees</div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-slate-50 text-left">
+          <tr>
+            <th class="px-4 py-2">Reference</th>
+            <th class="px-4 py-2">Corridor</th>
+            <th class="px-4 py-2">Mode</th>
+            <th class="px-4 py-2">Marge nette</th>
+            <th class="px-4 py-2">Statut</th>
+            <th class="px-4 py-2">Nature</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in dashboard_data.rows %}
+          <tr class="border-t">
+            <td class="px-4 py-2">{{ row.conversion_reference }}</td>
+            <td class="px-4 py-2">{{ row.corridor }}</td>
+            <td class="px-4 py-2">{{ row.execution_mode }}</td>
+            <td class="px-4 py-2">{{ row.marge_nette }}</td>
+            <td class="px-4 py-2">{{ row.statut }}</td>
+            <td class="px-4 py-2">{{ 'provisoire' if row.provisoire else 'definitive' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="px-4 py-4 text-gray-500">Aucune donnee sur cette selection.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+{% endblock %}

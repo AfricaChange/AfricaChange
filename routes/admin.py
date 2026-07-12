@@ -23,6 +23,7 @@ from functools import wraps
 from services.liquidity_service import LiquidityService
 from services.dispute_service import DisputeService
 from services.settlement_service import SettlementService
+from services.reporting_service import ReportingService
  
 
 
@@ -100,6 +101,70 @@ def dashboard():
         tx_failed=tx_failed,
         conv_pending=conv_pending
     )
+
+
+@admin.route('/reporting')
+@admin_required
+def reporting_dashboard():
+    start_date = _parse_date(request.args.get('start_date'))
+    end_date = _parse_date(request.args.get('end_date'))
+    corridor = (request.args.get('corridor') or "").strip()
+    currency = (request.args.get('currency') or "").strip()
+    execution_mode = (request.args.get('execution_mode') or "").strip()
+    statut = (request.args.get('statut') or "").strip()
+    merchant_id_raw = (request.args.get('merchant_id') or "").strip()
+    merchant_id = int(merchant_id_raw) if merchant_id_raw.isdigit() else None
+
+    dashboard_data = ReportingService.generate_dashboard(
+        start_date=start_date,
+        end_date=end_date,
+        corridor=corridor,
+        currency=currency,
+        merchant_id=merchant_id,
+        execution_mode=execution_mode,
+        statut=statut,
+        detail_limit=20,
+    )
+
+    all_rows = ReportingService.build_rows()
+    corridor_options = sorted({row.corridor for row in all_rows if row.corridor})
+    currency_options = sorted({
+        value
+        for row in all_rows
+        for value in (row.devise_source, row.devise_cible)
+        if value
+    })
+    execution_mode_options = sorted({row.execution_mode for row in all_rows if row.execution_mode})
+    status_options = sorted({row.statut for row in all_rows if row.statut})
+    merchants = Merchant.query.order_by(Merchant.nom.asc()).all()
+
+    return render_template(
+        "admin_reporting.html",
+        dashboard_data=dashboard_data,
+        corridor_options=corridor_options,
+        currency_options=currency_options,
+        execution_mode_options=execution_mode_options,
+        status_options=status_options,
+        merchants=merchants,
+        filters={
+            "start_date": request.args.get("start_date", ""),
+            "end_date": request.args.get("end_date", ""),
+            "corridor": corridor,
+            "currency": currency,
+            "merchant_id": merchant_id_raw,
+            "execution_mode": execution_mode,
+            "statut": statut,
+        },
+    )
+
+
+def _parse_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
 
    
 

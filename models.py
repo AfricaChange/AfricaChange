@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
@@ -224,6 +225,12 @@ class Conversion(db.Model):
     settlement_status = db.Column(db.String(20), default="pending", nullable=False)
     reserved_until = db.Column(db.DateTime(timezone=True), nullable=True)
     selection_reason = db.Column(db.String(255), nullable=True)
+    quote_source_amount = db.Column(db.Numeric(24, 8), nullable=True)
+    quote_target_amount = db.Column(db.Numeric(24, 8), nullable=True)
+    client_rate = db.Column(db.Numeric(24, 8), nullable=True)
+    execution_mode = db.Column(db.String(20), nullable=True)
+    margin_estimated = db.Column(db.Numeric(24, 8), nullable=True)
+    offer_snapshot = db.Column(db.JSON, nullable=True)
     compte_systeme_id = db.Column(db.Integer, db.ForeignKey("compte_systeme.id"))
 
     user = db.relationship("Utilisateur", backref="conversions")
@@ -377,6 +384,41 @@ class PaymentEvent(db.Model):
 
     def __repr__(self):
         return f"<PaymentEvent {self.provider} {self.event_type}>"
+
+
+class ConversionExecution(db.Model):
+    __tablename__ = "conversion_execution"
+
+    id = db.Column(db.Integer, primary_key=True)
+    conversion_id = db.Column(db.Integer, db.ForeignKey("conversion.id"), nullable=False, unique=True, index=True)
+    execution_reference = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    mode = db.Column(db.String(20), nullable=False)
+    provider_code = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(50), nullable=False, index=True)
+    payin_reference = db.Column(db.String(100), nullable=True)
+    payout_reference = db.Column(db.String(100), nullable=True)
+    payin_status = db.Column(db.String(50), nullable=True)
+    payout_status = db.Column(db.String(50), nullable=True)
+    amount_source = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    amount_destination = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    provider_fees = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    execution_cost = db.Column(db.Numeric(24, 8), nullable=False, default=Decimal("0"))
+    error_code = db.Column(db.String(50), nullable=True)
+    error_message = db.Column(db.String(255), nullable=True)
+    raw_context = db.Column(db.JSON, nullable=True)
+    started_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    conversion = db.relationship("Conversion", backref=db.backref("execution", uselist=False))
+
+    def __repr__(self):
+        return f"<ConversionExecution {self.execution_reference} {self.status}>"
 
 
 class LedgerEntry(db.Model):
