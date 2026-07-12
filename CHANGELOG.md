@@ -10,4 +10,4 @@
 - ajout de la route admin read-only `/admin/reporting`
 - ajout du dashboard `templates/admin_reporting.html`
 - ajout des tests de reporting, de route admin et de validation fonctionnelle controlee
-- EPIC 8.9 marque comme valide et ferme
+- EPIC 8.9 marque comme valide, fusionne et clos

@@ -2,7 +2,7 @@
 
 ## Jalon actuel
 
-- `AfricaChangeX Fintech Foundation v0.9.1` prepare avec EPIC 8.9 valide
+- `AfricaChangeX Fintech Foundation v0.9.1` prepare avec EPIC 8.9 valide, fusionne et clos
 
 ## Priorites suivantes
 

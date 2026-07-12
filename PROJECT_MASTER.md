@@ -6,7 +6,7 @@ AfricaChangeX est une plateforme de paiement, de conversion et d'orchestration d
 
 ## Etat de reference
 
-- EPIC 8.9 - Reporting Engine : valide et ferme
+- EPIC 8.9 - Reporting Engine : valide, fusionne et clos
 - EPIC 9 - Treasury Intelligence : a cadrer
 - EPIC 10 - Pricing Engine : a cadrer
 - EPIC 11 - Integration SenePay : a cadrer
