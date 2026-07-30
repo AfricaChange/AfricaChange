@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *$py.class
 
 # Virtual environments
@@ -19,6 +21,7 @@ instance/*.db
 
 # Flask / local runtime
 instance/
+instance/*.sqbpro
 logs/
 *.log
 
@@ -28,6 +31,7 @@ logs/
 .ruff_cache/
 .coverage
 .coverage.*
+coverage.xml
 htmlcov/
 
 # IDE / OS
@@ -43,9 +47,25 @@ build/
 
 # Archives and temporary exports
 *.zip
+*.rar
+*.7z
+zip/africachange_backup_*/
 *.swp
 *.tmp
 *.bak
+instance/*.sql
+*.dump
+*.backup
+
+# Local secret placeholders / credential files
+ADMIN_EMAIL
+ADMIN_PASSWORD
+ORANGE_CLIENT_ID
+ORANGE_CLIENT_SECRET
+ORANGE_CURRENCY
+ORANGE_MERCHANT_KEY
+WAVE_API_KEY
+WAVE_API_URL
 
 # Local tunnel / TLS diagnostics artifacts
 .tools/

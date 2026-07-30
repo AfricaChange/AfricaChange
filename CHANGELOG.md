@@ -119,6 +119,7 @@
 - ajout de `ConversionExecutionService` pour faire evoluer une conversion reservee jusqu'a l'execution sans logique provider metier
 - ajout des adapters `SimulationExecutionAdapter`, `ManualExecutionAdapter` et `ProviderExecutionAdapter`
 - maintien de la separation stricte : `ConversionOrchestrationService -> ConversionExecutionService -> ExecutionAdapter -> ProviderRegistry`
+- ajout de la specification de conception `docs/business/EPIC_9_0_1_MANUAL_EXECUTION_ADAPTER.md` pour cadrer le durcissement du mode manuel avant les adapters marchand et provider
 - ajout des tests v0.7 : execution simulee complete, echec payin, echec payout apres payin, pending verification, reprise idempotente, double confirmation, mode manuel, execution interdite sans reservation, offre client figee, conversion terminee non reexecutee, annulation, revue manuelle et tracabilite complete
 
 ## 2026-07-11 - Profitability Engine v0.1
@@ -144,3 +145,28 @@
 - ajout de `tests/test_reporting_validation_integration.py` avec jeu de donnees controle pour les cas rentable, perte, provisoire, platform, merchant, hybrid, annule et rejete
 - exposition explicite de `ecart_prevision_reel` dans les lignes de reporting
 - ajout du rapport `docs/business/VALIDATION_FONCTIONNELLE_EPIC_8_9_REPORTING.md`
+
+## 2026-07-12 - EPIC 9.0.1 finition operationnelle admin
+- ajout des champs de revue des preuves manuelles sur `ExecutionProof` avec migration dediee
+- ajout des actions metier `attach_manual_proof`, `review_manual_proof` et `set_manual_review` dans `ConversionExecutionService`
+- ajout de la page admin `admin_conversion_execution.html` pour exposer statuts manuels, preuves, audits et couts reels par conversion
+- ajout des routes admin de confirmation, revue manuelle, attachement et revue de preuve sans ecriture financiere directe
+- ajout des tests `test_admin_manual_execution_route.py` pour couvrir acces admin, affichage, validation idempotente, motif obligatoire et etats interdits
+
+## 2026-07-14 - EPIC 9.0.2 cadrage MerchantExecutionAdapter
+- ajout de la specification officielle `docs/business/EPIC_9_0_2_MERCHANT_EXECUTION_ADAPTER.md`
+- formalisation des responsabilites du `MerchantExecutionAdapter`, de ses objets metier, de sa machine d'etats et de ses KPI marchands
+- ajout de la reserve operationnelle liant les etats longs a la dette `conversion.statut` sur Render
+- rattachement de l'EPIC 9.0.2 au `PROJECT_MASTER.md`, a la `MATRICE_DE_TRACABILITE.md`, au `BACKLOG.md` et au registre `TECH-001`
+
+## 2026-07-14 - EPIC 9.0.2 squelette MerchantExecutionAdapter
+- ajout du squelette pur `services/merchant_execution_adapter.py`
+- ajout des objets `MerchantExecutionOffer`, `MerchantExecutionAssignment`, `MerchantExecutionResponse`, `MerchantExecutionProof`, `MerchantExecutionCost`, `MerchantPerformanceSnapshot`, `MerchantTrustScore`, `MerchantExecutionSlice` et `MerchantFallbackStep`
+- ajout des garde-fous de conception dans la specification : score marchand dynamique, fractionnement d'execution, timeouts par segment, circuit de secours explicable et compatibilite multi-canaux
+- ajout des tests unitaires `tests/test_merchant_execution_adapter.py` sans base de donnees, sans provider reel et sans wallet supplementaire
+
+## 2026-07-18 - EPIC 9.0.2 phase 2 contrat d'orchestration marchand
+- ajout du module pur `services/merchant_execution_orchestrator.py` pour orchestrer la portion marchand d'un `PlanExecution` sans Flask, sans SQLAlchemy, sans provider et sans mutation financiere
+- ajout des contrats `MerchantChannelPort` et `MerchantDataPort` pour preparer les futurs canaux marchand sans dependance concrete au moteur metier
+- ajout des objets `MerchantCandidate`, `FallbackPolicy`, `MerchantOrchestrationRequest`, `MerchantOrchestrationResult` et `MerchantOrchestrationStatus`
+- ajout des tests unitaires `tests/test_merchant_execution_orchestrator.py` couvrant selection multi-criteres, timeouts, reaffectation, fractionnement, mode hybride, absence de marchand eligible, reponse tardive ignoree et determinisme

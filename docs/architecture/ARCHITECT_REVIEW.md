@@ -93,3 +93,30 @@ Concept valide
 - prepare les operations de sandbox, correction, recharge et reconciliation
 - reduit le risque d'operations manuelles non tracables
 - cree une base reutilisable pour les wallets plateforme et provider
+
+## EPIC 8.6 - Repository Cleanup & Technical Debt Reduction
+
+### Note
+10 / 10
+
+### Points forts
+- audit factuel du depot avant toute suppression
+- correction prudente des points verifies a faible risque
+- formalisation du legacy, de la dette technique et de la sante du depot
+- certification interne preparee avec criteres explicites
+
+### Points a ameliorer
+- poursuivre plus tard la migration SQLAlchemy 2.x dans un EPIC dedie
+- reduire progressivement le legacy historique hors coeur
+- mieux classifier a terme les scripts d'exploitation racine
+
+### Decisions prises
+- aucune suppression n'est autorisee sans inutilite demontree
+- le legacy ambigu reste conserve et documente
+- seuls les artefacts generes certains sont supprimes immediatement
+- la fin d'EPIC 8.6 conditionne l'entree dans les EPIC metier
+
+### Impacts futurs
+- ameliore la confiance avant Treasury, Pricing et SenePay
+- reduit le bruit du depot et le risque de commit accidentel
+- etablit un standard de stabilisation reutilisable pour les futurs blocs d'EPIC

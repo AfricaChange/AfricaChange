@@ -116,3 +116,80 @@ Decision :
 Raison :
 - reduire le chaos fonctionnel
 - permettre au produit de croitre sans se re-melanger
+
+## AD-014 - Cycle de vie obligatoire des EPIC
+Decision :
+- chaque EPIC doit suivre un cycle de vie standardise
+- ce cycle couvre l'ouverture, le developpement, la revue d'architecture, la cloture et la fusion Git
+- aucun EPIC n'est considere termine sans PR, validation et mise a jour documentaire minimale
+
+Raison :
+- rendre la gouvernance reproductible
+- conserver un historique comprensible des decisions et des livraisons
+- aligner code, architecture, documentation et Git
+
+## AD-015 - EPIC de stabilisation periodique
+Decision :
+- tous les 5 EPIC, un EPIC de stabilisation doit etre planifie
+- ces EPIC n'introduisent aucune nouvelle fonctionnalite metier
+- ils sont reserves a la dette technique, aux tests, a la documentation, a la securite et a la performance
+
+Raison :
+- eviter l'accumulation de dette technique
+- stabiliser la plateforme avant les prochaines phases de croissance
+- proteger la qualite de l'architecture sur le long terme
+
+## AD-016 - Gel du coeur financier
+Decision :
+- `Wallet`, `Ledger`, `Settlement`, `MerchantBalance` et `WalletService` sont consideres comme composants du Core financier
+- toute modification structurante de ces composants exige une ADR et une revue d'architecture avant implementation
+
+Raison :
+- reduire le risque de regression sur les composants les plus sensibles
+- traiter le coeur financier comme un actif critique de la plateforme
+- forcer un niveau de revue proportionnel au risque
+
+## AD-017 - Ouverture officielle de l'EPIC 8.6
+Decision :
+- avant l'EPIC 9, AfricaChangeX ouvre officiellement l'EPIC 8.6 `Repository Cleanup & Technical Debt Reduction`
+- cet EPIC est non fonctionnel et ne doit modifier aucun comportement produit
+- sa sortie attendue inclut un audit de dette technique, un plan legacy et un nettoyage du depot
+
+Raison :
+- consolider la base technique avant les prochains EPIC financiers
+- reduire la dette pendant que le projet est encore jeune
+- preparer une meilleure maintenabilite pour Treasury, Pricing et Provider Integration
+
+## AD-018 - Reservation transactionnelle separee du Business Engine
+Decision :
+- le `Business Engine` ne lit ni ne modifie directement les soldes reels
+- les soldes reels sont transformes en `TreasurySnapshot` via un builder dedie
+- toute reservation reelle passe par `ExecutionReservationService`
+- toute mutation effective continue de passer par `WalletService`
+
+Raison :
+- proteger la separation entre decision metier et mutation comptable
+- revalider la liquidite au moment du lock
+- garantir l'idempotence, le rollback et les traces d'audit avant toute execution fournisseur reelle
+
+## AD-019 - La conversion orchestre, le provider execute plus tard
+Decision :
+- la conversion devient le premier cas d'usage applicatif complet au-dessus du `Business Engine`
+- le checkout, le payin et le payout provider ne pilotent pas la conversion
+- `ConversionOrchestrationService` fige l'offre, evalue, reserve et prepare la conversion avant toute execution externe
+
+Raison :
+- garder le metier maitre du parcours principal
+- eviter qu'un moyen d'encaissement dicte la logique de conversion
+- preparer un branchement provider ulterieur sans casser la chaine metier
+
+## AD-020 - L'execution externe passe par un adapter controle
+Decision :
+- toute conversion reservee passe par `ConversionExecutionService`
+- le mode d'execution est choisi entre `simulation`, `manuel` et `api`
+- le mode `api` utilise un adapter provider abstrait et non une logique SenePay directe
+
+Raison :
+- proteger le coeur metier contre la variabilite des providers
+- valider les etats d'execution avant tout branchement fournisseur reel
+- permettre une execution simulee et manuelle sans bloquer le parcours global

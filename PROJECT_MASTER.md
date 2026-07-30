@@ -77,6 +77,7 @@ Cycle de vie obligatoire d'un EPIC :
 ## Principes produit
 - Le coeur metier ne depend jamais directement d'un fournisseur.
 - Toute integration externe passe par une interface commune.
+- Le marche client et le marche fournisseur sont separes ; le client contracte avec AfricaChangeX, pas avec le marchand.
 - Les routes HTTP restent fines ; la logique vit dans les services et moteurs.
 - Toute donnee financiere doit etre traçable dans le ledger.
 - Toute nouvelle brique doit etre pensee pour le scale regional.
@@ -150,6 +151,12 @@ Sources de revenus cibles :
 11. event store interne
 12. core financier
 
+## Reserve operationnelle active
+
+Tant que `conversion.statut` reste en `VARCHAR(20)` sur Render, aucun parcours deploye ne doit tenter d'enregistrer `manual_review_required` ou tout autre statut long.
+
+La migration corrective d'elargissement reste une dette prioritaire avant activation operationnelle reelle du mode manuel et des futurs etats longs.
+
 ## EPIC officiellement ouvert
 ### EPIC 8.6 - Repository Cleanup & Technical Debt Reduction
 
@@ -214,6 +221,40 @@ Critere de validation :
 - la page admin `/admin/senepay-sandbox` permet de tester les endpoints cibles
 - les journaux techniques permettent de suivre requete, reponse, statut et reference interne
 - les tests automatises n'appellent pas reellement SenePay
+
+### EPIC 9.0.2 - MerchantExecutionAdapter
+
+Objectif :
+- permettre a AfricaChangeX de confier tout ou partie de l'execution interne d'une conversion a un marchand sans exposer ce marchand au client et sans modifier l'offre client deja acceptee
+
+Perimetre de cette phase :
+- specification officielle en francais
+- machine d'etats
+- objets metier
+- regles de reaffectation
+- scenarios de reference
+- KPI marchands
+
+Hors perimetre :
+- PostgreSQL local
+- restauration de sauvegarde
+- dette Alembic historique
+- application de la migration corrective sur Render
+- integration SenePay
+- ecriture du code du MerchantExecutionAdapter
+
+Critere de validation :
+- specification `docs/business/EPIC_9_0_2_MERCHANT_EXECUTION_ADAPTER.md` approuvee
+- responsabilites du MerchantExecutionAdapter stabilisees
+- machine d'etats documentee
+- scenarios de reaffectation documentes
+- KPI marchands definis
+
+Risque :
+- confusion entre marche client et marche marchand
+- double reservation de liquidite
+- reaffectation tardive
+- fuite d'identite marchand cote client
 
 ## Regles de stabilisation
 - tous les 5 EPIC, un EPIC de stabilisation doit etre planifie
