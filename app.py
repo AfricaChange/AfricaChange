@@ -1,3 +1,9 @@
+import os
+
+if __name__ == "__main__":
+    # Local runs via `python app.py` default to development unless explicitly overridden.
+    os.environ.setdefault("FLASK_ENV", "development")
+
 from flask import Flask
 
 from app_bootstrap.blueprints import register_blueprints

@@ -18,9 +18,9 @@ def configure_runtime_security(app):
     return Talisman(
         app,
         content_security_policy=None,
-        force_https=True,
-        session_cookie_secure=True,
-        strict_transport_security=True,
-        strict_transport_security_max_age=31536000,
-        strict_transport_security_include_subdomains=True,
+        force_https=bool(app.config.get("IS_PRODUCTION", False)),
+        session_cookie_secure=bool(app.config.get("SESSION_COOKIE_SECURE", False)),
+        strict_transport_security=bool(app.config.get("IS_PRODUCTION", False)),
+        strict_transport_security_max_age=31536000 if app.config.get("IS_PRODUCTION", False) else None,
+        strict_transport_security_include_subdomains=bool(app.config.get("IS_PRODUCTION", False)),
     )

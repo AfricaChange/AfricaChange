@@ -6,224 +6,250 @@
   <meta name="facebook-domain-verification" content="3qivmst0r58vwrny8s4dz0u3oar512" />
   <meta name="facebook-domain-verification" content="fwh5zumx3018ik60mxobr8e9o7ta2e" />
   <meta name="facebook-domain-verification" content="vtln51ecz3at2kgy0h3uis9ggo90u9" />
-  <!-- 🔐 CSRF TOKEN (utilisable JS / fetch) -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
-
-  <!-- 🔐 Sécurité navigateur -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-  
-  <!--  logo et notes -->  
   <meta property="og:title" content="AfricaChangeX">
   <meta property="og:description" content="Plateforme de change entre devises africaines">
   <meta property="og:image" content="https://www.africachangex.com/static/img/logo.png">
   <meta property="og:url" content="https://www.africachangex.com">
-  <meta property="og:type" content="website">  
+  <meta property="og:type" content="website">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <!-- <meta property="fb:app_id" content="1668825537898117">-->
-  
-  
   <title>AfricaChangeX</title>
-  
-  <script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: {} } }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            acx: {
+              ink: "#10233f",
+              warm: "#fffaf4",
+              line: "#e7ecf3",
+              action: "#f97316",
+              actionDark: "#ea580c",
+              success: "#0f8b5f"
+            }
+          }
+        }
+      }
+    }
   </script>
+  <script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/recap_payment.js') }}"></script>
 </head>
+<body class="min-h-screen bg-gray-50 text-gray-800 flex flex-col">
+  {% if not disable_mobile_bottom_nav %}
+    {% include "partials/mobile_nav.html" %}
+  {% endif %}
 
-{% include "partials/mobile_nav.html" %}
-<!-- ===============================
-     🔄 GLOBAL LOADING OVERLAY
-     =============================== -->
-<div id="globalLoader"
-     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl p-6 text-center shadow-xl w-64">
-    <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mx-auto"></div>
-    <p class="mt-4 text-sm font-semibold text-gray-700">
-      Traitement en cours…
-    </p>
-    <p class="text-xs text-gray-500 mt-1">
-      Merci de patienter
-    </p>
+  <div id="globalLoader" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
+    <div class="w-64 rounded-xl bg-white p-6 text-center shadow-xl">
+      <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+      <p class="mt-4 text-sm font-semibold text-gray-700">Traitement en cours...</p>
+      <p class="mt-1 text-xs text-gray-500">Merci de patienter</p>
+    </div>
   </div>
-</div>
 
-<script>
-  function showLoader() {
-    document.getElementById("globalLoader").classList.remove("hidden");
-  }
-
-  function hideLoader() {
-    document.getElementById("globalLoader").classList.add("hidden");
-  }
-</script>
-
-<script src="{{ url_for('static', filename='js/fintech-ui.js') }}"></script>
-
-<script src="{{ url_for('static', filename='js/recap_payment.js') }}"></script>
-
-
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
-
-  <!-- NAV -->
-  <header class="bg-white border-b sticky top-0 z-50">
-   <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-
-    <!-- LOGO -->
-    <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
-      <span class="text-xl font-bold text-indigo-600">AfricaChangeX</span>
-    </a>
-
-    <!-- ACTIONS (toujours visibles) -->
-    <div class="flex items-center gap-2">
-
-      {% if session.get('user_id') %}
-        <a href="{{ url_for('auth.tableau_de_bord') }}"
-           class="hidden sm:inline-flex px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
-          Tableau de bord
+  <header class="sticky top-0 z-40 border-b border-acx-line bg-white/95 backdrop-blur">
+    {% if minimal_home_shell %}
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-18 sm:px-6 lg:px-8">
+        <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-3" aria-label="AfricaChangeX accueil">
+          <img
+            src="{{ url_for('static', filename='img/logo.png') }}"
+            alt="Logo AfricaChangeX"
+            class="h-8 w-auto sm:h-11"
+          >
         </a>
 
-        {% if session.get('is_admin') %}
-          <a href="{{ url_for('admin.dashboard') }}"
-             class="hidden sm:inline-flex px-3 py-1.5 rounded-md text-sm font-medium text-purple-700 hover:bg-purple-50">
-            Admin
+        <div class="flex items-center gap-2">
+          <a
+            href="{{ url_for('auth.connexion') }}"
+            class="hidden rounded-full px-4 py-2 text-sm font-medium text-acx-ink transition hover:bg-gray-100 sm:inline-flex"
+          >
+            Se connecter
           </a>
-        {% endif %}
 
-        <a href="{{ url_for('auth.deconnexion') }}"
-           class="px-3 py-1.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50">
-          Déconnexion
-        </a>
-
-      {% else %}
-        <!-- CONNEXION -->
-        <a href="{{ url_for('auth.connexion') }}"
-           class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
-          Connexion
-        </a>
-
-        <!-- INSCRIPTION (CTA PRINCIPAL) -->
-        <a href="{{ url_for('auth.inscription') }}"
-           class="px-4 py-1.5 rounded-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700">
-          Créer un compte
-        </a>
-      {% endif %}
-
-      <!-- BURGER -->
-      <button id="btnBurger"
-              class="md:hidden p-2 rounded-md hover:bg-gray-100">
-        <svg id="iconOpen" xmlns="http://www.w3.org/2000/svg"
-             class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <svg id="iconClose" xmlns="http://www.w3.org/2000/svg"
-             class="h-6 w-6 text-gray-700 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-
-    </div>
-   </div>
-
-<script>
-  const btn = document.getElementById('btnBurger');
-  const menu = document.getElementById('mobileMenu');
-  const openIcon = document.getElementById('iconOpen');
-  const closeIcon = document.getElementById('iconClose');
-
-  btn?.addEventListener('click', () => {
-    menu.classList.toggle('hidden');
-    openIcon.classList.toggle('hidden');
-    closeIcon.classList.toggle('hidden');
-  });
-</script>
-
-
-  <!-- MENU MOBILE -->
-  <div id="mobileMenu" class="hidden md:hidden border-t bg-white">
-    <div class="px-4 py-3 space-y-2">
-
-      <a href="{{ url_for('convert.convertir') }}" class="block text-sm text-gray-700">
-        Convertir
-      </a>
-	  <a href="{{ url_for('support.index') }}">🆘 Support</a>
-
-
-      {% if session.get('user_id') %}
-        <a href="{{ url_for('convert.historique') }}" class="block text-sm text-gray-700">
-          Historique
-        </a>
-      {% endif %}
-
-    </div>
-  </div>
-</header>
-
-
-  <!-- MAIN -->
-  <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="space-y-2 mb-4">
-          {% for category, msg in messages %}
-            <div class="p-3 rounded 
-              {{ 'bg-green-100 text-green-800' if category=='success'
-                 else 'bg-yellow-100 text-yellow-800' if category=='warning'
-                 else 'bg-red-100 text-red-800' }}">
-              {{ msg }}
-            </div>
-          {% endfor %}
+          <button
+            id="btnBurger"
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-acx-ink transition hover:bg-gray-100 sm:h-11 sm:w-11"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+            aria-label="Ouvrir le menu"
+          >
+            <svg id="iconOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      {% endif %}
-    {% endwith %}
-    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 pb-20">
-
-    {% block back_button %}
-      <div class="mb-4">
-        <a href="javascript:history.back()" class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700">
-          ← Retour
-        </a>
       </div>
-    {% endblock %}
 
-    {% block content %}{% endblock %}
+      <div id="mobileMenu" class="hidden border-t border-acx-line bg-white">
+        <div class="mx-auto max-w-7xl space-y-2 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="{{ url_for('auth.connexion') }}" class="block rounded-xl px-3 py-2 text-sm font-medium text-acx-ink hover:bg-gray-50">
+            Se connecter
+          </a>
+          <a href="#comment-ca-marche" class="block rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            Comment ça marche
+          </a>
+          <a href="#confiance" class="block rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            Sécurité
+          </a>
+          <a href="#faq" class="block rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            FAQ
+          </a>
+          <a href="{{ url_for('support.index') }}" class="block rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            Support
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <a href="{{ url_for('main.accueil') }}" class="flex items-center gap-2">
+          <span class="text-xl font-bold text-indigo-600">AfricaChangeX</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+          {% if session.get('user_id') %}
+            <a
+              href="{{ url_for('auth.tableau_de_bord') }}"
+              class="hidden rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 sm:inline-flex"
+            >
+              Tableau de bord
+            </a>
+
+            {% if session.get('is_admin') %}
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="hidden rounded-md px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-50 sm:inline-flex"
+              >
+                Admin
+              </a>
+            {% endif %}
+
+            <a
+              href="{{ url_for('auth.deconnexion') }}"
+              class="rounded-md px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Déconnexion
+            </a>
+          {% else %}
+            <a
+              href="{{ url_for('auth.connexion') }}"
+              class="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            >
+              Connexion
+            </a>
+            <a
+              href="{{ url_for('auth.inscription') }}"
+              class="rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              Créer un compte
+            </a>
+          {% endif %}
+
+          <button
+            id="btnBurger"
+            type="button"
+            class="rounded-md p-2 hover:bg-gray-100 md:hidden"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+            aria-label="Ouvrir le menu"
+          >
+            <svg id="iconOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="hidden h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="mobileMenu" class="hidden border-t bg-white md:hidden">
+        <div class="space-y-2 px-4 py-3">
+          <a href="{{ url_for('convert.convertir') }}" class="block text-sm text-gray-700">Convertir</a>
+          <a href="{{ url_for('support.index') }}" class="block text-sm text-gray-700">Support</a>
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('convert.historique') }}" class="block text-sm text-gray-700">Historique</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </header>
+
+  <main class="flex-grow">
+    <div class="{% if minimal_home_shell %}w-full{% else %}mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8{% endif %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="{% if minimal_home_shell %}mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8{% else %}mb-4{% endif %}">
+            <div class="space-y-2">
+              {% for category, msg in messages %}
+                <div class="rounded p-3 {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-yellow-100 text-yellow-800' if category == 'warning' else 'bg-red-100 text-red-800' }}">
+                  {{ msg }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if not minimal_home_shell %}
+        {% block back_button %}
+          <div class="mb-4">
+            <a href="javascript:history.back()" class="inline-flex items-center text-sm text-gray-600 hover:text-blue-700">
+              ← Retour
+            </a>
+          </div>
+        {% endblock %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
-  <footer class="bg-white border-t py-4 text-center text-sm text-gray-500">
+  <footer class="border-t bg-white py-4 text-center text-sm text-gray-500">
     <a href="{{ url_for('support.index') }}">Support</a>
-    © {{ (config.get('APP_NAME') or 'AfricaChangeX') }}	
-	<a href="/privacy">Confidentialité</a>
+    © {{ config.get('APP_NAME') or 'AfricaChangeX' }}
+    <a href="/privacy">Confidentialité</a>
     <a href="/cgu">CGU</a>
-     <a href="/mentions-legales">Mentions légales</a>
+    <a href="/mentions-legales">Mentions légales</a>
   </footer>
 
-  <!-- 🔐 Helper JS CSRF (AJOUT) -->
   <script>
+    function showLoader() {
+      document.getElementById("globalLoader")?.classList.remove("hidden");
+      document.getElementById("globalLoader")?.classList.add("flex");
+    }
+
+    function hideLoader() {
+      document.getElementById("globalLoader")?.classList.add("hidden");
+      document.getElementById("globalLoader")?.classList.remove("flex");
+    }
+
     window.CSRF_TOKEN = document
       .querySelector('meta[name="csrf-token"]')
       ?.getAttribute('content');
-  </script>
 
-  <script>
-    // Toggle mobile menu
-    const btn = document.getElementById('btnBurger');
-    const menu = document.getElementById('mobileMenu');
-    const iconOpen = document.getElementById('iconOpen');
-    const iconClose = document.getElementById('iconClose');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-        iconOpen.classList.toggle('hidden');
-        iconClose.classList.toggle('hidden');
-      });
-    }
-  </script>
+    const burgerButton = document.getElementById("btnBurger");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const openIcon = document.getElementById("iconOpen");
+    const closeIcon = document.getElementById("iconClose");
 
+    burgerButton?.addEventListener("click", () => {
+      const expanded = burgerButton.getAttribute("aria-expanded") === "true";
+      burgerButton.setAttribute("aria-expanded", expanded ? "false" : "true");
+      mobileMenu?.classList.toggle("hidden");
+      openIcon?.classList.toggle("hidden");
+      closeIcon?.classList.toggle("hidden");
+    });
+  </script>
 </body>
 </html>

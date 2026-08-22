@@ -6,6 +6,13 @@ import uuid
 from paiements.models import Depot, Retrait, Notification
 from flask_login import login_required, current_user
 from paiements.services import generer_lien_whatsapp, message_support
+from services.homepage_quote_service import (
+    DEFAULT_DEMO_AMOUNT,
+    build_demo_quote,
+    build_quote,
+    default_corridor,
+    list_supported_corridors,
+)
 
 
 
@@ -18,7 +25,46 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def accueil():
-    return render_template('index.html')
+    corridors = list_supported_corridors()
+    default = default_corridor()
+
+    if default:
+        initial_quote = build_quote(
+            amount=DEFAULT_DEMO_AMOUNT,
+            from_currency=str(default["from_currency"]),
+            to_currency=str(default["to_currency"]),
+        )
+    else:
+        initial_quote = build_demo_quote()
+
+    return render_template(
+        'index.html',
+        minimal_home_shell=True,
+        disable_mobile_bottom_nav=True,
+        homepage_corridors=corridors,
+        homepage_initial_quote=initial_quote,
+        homepage_default_amount=DEFAULT_DEMO_AMOUNT,
+    )
+
+
+@main.route('/demarrer-conversion', methods=['POST'])
+def demarrer_conversion():
+    montant = (request.form.get("montant") or "").strip()
+    from_currency = (request.form.get("from_currency") or "").strip().upper()
+    to_currency = (request.form.get("to_currency") or "").strip().upper()
+
+    if not montant or not from_currency or not to_currency:
+        flash("Veuillez completer le montant et le corridor.", "warning")
+        return redirect(url_for("main.accueil"))
+
+    return redirect(
+        url_for(
+            "convert.convertir",
+            montant=montant,
+            from_currency=from_currency,
+            to_currency=to_currency,
+        )
+    )
 
 
 @main.route('/conversion', methods=['GET', 'POST'])

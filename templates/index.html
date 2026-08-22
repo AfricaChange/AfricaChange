@@ -1,187 +1,263 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set quote = homepage_initial_quote or {} %}
+<section class="bg-gradient-to-b from-white via-acx-warm to-white">
+  <div class="mx-auto grid max-w-7xl gap-8 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_500px] lg:gap-12 lg:px-8 lg:pb-24 lg:pt-10">
+    <div class="order-2 flex flex-col justify-center lg:order-1">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">
+        AfricaChangeX
+      </p>
+      <h1 class="max-w-xl text-3xl font-semibold leading-tight text-acx-ink sm:text-4xl lg:text-[2.75rem]">
+        Envoyez. Convertissez. Recevez.
+      </h1>
+      <p class="mt-3 max-w-xl text-base leading-7 text-gray-600 sm:text-lg">
+        Le moyen le plus simple et transparent d'envoyer de l'argent en Afrique.
+      </p>
 
-<!-- ======================================================
-     1️⃣ HERO SECTION
-     Objectif :
-     - Faire comprendre AfricaChange en < 5 secondes
-     - Donner confiance
-     - Inciter à l’action (Convertir / S’inscrire)
-====================================================== -->
-<section class="bg-gradient-to-b from-indigo-50 to-white py-20">
-  <div class="max-w-6xl mx-auto px-4 text-center">
-
-    <!-- Promesse principale -->
-    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-      Échangez vos devises africaines<br>
-      <span class="text-indigo-600">
-        rapidement, simplement et en toute sécurité
-      </span>
-    </h1>
-
-    <!-- Sous-titre explicatif -->
-    <p class="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
-      AfricaChange est un pont financier entre les devises africaines.
-      Convertissez et transférez votre argent sans complexité.
-    </p>
-
-    <!-- Boutons principaux (CTA) -->
-    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-
-      <!-- CTA principal : toujours visible -->
-      <a href="{{ url_for('convert.convertir') }}"
-         class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700">
-        Convertir maintenant
-      </a>
-
-      <!-- CTA secondaire : seulement si non connecté -->
-      {% if not session.get('user_id') %}
-      <a href="{{ url_for('auth.inscription') }}"
-         class="px-6 py-3 rounded-lg border border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50">
-        Créer un compte
-      </a>
-      {% endif %}
-
+      <div id="confiance" class="mt-6 grid gap-3 sm:grid-cols-3">
+        <div class="rounded-2xl border border-acx-line bg-white px-4 py-4">
+          <p class="text-sm font-semibold text-acx-ink">Transactions sécurisées</p>
+          <p class="mt-1 text-sm text-gray-500">Protection des parcours et confirmation explicite.</p>
+        </div>
+        <div class="rounded-2xl border border-acx-line bg-white px-4 py-4">
+          <p class="text-sm font-semibold text-acx-ink">Frais transparents</p>
+          <p class="mt-1 text-sm text-gray-500">Le taux et les frais affichés restent lisibles.</p>
+        </div>
+        <div class="rounded-2xl border border-acx-line bg-white px-4 py-4">
+          <p class="text-sm font-semibold text-acx-ink">Support disponible</p>
+          <p class="mt-1 text-sm text-gray-500">Une aide humaine reste accessible en cas de besoin.</p>
+        </div>
+      </div>
     </div>
 
+    <div class="order-1 lg:order-2">
+      <div id="home-converter" class="overflow-hidden rounded-[28px] border border-acx-line bg-white shadow-[0_18px_60px_rgba(16,35,63,0.08)]">
+        <form
+          id="homeConverterForm"
+          method="post"
+          action="{{ url_for('main.demarrer_conversion') }}"
+          class="space-y-6 p-5 sm:p-7"
+          novalidate
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" id="fromCurrencyInput" name="from_currency" value="{{ quote.get('from_currency', 'XOF') }}">
+          <input type="hidden" id="toCurrencyInput" name="to_currency" value="{{ quote.get('to_currency', 'GNF') }}">
+
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Conversion</p>
+              <p class="mt-1 text-base font-semibold text-acx-ink sm:text-lg">Commencez immédiatement</p>
+            </div>
+            <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+              Temps réel
+            </span>
+          </div>
+
+          <div class="grid gap-4">
+            <div class="rounded-3xl border border-acx-line bg-gray-50/70 p-4 sm:p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-medium text-gray-500">Vous envoyez</p>
+                  <label for="sendAmount" class="sr-only">Montant envoyé</label>
+                  <input
+                    id="sendAmount"
+                    name="montant"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="{{ quote.get('amount_sent', homepage_default_amount) }}"
+                    class="mt-2 w-full border-0 bg-transparent p-0 text-3xl font-semibold tracking-tight text-acx-ink outline-none focus:ring-0"
+                    aria-describedby="amountHint amountError"
+                  >
+                </div>
+                <div class="min-w-[170px] rounded-2xl border border-acx-line bg-white px-3 py-2 shadow-sm">
+                  <label for="sourceCurrency" class="sr-only">Devise source</label>
+                  <div class="flex items-start gap-2">
+                    <span id="sourceFlag" class="pt-1 text-xl">{{ quote.get('from_flag', '🇸🇳') }}</span>
+                    <div class="min-w-0 flex-1">
+                      <select
+                        id="sourceCurrency"
+                        class="min-h-8 w-full border-0 bg-transparent p-0 text-base font-semibold text-acx-ink focus:outline-none focus:ring-0"
+                      >
+                        {% set source_ns = namespace(seen=[]) %}
+                        {% for corridor in homepage_corridors %}
+                          {% if corridor.from_currency not in source_ns.seen %}
+                            {% set source_ns.seen = source_ns.seen + [corridor.from_currency] %}
+                            <option
+                              value="{{ corridor.from_currency }}"
+                              data-country="{{ corridor.from_country_name }}"
+                              data-flag="{{ corridor.from_flag }}"
+                              {% if corridor.from_currency == quote.get('from_currency') %}selected{% endif %}
+                            >
+                              {{ corridor.from_currency }}
+                            </option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <p id="sourceCountryInline" class="truncate text-xs text-gray-500">
+                        {{ quote.get('from_country_name', 'Sénégal') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p id="amountHint" class="mt-3 text-sm text-gray-500">
+                Depuis
+                <span id="sourceCountry">{{ quote.get('from_country_name', 'Sénégal') }}</span>
+                ·
+                <span id="sourceCurrencyLabel">{{ quote.get('from_currency', 'XOF') }}</span>
+              </p>
+              <p id="amountError" class="mt-2 hidden text-sm font-medium text-red-600"></p>
+            </div>
+
+            <div class="flex items-center justify-center">
+              <button
+                id="swapCorridor"
+                type="button"
+                class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-acx-line bg-white text-acx-ink shadow-sm transition hover:border-orange-200 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                aria-label="Inverser le corridor"
+              >
+                ⇅
+              </button>
+            </div>
+
+            <div class="rounded-3xl border border-acx-line bg-white p-4 sm:p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-medium text-gray-500">Le bénéficiaire reçoit</p>
+                  <p id="receivedAmount" class="mt-2 text-3xl font-semibold tracking-tight text-acx-ink">
+                    {% if quote.get('amount_received') is not none %}
+                      {{ "%.2f"|format(quote.get('amount_received', 0)) }}
+                    {% else %}
+                      --
+                    {% endif %}
+                  </p>
+                </div>
+                <div class="min-w-[170px] rounded-2xl border border-acx-line bg-gray-50 px-3 py-2 shadow-sm">
+                  <label for="targetCurrency" class="sr-only">Devise destination</label>
+                  <div class="flex items-start gap-2">
+                    <span id="targetFlag" class="pt-1 text-xl">{{ quote.get('to_flag', '🇬🇳') }}</span>
+                    <div class="min-w-0 flex-1">
+                      <select
+                        id="targetCurrency"
+                        class="min-h-8 w-full border-0 bg-transparent p-0 text-base font-semibold text-acx-ink focus:outline-none focus:ring-0"
+                      >
+                        {% for corridor in homepage_corridors %}
+                          {% if corridor.from_currency == quote.get('from_currency') %}
+                            <option
+                              value="{{ corridor.to_currency }}"
+                              data-country="{{ corridor.to_country_name }}"
+                              data-flag="{{ corridor.to_flag }}"
+                              {% if corridor.to_currency == quote.get('to_currency') %}selected{% endif %}
+                            >
+                              {{ corridor.to_currency }}
+                            </option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <p id="targetCountryInline" class="truncate text-xs text-gray-500">
+                        {{ quote.get('to_country_name', 'Guinée') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-3 text-sm text-gray-500">
+                Vers
+                <span id="targetCountry">{{ quote.get('to_country_name', 'Guinée') }}</span>
+                ·
+                <span id="targetCurrencyLabel">{{ quote.get('to_currency', 'GNF') }}</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-3 rounded-2xl bg-acx-warm px-4 py-4">
+            <div class="flex items-start justify-between gap-3 text-sm">
+              <span class="font-medium text-gray-500">Taux de change</span>
+              <span id="rateLine" class="text-right font-semibold text-acx-ink">
+                {% if quote.get('rate') is not none %}
+                  1 {{ quote.get('from_currency') }} = {{ quote.get('rate') }} {{ quote.get('to_currency') }}
+                {% else %}
+                  Calcul du taux...
+                {% endif %}
+              </span>
+            </div>
+            <div class="flex items-start justify-between gap-3 text-sm">
+              <span class="font-medium text-gray-500">Frais</span>
+              <span id="feeLine" class="text-right font-semibold text-acx-ink">
+                {{ quote.get('fee_label', "Frais calcules a l'etape suivante") }}
+              </span>
+            </div>
+            <div class="flex items-start justify-between gap-3 text-sm">
+              <span class="font-medium text-gray-500">Direction</span>
+              <span id="corridorLabel" class="text-right font-semibold text-acx-ink">
+                {{ quote.get('from_currency', 'XOF') }} → {{ quote.get('to_currency', 'GNF') }}
+              </span>
+            </div>
+          </div>
+
+          <div id="quoteStatus" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+
+          <button
+            id="continueButton"
+            type="submit"
+            class="inline-flex min-h-14 w-full items-center justify-center rounded-2xl bg-acx-action px-5 py-4 text-base font-semibold text-white transition hover:bg-acx-actionDark focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:bg-gray-300"
+          >
+            Continuer
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 </section>
 
-
-<!-- ======================================================
-     2️⃣ PREUVES DE CONFIANCE
-     Objectif :
-     - Rassurer immédiatement
-     - Montrer que c’est une vraie fintech
-====================================================== -->
-<section class="py-16 bg-white">
-  <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 text-center">
-
-    <!-- Sécurité -->
-    <div>
-      <div class="text-indigo-600 text-3xl mb-3">🔐</div>
-      <h3 class="font-semibold text-lg">Sécurité renforcée</h3>
-      <p class="text-gray-600 mt-2">
-        Données protégées, paiements contrôlés, anti-fraude intégré.
+<section id="comment-ca-marche" class="border-t border-acx-line bg-white">
+  <div class="mx-auto grid max-w-7xl gap-4 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
+    <div class="rounded-3xl border border-acx-line p-6">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">Rapide</p>
+      <h2 class="mt-3 text-xl font-semibold text-acx-ink">Commencez sans détour</h2>
+      <p class="mt-3 text-sm leading-6 text-gray-600">
+        Entrez le montant, choisissez la devise de départ et voyez immédiatement ce que le bénéficiaire reçoit.
       </p>
     </div>
-
-    <!-- Rapidité -->
-    <div>
-      <div class="text-indigo-600 text-3xl mb-3">⚡</div>
-      <h3 class="font-semibold text-lg">Rapide et fiable</h3>
-      <p class="text-gray-600 mt-2">
-        Conversion instantanée et traitement rapide des paiements.
+    <div class="rounded-3xl border border-acx-line p-6">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">Partout en Afrique</p>
+      <h2 class="mt-3 text-xl font-semibold text-acx-ink">Des directions lisibles</h2>
+      <p class="mt-3 text-sm leading-6 text-gray-600">
+        Les pays et devises restent visibles pour éviter toute ambiguïté pendant la conversion.
       </p>
     </div>
-
-    <!-- Contexte africain -->
-    <div>
-      <div class="text-indigo-600 text-3xl mb-3">🌍</div>
-      <h3 class="font-semibold text-lg">Pensé pour l’Afrique</h3>
-      <p class="text-gray-600 mt-2">
-        CFA, GNF et autres devises locales, sans intermédiaires inutiles.
+    <div class="rounded-3xl border border-acx-line p-6">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">Fiable</p>
+      <h2 class="mt-3 text-xl font-semibold text-acx-ink">Une confiance compacte</h2>
+      <p class="mt-3 text-sm leading-6 text-gray-600">
+        Les détails utiles restent proches de l'action : taux, frais, support et disponibilité du corridor.
       </p>
     </div>
-
   </div>
 </section>
 
-
-<!-- ======================================================
-     3️⃣ COMMENT ÇA MARCHE
-     Objectif :
-     - Simplicité
-     - Réduction de la peur
-====================================================== -->
-<section class="py-20 bg-gray-50">
-  <div class="max-w-6xl mx-auto px-4">
-
-    <h2 class="text-3xl font-bold text-center mb-12">
-      Comment fonctionne AfricaChange ?
-    </h2>
-
-    <div class="grid md:grid-cols-3 gap-10 text-center">
-
-      <!-- Étape 1 -->
-      <div>
-        <div class="text-4xl font-bold text-indigo-600 mb-3">1</div>
-        <h3 class="font-semibold text-lg">Entrez le montant</h3>
-        <p class="text-gray-600 mt-2">
-          Choisissez la devise d’origine et la devise de destination.
-        </p>
-      </div>
-
-      <!-- Étape 2 -->
-      <div>
-        <div class="text-4xl font-bold text-indigo-600 mb-3">2</div>
-        <h3 class="font-semibold text-lg">Vérifiez le taux</h3>
-        <p class="text-gray-600 mt-2">
-          Le taux est clair, sans frais cachés.
-        </p>
-      </div>
-
-      <!-- Étape 3 -->
-      <div>
-        <div class="text-4xl font-bold text-indigo-600 mb-3">3</div>
-        <h3 class="font-semibold text-lg">Envoyez l’argent</h3>
-        <p class="text-gray-600 mt-2">
-          Le bénéficiaire reçoit via un compte sécurisé.
-        </p>
-      </div>
-
+<section id="faq" class="border-t border-acx-line bg-gray-50">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <a href="/about" class="rounded-2xl border border-acx-line bg-white px-4 py-4 text-sm font-medium text-acx-ink hover:border-orange-200">À propos</a>
+      <a href="/privacy" class="rounded-2xl border border-acx-line bg-white px-4 py-4 text-sm font-medium text-acx-ink hover:border-orange-200">Sécurité</a>
+      <a href="/faq" class="rounded-2xl border border-acx-line bg-white px-4 py-4 text-sm font-medium text-acx-ink hover:border-orange-200">FAQ</a>
+      <a href="{{ url_for('support.index') }}" class="rounded-2xl border border-acx-line bg-white px-4 py-4 text-sm font-medium text-acx-ink hover:border-orange-200">Contact</a>
+      <button type="button" class="rounded-2xl border border-acx-line bg-white px-4 py-4 text-left text-sm font-medium text-acx-ink hover:border-orange-200">
+        Langue
+      </button>
     </div>
   </div>
 </section>
 
-
-<!-- ======================================================
-     4️⃣ SÉCURITÉ & RÈGLES FINTECH
-     Objectif :
-     - Montrer que la plateforme est sérieuse
-====================================================== -->
-<section class="py-16 bg-white">
-  <div class="max-w-4xl mx-auto px-4 text-center">
-
-    <h2 class="text-2xl font-bold mb-4">
-      Une plateforme financière responsable
-    </h2>
-
-    <p class="text-gray-600 mb-6">
-      AfricaChange applique des règles strictes pour garantir la sécurité
-      des utilisateurs et la conformité.
-    </p>
-
-    <ul class="text-gray-700 space-y-2">
-      <li>✔️ Limites pour utilisateurs non connectés</li>
-      <li>✔️ Historique et traçabilité complète</li>
-      <li>✔️ Comptes systèmes contrôlés</li>
-      <li>✔️ Accès administrateur sécurisé</li>
-    </ul>
-
-  </div>
-</section>
-
-
-<!-- ======================================================
-     5️⃣ CALL TO ACTION FINAL
-     Objectif :
-     - Dernière incitation à agir
-====================================================== -->
-<section class="py-20 bg-indigo-600 text-white text-center">
-  <h2 class="text-3xl font-bold mb-4">
-    Commencez dès maintenant
-  </h2>
-
-  <p class="mb-6 text-indigo-100">
-    Convertissez vos devises africaines avec AfricaChange.
-  </p>
-
-  <a href="{{ url_for('convert.convertir') }}"
-     class="inline-block px-8 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100">
-    Convertir maintenant
-  </a>
-</section>
-
+<script id="homepageQuoteData" type="application/json">
+  {{ (homepage_initial_quote or {}) | tojson }}
+</script>
+<script id="homepageCorridorsData" type="application/json">
+  {{ (homepage_corridors or []) | tojson }}
+</script>
+<script src="{{ url_for('static', filename='js/homepage_converter.js') }}"></script>
 {% endblock %}

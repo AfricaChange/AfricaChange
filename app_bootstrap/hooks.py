@@ -2,6 +2,9 @@ from flask import redirect, request
 
 
 def register_request_hooks(app):
+    def _production_enforces_https() -> bool:
+        return bool(app.config.get("IS_PRODUCTION", False))
+
     @app.before_request
     def handle_all():
         if request.endpoint and request.endpoint.startswith("webhook."):
@@ -11,12 +14,18 @@ def register_request_hooks(app):
         if "facebookexternalhit" in user_agent or "facebot" in user_agent:
             return None
 
+        if not _production_enforces_https():
+            return None
+
         if request.headers.get("X-Forwarded-Proto", "http") != "https":
             return redirect(request.url.replace("http://", "https://"), code=301)
 
     @app.before_request
     def force_domain():
         if request.endpoint and request.endpoint.startswith("webhook."):
+            return None
+
+        if not _production_enforces_https():
             return None
 
         url = request.url
