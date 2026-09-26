@@ -5,7 +5,6 @@ from datetime import datetime
 import uuid
 from paiements.models import Depot, Retrait, Notification
 from flask_login import login_required, current_user
-from paiements.services import generer_lien_whatsapp, message_support
 
 
 
@@ -88,15 +87,3 @@ def dashboard():
         retraits=retraits,
         notifications=notifications
     )
-    
-
-
-@main.route('/support')
-@login_required
-def support():
-
-    message = message_support(current_user)
-
-    lien = generer_lien_whatsapp("2246XXXXXXX", message)
-
-    return redirect(lien)    

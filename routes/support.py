@@ -12,13 +12,13 @@ def index():
 
         if not nom or not email or not message:
             flash("Veuillez remplir tous les champs obligatoires.", "error")
-            return redirect(url_for("support.support_page"))
+            return redirect(url_for("support.index"))
 
         # 👉 Pour l’instant on log, plus tard email / ticket
         print("📩 MESSAGE SUPPORT")
         print(nom, email, sujet, message)
 
         flash("Votre message a bien été envoyé. Nous vous répondrons rapidement.", "success")
-        return redirect(url_for("support.support_page"))
+        return redirect(url_for("support.index"))
 
     return render_template("support.html")
