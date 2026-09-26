@@ -12,12 +12,14 @@ SITEMAP_ENDPOINTS = (
     "legal.privacy",
     "legal.cgu",
     "legal.mentions",
+    "support.index",
 )
 CANONICAL_URLS = {
     "main.accueil": f"{PUBLIC_ORIGIN}/",
     "legal.privacy": f"{PUBLIC_ORIGIN}/privacy",
     "legal.cgu": f"{PUBLIC_ORIGIN}/cgu",
     "legal.mentions": f"{PUBLIC_ORIGIN}/mentions-legales",
+    "support.index": f"{PUBLIC_ORIGIN}/support",
 }
 
 

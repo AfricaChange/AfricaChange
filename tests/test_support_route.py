@@ -1,10 +1,11 @@
 import os
 import unittest
 from unittest.mock import patch
+from xml.etree import ElementTree
 
 from flask import Flask
 
-from routes.seo import seo
+from routes.seo import CANONICAL_URLS, PUBLIC_ORIGIN, seo
 from routes.support import support
 
 
@@ -39,6 +40,11 @@ class SupportRouteTestCase(unittest.TestCase):
         self.assertIn(b'Support & Assistance', response.data)
         self.assertIn(b'<form method="POST"', response.data)
 
+    def test_support_has_one_self_referencing_canonical(self):
+        response = self.client.get("/support", headers={"Host": "old.example"})
+        canonical = b'<link rel="canonical" href="https://www.africachangex.com/support">'
+        self.assertEqual(response.data.count(canonical), 1)
+
     def test_incomplete_post_redirects_to_support_without_a_server_error(self):
         response = self.client.post("/support", data={"nom": "Test"})
         self.assertEqual(response.status_code, 302)
@@ -64,13 +70,39 @@ class SupportRouteTestCase(unittest.TestCase):
         ]
         self.assertEqual([rule.endpoint for rule in support_rules], ["support.index"])
 
-    def test_seo_endpoints_remain_available(self):
+    def test_sitemap_contains_the_five_approved_absolute_https_urls(self):
         sitemap = self.client.get("/sitemap.xml")
+        root = ElementTree.fromstring(sitemap.data)
+        namespace = {"sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        locations = [node.text for node in root.findall("sitemap:url/sitemap:loc", namespace)]
         robots = self.client.get("/robots.txt")
+
         self.assertEqual(sitemap.status_code, 200)
-        self.assertIn(b"https://www.africachangex.com/privacy", sitemap.data)
+        self.assertEqual(
+            locations,
+            [
+                f"{PUBLIC_ORIGIN}/",
+                f"{PUBLIC_ORIGIN}/privacy",
+                f"{PUBLIC_ORIGIN}/cgu",
+                f"{PUBLIC_ORIGIN}/mentions-legales",
+                f"{PUBLIC_ORIGIN}/support",
+            ],
+        )
+        self.assertTrue(all(url.startswith(PUBLIC_ORIGIN) for url in locations))
         self.assertEqual(robots.status_code, 200)
         self.assertIn(b"Sitemap: https://www.africachangex.com/sitemap.xml", robots.data)
+
+    def test_existing_public_canonicals_are_unchanged(self):
+        self.assertEqual(
+            CANONICAL_URLS,
+            {
+                "main.accueil": f"{PUBLIC_ORIGIN}/",
+                "legal.privacy": f"{PUBLIC_ORIGIN}/privacy",
+                "legal.cgu": f"{PUBLIC_ORIGIN}/cgu",
+                "legal.mentions": f"{PUBLIC_ORIGIN}/mentions-legales",
+                "support.index": f"{PUBLIC_ORIGIN}/support",
+            },
+        )
 
 
 if __name__ == "__main__":
