@@ -2,7 +2,7 @@
 
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from flask import Blueprint, Response, url_for
+from flask import Blueprint, Response, request, url_for
 
 
 seo = Blueprint("seo", __name__)
@@ -13,6 +13,18 @@ SITEMAP_ENDPOINTS = (
     "legal.cgu",
     "legal.mentions",
 )
+CANONICAL_URLS = {
+    "main.accueil": f"{PUBLIC_ORIGIN}/",
+    "legal.privacy": f"{PUBLIC_ORIGIN}/privacy",
+    "legal.cgu": f"{PUBLIC_ORIGIN}/cgu",
+    "legal.mentions": f"{PUBLIC_ORIGIN}/mentions-legales",
+}
+
+
+@seo.app_context_processor
+def public_canonical_context():
+    """Expose a canonical URL only for the approved indexable pages."""
+    return {"canonical_url": CANONICAL_URLS.get(request.endpoint)}
 
 
 @seo.route("/sitemap.xml")
