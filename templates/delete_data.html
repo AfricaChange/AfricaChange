@@ -1,20 +1,63 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Suppression des données</title>
-</head>
-<body>
-    <h1>Suppression de vos données</h1>
+{% extends "base.html" %}
 
-    <p>
-        Si vous souhaitez supprimer vos données de AfricaChangeX,
-        veuillez envoyer une demande à :
+{% block content %}
+<section class="mx-auto max-w-3xl space-y-6" aria-labelledby="delete-data-title">
+  <div class="rounded-2xl border border-acx-line bg-white p-6 shadow-sm sm:p-8">
+    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-acx-action">Vos données</p>
+    <h1 id="delete-data-title" class="mt-2 text-3xl font-bold tracking-tight text-acx-ink">
+      Demander la suppression de vos données
+    </h1>
+    <p class="mt-4 text-base leading-7 text-gray-700">
+      Vous pouvez demander la suppression ou l'anonymisation des données personnelles
+      traitées par AfricaChangeX lorsque cela est applicable.
     </p>
+  </div>
 
-    <p><strong>support@africachangex.com</strong></p>
+  <div class="space-y-5 rounded-2xl border border-acx-line bg-white p-6 shadow-sm sm:p-8">
+    <section aria-labelledby="delete-data-request">
+      <h2 id="delete-data-request" class="text-lg font-semibold text-acx-ink">Faire une demande</h2>
+      <p class="mt-2 leading-7 text-gray-700">
+        Envoyez votre demande à
+        <a class="font-semibold text-acx-action underline hover:text-acx-actionDark" href="mailto:support@africachangex.com">support@africachangex.com</a>.
+        Indiquez l'objet « Demande de suppression de données ».
+      </p>
+      <p class="mt-2 leading-7 text-gray-700">
+        Pour nous permettre de retrouver votre dossier, fournissez votre nom, votre adresse
+        e-mail ou votre numéro de téléphone associé au compte, ainsi que toute référence
+        utile à votre demande. Ne communiquez jamais votre mot de passe.
+      </p>
+    </section>
 
-    <p>
-        Nous traiterons votre demande dans un délai de 72 heures.
-    </p>
-</body>
-</html>
+    <section aria-labelledby="delete-data-verification">
+      <h2 id="delete-data-verification" class="text-lg font-semibold text-acx-ink">Vérification et traitement</h2>
+      <p class="mt-2 leading-7 text-gray-700">
+        Nous pouvons vous demander une vérification d'identité avant toute suppression afin
+        de protéger votre compte et vos données. Après examen, nous vous informerons du
+        résultat de votre demande.
+      </p>
+    </section>
+
+    <section aria-labelledby="delete-data-scope">
+      <h2 id="delete-data-scope" class="text-lg font-semibold text-acx-ink">Données concernées</h2>
+      <p class="mt-2 leading-7 text-gray-700">
+        Selon votre situation, la demande peut concerner les données de compte et de contact,
+        les demandes adressées au support et les données personnelles liées à l'utilisation
+        de la plateforme. Les données peuvent être supprimées ou anonymisées lorsque cela est
+        possible.
+      </p>
+      <p class="mt-2 leading-7 text-gray-700">
+        Certaines informations peuvent devoir être conservées lorsqu'une obligation légale,
+        réglementaire, comptable, de sécurité, d'audit ou de prévention de la fraude l'exige.
+        Elles ne sont alors conservées que pour cette finalité et selon la durée applicable.
+      </p>
+    </section>
+  </div>
+
+  <p class="text-sm leading-6 text-gray-600">
+    Consultez également notre
+    <a class="font-medium text-acx-action underline hover:text-acx-actionDark" href="{{ url_for('legal.privacy') }}">politique de confidentialité</a>
+    et nos
+    <a class="font-medium text-acx-action underline hover:text-acx-actionDark" href="{{ url_for('legal.cgu') }}">conditions générales d'utilisation</a>.
+  </p>
+</section>
+{% endblock %}
